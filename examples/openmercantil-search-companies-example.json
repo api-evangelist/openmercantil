@@ -1,0 +1,48 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://openmercantil.es/api/v1/search?q=mercadona&limit=5",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "X-RateLimit-Limit": "60",
+      "X-RateLimit-Remaining": "59",
+      "X-RateLimit-Reset": "1746799260"
+    },
+    "body": {
+      "query": "mercadona",
+      "count": 3,
+      "offset": 0,
+      "items": [
+        {
+          "slug": "mercadona-sa-a46103834",
+          "name": "MERCADONA SA",
+          "cif": "A46103834",
+          "acts_count": 412,
+          "last_seen": "2026-04-15",
+          "aliases": ["Mercadona", "MERCADONA"]
+        },
+        {
+          "slug": "mercadona-supermercados-sl-b96000001",
+          "name": "MERCADONA SUPERMERCADOS SL",
+          "cif": "B96000001",
+          "acts_count": 7,
+          "last_seen": "2024-11-10",
+          "aliases": []
+        },
+        {
+          "slug": "fundacion-mercadona-g46100000",
+          "name": "FUNDACION MERCADONA",
+          "cif": "G46100000",
+          "acts_count": 18,
+          "last_seen": "2025-09-02",
+          "aliases": []
+        }
+      ]
+    }
+  }
+}

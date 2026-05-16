@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/openmercantil/refs/heads/main/json-schema/openmercantil-event-schema.json",
+  "title": "OpenMercantil Company Event",
+  "description": "A single BORME act associated with a Spanish company in the OpenMercantil registry timeline.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "OpenMercantil-stable identifier for the BORME act."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the act was published in BORME."
+    },
+    "type": {
+      "type": "string",
+      "description": "BORME act category (e.g., Constitucion, Nombramientos, Ceses, Cuentas anuales, Disolucion)."
+    },
+    "text": {
+      "type": "string",
+      "description": "Normalized act text."
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "nullable": true,
+      "description": "Canonical BOE/BORME source URL when available."
+    }
+  },
+  "required": ["id", "date", "type"]
+}

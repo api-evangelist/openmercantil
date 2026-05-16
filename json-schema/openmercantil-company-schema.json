@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/openmercantil/refs/heads/main/json-schema/openmercantil-company-schema.json",
+  "title": "OpenMercantil Company",
+  "description": "A Spanish company report assembled from BORME and other integrated public-data sources by OpenMercantil. Informational only, not an official Registro Mercantil extract.",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "OpenMercantil canonical slug, typically `{name-normalized}-{cif}`."
+    },
+    "name": {
+      "type": "string",
+      "description": "Registered company name as recorded in BORME."
+    },
+    "cif": {
+      "type": "string",
+      "description": "Codigo de Identificacion Fiscal (Spanish tax ID)."
+    },
+    "registered_address": {
+      "type": "string",
+      "description": "Domicilio social as recorded in the registry."
+    },
+    "province": {
+      "type": "string",
+      "description": "Spanish province of the registered address."
+    },
+    "registry": {
+      "type": "string",
+      "description": "Name of the Registro Mercantil that holds the entry."
+    },
+    "legal_form": {
+      "type": "string",
+      "description": "Forma juridica (e.g., Sociedad Anonima, Sociedad Limitada)."
+    },
+    "status": {
+      "type": "string",
+      "description": "Registry status of the company.",
+      "enum": ["Activa", "Disuelta", "Liquidada", "Concurso", "Inactiva", "Otra"]
+    },
+    "cnae": {
+      "type": "string",
+      "description": "CNAE 2009 sector code."
+    },
+    "founding_date": {
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Date of constitution."
+    },
+    "last_event": {
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Date of the most recent BORME act."
+    },
+    "events_count": {
+      "type": "integer",
+      "description": "Total number of BORME acts associated with the company."
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Alternative names and brand aliases."
+    }
+  },
+  "required": ["slug", "name", "cif"]
+}

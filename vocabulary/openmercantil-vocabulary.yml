@@ -1,0 +1,130 @@
+name: OpenMercantil Vocabulary
+description: >-
+  Vocabulary and taxonomy for OpenMercantil's Spanish company intelligence
+  domain, covering BORME registry concepts, company and person entities,
+  integrated public-data sources, and OpenMercantil-specific scoring concepts.
+created: '2026-05-16'
+modified: '2026-05-16'
+terms:
+  - term: BORME
+    definition: >-
+      Boletin Oficial del Registro Mercantil. The Spanish official gazette
+      that publishes daily acts of all registered commercial entities,
+      including incorporations, appointments, depositions of accounts and
+      dissolutions. BORME is the upstream source of OpenMercantil's timelines.
+    tags: [Core Source, Spain, Registry]
+
+  - term: Registro Mercantil
+    definition: >-
+      The Spanish Commercial Registry, a network of provincial registries
+      operated under the Ministerio de Justicia, where all Spanish commercial
+      entities are registered. OpenMercantil is not the Registro Mercantil and
+      does not replace official extracts.
+    tags: [Registry, Spain]
+
+  - term: CIF
+    definition: >-
+      Codigo de Identificacion Fiscal. The Spanish tax identification code
+      for legal entities, used as the primary stable identifier for companies
+      in OpenMercantil.
+    tags: [Identifier, Tax]
+
+  - term: Company
+    definition: >-
+      A Spanish commercial entity (Sociedad Anonima, Sociedad Limitada,
+      Cooperativa, etc.) registered with a Registro Mercantil and indexed by
+      OpenMercantil from BORME publications.
+    tags: [Core Entity, Company]
+
+  - term: Slug
+    definition: >-
+      The canonical OpenMercantil identifier for a company or person, typically
+      `{name-normalized}-{cif}` for companies and `{name-normalized}` for
+      persons. Slugs are stable across the public API.
+    tags: [Identifier]
+
+  - term: Officer
+    definition: >-
+      A natural person or entity holding a registered role with a company,
+      including administradores, consejeros, apoderados, secretarios and
+      auditores.
+    tags: [Person, Role]
+
+  - term: Event
+    definition: >-
+      A BORME act published against a company, representing changes such as
+      Constitucion, Nombramientos, Ceses, Cuentas anuales, Cambio de domicilio,
+      or Disolucion. Events form the registry timeline.
+    tags: [Core Entity, Timeline]
+
+  - term: CNAE
+    definition: >-
+      Clasificacion Nacional de Actividades Economicas 2009. The Spanish
+      industry sector classification used to categorize companies. OpenMercantil
+      exposes the CNAE tree and per-sector aggregates.
+    tags: [Taxonomy, Sector]
+
+  - term: CCAA
+    definition: >-
+      Comunidades Autonomas. Spanish autonomous communities used as a
+      geographic aggregation dimension for OpenMercantil statistics.
+    tags: [Geography, Spain]
+
+  - term: PLACSP
+    definition: >-
+      Plataforma de Contratacion del Sector Publico. The Spanish public
+      procurement platform, integrated by OpenMercantil for the contracts
+      endpoints and trust-score signals.
+    tags: [Source, Public Procurement]
+
+  - term: CNMV
+    definition: >-
+      Comision Nacional del Mercado de Valores. The Spanish securities
+      regulator, whose disclosures are integrated into OpenMercantil for
+      listed-entity records.
+    tags: [Source, Regulator]
+
+  - term: BDNS
+    definition: >-
+      Base de Datos Nacional de Subvenciones. The Spanish national database of
+      public grants, integrated into OpenMercantil's company grants endpoint.
+    tags: [Source, Grants]
+
+  - term: OEPM
+    definition: >-
+      Oficina Espanola de Patentes y Marcas. The Spanish patent and trademark
+      office, used as a signal source for OpenMercantil's trust score.
+    tags: [Source, Intellectual Property]
+
+  - term: OpenSanctions
+    definition: >-
+      Open dataset of sanctioned and politically exposed entities and persons,
+      integrated by OpenMercantil into the company sanctions endpoint.
+    tags: [Source, Sanctions]
+
+  - term: Trust Score
+    definition: >-
+      A v1.4 composite signal score combining BORME activity, CNMV records,
+      OEPM filings, PLACSP contracts, BOE notices and sanctions hits into a
+      single per-company indicator. Informational only.
+    tags: [Score, OpenMercantil]
+
+  - term: Embargo
+    definition: >-
+      A public seizure or attachment order recorded against a company in
+      Spanish public records, surfaced via the v1.4 embargoes endpoint.
+    tags: [Public Record, Risk]
+
+  - term: Daily Summary
+    definition: >-
+      The aggregated BORME publication for a given date, accessible via the
+      daily endpoint and used to subscribe to registry activity in bulk.
+    tags: [Feed, Timeline]
+
+  - term: Rate Limit
+    definition: >-
+      The public anonymous tier of the OpenMercantil API is limited to roughly
+      60 requests per minute per IP, with `X-RateLimit-Limit`,
+      `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers signaling
+      remaining capacity, and `429 Too Many Requests` returned on exceed.
+    tags: [Operations, Public API]

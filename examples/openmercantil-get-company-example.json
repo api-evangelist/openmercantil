@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://openmercantil.es/api/v1/company/inditex-sa-a15075062",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "slug": "inditex-sa-a15075062",
+      "name": "INDITEX SA",
+      "cif": "A15075062",
+      "registered_address": "Avenida de la Diputacion s/n, Edificio Inditex, 15143 Arteixo (A Coruna)",
+      "province": "A Coruna",
+      "registry": "Registro Mercantil de A Coruna",
+      "legal_form": "Sociedad Anonima",
+      "status": "Activa",
+      "cnae": "4642",
+      "founding_date": "1985-06-12",
+      "last_event": "2026-04-22",
+      "events_count": 1287,
+      "aliases": ["Industria de Diseno Textil", "Inditex"]
+    }
+  }
+}

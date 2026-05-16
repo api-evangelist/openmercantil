@@ -1,0 +1,102 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: OpenMercantil
+providerId: openmercantil
+created: '2026-05-16'
+modified: '2026-05-16'
+reconciled: false
+tags:
+  - FinOps
+  - FOCUS
+  - Open Data
+  - Spain
+  - Company Data
+  - BORME
+description: >-
+  FOCUS-aligned FinOps framing for OpenMercantil. The public REST API is free
+  and rate-limited; commercial surface is a flat-rate website / dataset
+  subscription (Profesional / MAX) plus optional one-time donations. There is
+  no metered per-request billing on the public API, so cost-allocation meters
+  here track subscription seats and donation revenue rather than API usage.
+notes: >-
+  No metered API pricing is published by OpenMercantil. Pricing is flat
+  monthly/annual subscription via Stripe with optional one-time donations.
+  Reconcile if a usage-priced API tier becomes available.
+sources:
+  - https://openmercantil.es/precios
+  - https://openmercantil.es/api/documentacion
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: OpenMercantil
+serviceCategory: Open Data / Public Records
+billingModel:
+  pricingCategory: Subscription + One-Time Donation
+  billingFrequency: Monthly Or Annual
+  billingCurrency: EUR
+  vatHandling: Spanish VAT (21%) added at checkout where applicable
+  paymentProcessor: Stripe
+  chargeCategories:
+    - Purchase
+    - Tax
+    - Adjustment
+    - Credit
+focusColumns:
+  ServiceName: OpenMercantil
+  ServiceCategory: Open Data
+  ProviderName: OpenMercantil
+  PublisherName: OpenMercantil
+  InvoiceIssuerName: OpenMercantil
+  BillingCurrency: EUR
+meters:
+  - name: subscription_seats
+    unit: seat
+    aggregation: count
+    dimensions:
+      - plan
+      - billingCycle
+  - name: subscription_revenue
+    unit: EUR
+    aggregation: sum
+    dimensions:
+      - plan
+      - billingCycle
+  - name: donation_revenue
+    unit: EUR
+    aggregation: sum
+    dimensions:
+      - source
+  - name: free_api_requests
+    unit: request
+    aggregation: count
+    dimensions:
+      - endpoint
+      - sourceIp
+principles:
+  - name: Visibility
+    description: >-
+      Reconcile Stripe invoice exports against the Profesional and MAX plan
+      definitions; track donation income as a separate revenue line. Public
+      API traffic is not invoiced but should be observed for capacity planning.
+  - name: Allocation
+    description: >-
+      Allocate seats and donation revenue back to project budgets. Allocate
+      free-tier API traffic by endpoint and source-IP cohort for
+      infrastructure cost attribution.
+  - name: Optimization
+    description: >-
+      Encourage consumers to use export endpoints and CSV downloads rather
+      than per-record looped requests to reduce upstream BORME and Nominatim
+      lookup costs. Cache the geocode and sources/status endpoints aggressively.
+  - name: Accountability
+    description: >-
+      OpenMercantil treasurer/owner reviews monthly Stripe statements and
+      donation totals; engineering reviews per-endpoint request volume for
+      free-tier infrastructure cost.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

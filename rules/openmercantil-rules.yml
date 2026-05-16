@@ -1,0 +1,76 @@
+extends: spectral:oas
+rules:
+  openmercantil-operation-ids-camel-case:
+    description: Operation IDs must use camelCase
+    severity: warn
+    given: "$.paths[*][*].operationId"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  openmercantil-tags-required:
+    description: All operations must have at least one tag
+    severity: error
+    given: "$.paths[*][*]"
+    then:
+      field: tags
+      function: truthy
+
+  openmercantil-summaries-title-case:
+    description: Operation summaries must use Title Case
+    severity: warn
+    given: "$.paths[*][*].summary"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[A-Z][a-zA-Z0-9]*(\\s[A-Z][a-zA-Z0-9]*)*$"
+
+  openmercantil-v1-paths:
+    description: Public paths must be versioned under /api/v1/
+    severity: error
+    given: "$.paths[*]~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^/api/v1/.+$"
+
+  openmercantil-429-documented:
+    description: All public endpoints should document the 429 rate-limit response
+    severity: warn
+    given: "$.paths[*][get,post,put,delete].responses"
+    then:
+      field: "429"
+      function: truthy
+
+  openmercantil-snake-case-query-params:
+    description: Query parameters should use snake_case
+    severity: info
+    given: "$.paths[*][*].parameters[?(@.in=='query')].name"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9_]*$"
+
+  openmercantil-slug-path-param:
+    description: Company and person resource paths must use a `slug` path parameter
+    severity: info
+    given: "$.paths[?(@property.match(/^\\/api\\/v1\\/(company|person)\\/.*/))][*].parameters[?(@.in=='path' && @.name=='slug')]"
+    then:
+      function: truthy
+
+  openmercantil-rate-limit-headers:
+    description: 429 responses should document Retry-After and X-RateLimit-* headers
+    severity: warn
+    given: "$.paths[*][*].responses.429"
+    then:
+      field: headers
+      function: truthy
+
+  openmercantil-public-no-auth:
+    description: Public read endpoints should not require authentication
+    severity: info
+    given: "$.paths[?(@property.match(/^\\/api\\/v1\\/(search|company|person|persona|daily|summary|cnae|sector|sectores|ccaa|sources|contracts|export|health)/))].get"
+    then:
+      field: security
+      function: falsy

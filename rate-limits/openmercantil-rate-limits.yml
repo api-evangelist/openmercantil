@@ -1,0 +1,96 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: OpenMercantil
+providerId: openmercantil
+created: '2026-05-16'
+modified: '2026-05-16'
+reconciled: false
+tags:
+  - Open Data
+  - Spain
+  - Company Data
+  - Business Registry
+  - BORME
+  - Public Records
+  - Rate Limiting
+  - Throttling
+description: >-
+  Machine-readable rate limit definitions for the OpenMercantil public API.
+  The anonymous public tier is documented at ~60 requests per minute per
+  source IP, signaled via X-RateLimit-* headers and Retry-After on 429.
+  Higher per-plan rate limits are alluded to in the API documentation but not
+  enumerated publicly; values below for paid tiers are scaffold defaults and
+  must be reconciled with the provider.
+notes: >-
+  Free-tier limit (60 req/min/IP) and rate-limit headers confirmed from
+  https://openmercantil.es/api/documentacion. Per-plan rate limit specifics
+  for Profesional / MAX are referenced ("rate limit por plan") but not
+  published, so paid-tier numbers below are placeholders.
+headers:
+  limit: X-RateLimit-Limit
+  remaining: X-RateLimit-Remaining
+  reset: X-RateLimit-Reset
+  retryAfter: Retry-After
+responseCodes:
+  throttled: 429
+  quotaExceeded: 429
+  serviceUnavailable: 503
+limits:
+  - tier: free
+    name: Public Anonymous Tier
+    scope: ip
+    metric: requests_per_minute
+    limit: 60
+    burst: 60
+    timeFrame: minute
+    applies:
+      - OpenMercantil Public API
+  - tier: profesional
+    name: Profesional Tier (Placeholder)
+    scope: account
+    metric: requests_per_minute
+    limit: 240
+    burst: 240
+    timeFrame: minute
+    applies:
+      - OpenMercantil Public API
+  - tier: max
+    name: MAX Tier (Placeholder)
+    scope: account
+    metric: requests_per_minute
+    limit: 1200
+    burst: 1200
+    timeFrame: minute
+    applies:
+      - OpenMercantil Public API
+policies:
+  - name: Backoff Strategy
+    description: >-
+      On 429 responses, clients should honor the Retry-After header and apply
+      exponential backoff with jitter for subsequent requests.
+  - name: Sliding Window
+    description: >-
+      Rate limits are enforced over a sliding window per source IP on the
+      anonymous tier. X-RateLimit-Reset signals the Unix timestamp at which the
+      counter resets.
+  - name: Fair Use
+    description: >-
+      OpenMercantil is a public-interest free service. Sustained scraping or
+      bulk-extraction patterns may be throttled even within published limits;
+      bulk consumers should prefer the dedicated export endpoints
+      (/api/v1/export/events, /api/v1/sectores/stats.csv) and observe ETag /
+      cache headers.
+  - name: Geocode Source Limit
+    description: >-
+      The /api/v1/company/{slug}/geocode endpoint is fronted by an upstream
+      Nominatim/OSM rate limit of approximately 1 request per second on cache
+      misses; cache hits are unconstrained.
+  - name: Anonymous Access
+    description: >-
+      All public read endpoints are accessible without authentication. Only the
+      billing endpoints (/api/v1/checkout, /api/v1/donation) require session
+      authentication.
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

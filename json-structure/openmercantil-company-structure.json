@@ -1,0 +1,19 @@
+{
+  "name": "OpenMercantil Company Structure",
+  "description": "Structural documentation for an OpenMercantil company report.",
+  "properties": {
+    "slug": { "type": "string", "description": "Canonical OpenMercantil slug `{name}-{cif}`" },
+    "name": { "type": "string", "description": "Registered company name" },
+    "cif": { "type": "string", "description": "Spanish tax identifier (CIF)" },
+    "registered_address": { "type": "string", "description": "Domicilio social" },
+    "province": { "type": "string", "description": "Spanish province of the registered address" },
+    "registry": { "type": "string", "description": "Registro Mercantil entry holder" },
+    "legal_form": { "type": "string", "description": "Forma juridica (legal form)" },
+    "status": { "type": "string", "description": "Registry status (Activa, Disuelta, etc.)" },
+    "cnae": { "type": "string", "description": "CNAE 2009 sector code" },
+    "founding_date": { "type": "string", "description": "Date of constitution (ISO 8601)" },
+    "last_event": { "type": "string", "description": "Date of the most recent BORME act (ISO 8601)" },
+    "events_count": { "type": "integer", "description": "Total number of BORME acts" },
+    "aliases": { "type": "array", "description": "Alternative names and brand aliases" }
+  }
+}

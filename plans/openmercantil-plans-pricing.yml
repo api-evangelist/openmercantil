@@ -1,0 +1,202 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: OpenMercantil
+providerId: openmercantil
+created: '2026-05-16'
+modified: '2026-05-16'
+reconciled: false
+tags:
+  - Open Data
+  - Spain
+  - Company Data
+  - Business Registry
+  - BORME
+  - Public Records
+description: >-
+  Machine-readable plans and pricing for OpenMercantil. The public REST API is
+  free, anonymous, and rate-limited per IP; paid plans (Profesional / MAX) at
+  openmercantil.es/precios extend website usage limits, downloads and Pro
+  datasets. Whether API rate limits explicitly increase on paid plans is
+  alluded to on the docs ("rate limit por plan") but not enumerated publicly,
+  so the higher-tier API quotas below are scaffold defaults flagged for
+  reconciliation.
+notes: >-
+  Free public API tier confirmed from https://openmercantil.es/api/documentacion
+  (~60 req/min per IP, anonymous). Profesional 57 EUR/month (or 649 EUR/year)
+  and MAX 197 EUR/month (or 2245 EUR/year) confirmed from
+  https://openmercantil.es/precios. Trial of 14 days on paid plans. Per-tier
+  API request quotas are not separately published and should be reconciled
+  with the provider.
+plans:
+  - id: openmercantil-free
+    name: Gratis
+    type: freemium
+    description: >-
+      Free anonymous public API and website tier. No API key required. Rate-limited per IP.
+    entries:
+      - label: API Requests
+        description: Approximate per-minute request budget per source IP on the public anonymous API
+        name: api_requests
+        type: rate
+        metric: requests_per_minute
+        limit: 60
+        timeFrame: minute
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+      - label: API Auth
+        description: No API key required
+        name: api_auth
+        type: feature
+        metric: auth
+        limit: 0
+        timeFrame: month
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+    elements:
+      - name: Public Documentation
+      - name: BORME Search
+      - name: Company Reports
+      - name: Registry Event Timelines
+      - name: Person Search
+      - name: CNAE Browser
+      - name: Daily Summaries
+      - name: Free CSV Downloads
+  - id: openmercantil-profesional
+    name: Profesional
+    type: paid
+    description: >-
+      Professional tier for power users and small teams needing higher web/dataset
+      usage. Includes a 14-day free trial. Whether the API rate limit is raised
+      relative to the anonymous tier is not enumerated publicly.
+    entries:
+      - label: Monthly Subscription
+        description: Profesional monthly subscription
+        name: monthly_subscription
+        type: subscription
+        metric: month
+        limit: 1
+        timeFrame: month
+        geo: global
+        domains: []
+        unit: 1
+        price: '57.00'
+        currency: EUR
+        userMultiplied: false
+      - label: Annual Subscription
+        description: Profesional annual subscription (equivalent to 54 EUR/month, 5% discount)
+        name: annual_subscription
+        type: subscription
+        metric: year
+        limit: 1
+        timeFrame: year
+        geo: global
+        domains: []
+        unit: 1
+        price: '649.00'
+        currency: EUR
+        userMultiplied: false
+      - label: Free Trial
+        description: 14-day free trial on monthly billing
+        name: free_trial
+        type: trial
+        metric: days
+        limit: 14
+        timeFrame: month
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+      - label: API Rate Limit
+        description: Per-plan API rate limit referenced in docs as "rate limit por plan"; exact value not published
+        name: api_rate_limit
+        type: rate
+        metric: requests_per_minute
+        limit: -1
+        timeFrame: minute
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+    elements:
+      - name: Everything In Gratis
+      - name: Pro Datasets
+      - name: Higher Website Quotas
+      - name: 14-Day Free Trial
+  - id: openmercantil-max
+    name: MAX
+    type: paid
+    description: >-
+      Top professional tier (also referred to as "Business / Agency" in API docs
+      checkout context). Highest published price point on openmercantil.es/precios.
+    entries:
+      - label: Monthly Subscription
+        description: MAX monthly subscription
+        name: monthly_subscription
+        type: subscription
+        metric: month
+        limit: 1
+        timeFrame: month
+        geo: global
+        domains: []
+        unit: 1
+        price: '197.00'
+        currency: EUR
+        userMultiplied: false
+      - label: Annual Subscription
+        description: MAX annual subscription
+        name: annual_subscription
+        type: subscription
+        metric: year
+        limit: 1
+        timeFrame: year
+        geo: global
+        domains: []
+        unit: 1
+        price: '2245.00'
+        currency: EUR
+        userMultiplied: false
+      - label: Free Trial
+        description: 14-day free trial on monthly billing
+        name: free_trial
+        type: trial
+        metric: days
+        limit: 14
+        timeFrame: month
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+      - label: API Rate Limit
+        description: Highest per-plan API rate limit; exact value not published
+        name: api_rate_limit
+        type: rate
+        metric: requests_per_minute
+        limit: -1
+        timeFrame: minute
+        geo: global
+        domains: []
+        unit: 1
+        price: '0.00'
+        userMultiplied: false
+    elements:
+      - name: Everything In Profesional
+      - name: Highest Quotas
+      - name: Priority Support
+      - name: Pro Datasets
+      - name: 14-Day Free Trial
+notes_about_pricing:
+  - All prices excluding VAT (IVA). Spanish VAT (21%) added at checkout where applicable.
+  - Donations are also supported via POST /api/v1/donation (Stripe one-time, 5-1000 EUR).
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com

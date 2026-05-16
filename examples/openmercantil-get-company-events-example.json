@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://openmercantil.es/api/v1/company/inditex-sa-a15075062/events?year=2025&page=1&page_size=20",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "slug": "inditex-sa-a15075062",
+      "year": 2025,
+      "page": 1,
+      "page_size": 20,
+      "total": 14,
+      "items": [
+        {
+          "id": "borme-2025-a15-000123",
+          "date": "2025-03-18",
+          "type": "Nombramientos",
+          "text": "Nombramiento de Consejero Delegado",
+          "source_url": "https://www.boe.es/diario_borme/txt.php?id=BORME-A-2025-00123"
+        },
+        {
+          "id": "borme-2025-a15-000456",
+          "date": "2025-07-05",
+          "type": "Cuentas anuales",
+          "text": "Deposito de cuentas anuales ejercicio 2024",
+          "source_url": "https://www.boe.es/diario_borme/txt.php?id=BORME-A-2025-00456"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "https://openmercantil.es/api/v1/health",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "version": "1.4.0",
+      "companies_indexed": 2600000,
+      "events_indexed": 18000000,
+      "last_updated": "2026-05-09T07:00:00Z"
+    }
+  }
+}

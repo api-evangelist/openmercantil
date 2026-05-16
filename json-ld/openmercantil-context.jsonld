@@ -1,0 +1,47 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "om": "https://openmercantil.es/vocab/",
+    "Company": "schema:Organization",
+    "Person": "schema:Person",
+    "Event": "om:RegistryEvent",
+    "Officer": "om:Officer",
+    "slug": "om:slug",
+    "name": "schema:name",
+    "cif": "schema:taxID",
+    "registered_address": "schema:address",
+    "province": "schema:addressRegion",
+    "registry": "om:registry",
+    "legal_form": "om:legalForm",
+    "status": "om:registryStatus",
+    "cnae": "om:cnae",
+    "founding_date": "schema:foundingDate",
+    "last_event": "om:lastEventDate",
+    "events_count": "om:eventsCount",
+    "aliases": "schema:alternateName",
+    "id": "@id",
+    "date": "schema:datePublished",
+    "type": "om:actType",
+    "text": "schema:text",
+    "source_url": "schema:isBasedOn",
+    "person_slug": "om:personSlug",
+    "role": "schema:roleName",
+    "appointed": "om:appointedOn",
+    "ceased": "om:ceasedOn",
+    "lat": "schema:latitude",
+    "lng": "schema:longitude",
+    "address": "schema:address",
+    "score": "om:companyScore",
+    "trust_score": "om:trustScore",
+    "components": {
+      "@id": "om:scoreComponents",
+      "@container": "@set"
+    },
+    "items": {
+      "@id": "om:items",
+      "@container": "@set"
+    }
+  }
+}
