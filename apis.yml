@@ -1,0 +1,26 @@
+aid: openmercantil
+url: https://raw.githubusercontent.com/api-evangelist/openmercantil/refs/heads/main/apis.yml
+name: OpenMercantil
+type: Index
+image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+description: 'Independent public-data API for Spanish company search, registry timelines, and public records (BORME).'
+created: '2026-05-16'
+modified: '2026-05-16'
+specificationVersion: '0.19'
+tags:
+  - Open Data
+  - Spain
+  - Company Data
+  - Business Registry
+  - BORME
+  - Public Records
+
+common:
+  - url: https://openmercantil.es/
+    type: Website
+  - url: https://openmercantil.es/api/documentacion
+    type: Documentation
+  - url: https://openmercantil.es/apis.json
+    type: APIsJSON
+url-source: https://openmercantil.es/
+apis: []
