@@ -1,0 +1,136 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Stats
+  description: 'OpenMercantil Public API — Stats. 3 operations. Lead operation: Get Aggregate Statistics By Autonomous Community.
+    Self-contained Naftiko capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Stats
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-stats
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Stats business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-ccaa-stats
+      path: /api/v1/ccaa/stats
+      operations:
+      - name: getccaastats
+        method: GET
+        description: Get Aggregate Statistics By Autonomous Community
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-v1-sectores-stats
+      path: /api/v1/sectores/stats
+      operations:
+      - name: getsectorstats
+        method: GET
+        description: Get Sector Aggregate Statistics
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-v1-sectores-stats.csv
+      path: /api/v1/sectores/stats.csv
+      operations:
+      - name: getsectorstatscsv
+        method: GET
+        description: Export Sector Aggregate Statistics As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-stats-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Stats. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/ccaa/stats
+      name: api-v1-ccaa-stats
+      description: REST surface for api-v1-ccaa-stats.
+      operations:
+      - method: GET
+        name: getccaastats
+        description: Get Aggregate Statistics By Autonomous Community
+        call: openmercantil-stats.getccaastats
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/sectores/stats
+      name: api-v1-sectores-stats
+      description: REST surface for api-v1-sectores-stats.
+      operations:
+      - method: GET
+        name: getsectorstats
+        description: Get Sector Aggregate Statistics
+        call: openmercantil-stats.getsectorstats
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/sectores/stats-csv
+      name: api-v1-sectores-stats-csv
+      description: REST surface for api-v1-sectores-stats.csv.
+      operations:
+      - method: GET
+        name: getsectorstatscsv
+        description: Export Sector Aggregate Statistics As CSV
+        call: openmercantil-stats.getsectorstatscsv
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-stats-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Stats. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: get-aggregate-statistics-autonomous-community
+      description: Get Aggregate Statistics By Autonomous Community
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-stats.getccaastats
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-sector-aggregate-statistics
+      description: Get Sector Aggregate Statistics
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-stats.getsectorstats
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: export-sector-aggregate-statistics-csv
+      description: Export Sector Aggregate Statistics As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-stats.getsectorstatscsv
+      outputParameters:
+      - type: object
+        mapping: $.

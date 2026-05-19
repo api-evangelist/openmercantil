@@ -1,0 +1,87 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Geocode
+  description: 'OpenMercantil Public API — Geocode. 1 operations. Lead operation: Geocode A Company Address. Self-contained
+    Naftiko capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Geocode
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-geocode
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Geocode business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-company-slug-geocode
+      path: /api/v1/company/{slug}/geocode
+      operations:
+      - name: geocodecompany
+        method: GET
+        description: Geocode A Company Address
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: force
+          in: query
+          type: integer
+          description: Set to 1 to bypass cache and force a live geocoding lookup.
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-geocode-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Geocode. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/company/{slug}/geocode
+      name: api-v1-company-slug-geocode
+      description: REST surface for api-v1-company-slug-geocode.
+      operations:
+      - method: GET
+        name: geocodecompany
+        description: Geocode A Company Address
+        call: openmercantil-geocode.geocodecompany
+        with:
+          slug: rest.slug
+          force: rest.force
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-geocode-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Geocode. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: geocode-company-address
+      description: Geocode A Company Address
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-geocode.geocodecompany
+      with:
+        slug: tools.slug
+        force: tools.force
+      outputParameters:
+      - type: object
+        mapping: $.

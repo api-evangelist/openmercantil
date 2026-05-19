@@ -1,0 +1,173 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Persons
+  description: 'OpenMercantil Public API — Persons. 3 operations. Lead operation: Search Persons. Self-contained Naftiko capability
+    covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Persons
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-persons
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Persons business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-person-search
+      path: /api/v1/person/search
+      operations:
+      - name: searchpersons
+        method: GET
+        description: Search Persons
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: q
+          in: query
+          type: string
+          required: true
+        - name: limit
+          in: query
+          type: integer
+        - name: offset
+          in: query
+          type: integer
+    - name: api-v1-person-slug
+      path: /api/v1/person/{slug}
+      operations:
+      - name: getperson
+        method: GET
+        description: Get A Person Report
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-persona-slug-contracts
+      path: /api/v1/persona/{slug}/contracts
+      operations:
+      - name: getpersoncontracts
+        method: GET
+        description: List Public Contracts For Person
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-persons-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Persons. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/person/search
+      name: api-v1-person-search
+      description: REST surface for api-v1-person-search.
+      operations:
+      - method: GET
+        name: searchpersons
+        description: Search Persons
+        call: openmercantil-persons.searchpersons
+        with:
+          q: rest.q
+          limit: rest.limit
+          offset: rest.offset
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/person/{slug}
+      name: api-v1-person-slug
+      description: REST surface for api-v1-person-slug.
+      operations:
+      - method: GET
+        name: getperson
+        description: Get A Person Report
+        call: openmercantil-persons.getperson
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/persona/{slug}/contracts
+      name: api-v1-persona-slug-contracts
+      description: REST surface for api-v1-persona-slug-contracts.
+      operations:
+      - method: GET
+        name: getpersoncontracts
+        description: List Public Contracts For Person
+        call: openmercantil-persons.getpersoncontracts
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-persons-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Persons. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: search-persons
+      description: Search Persons
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-persons.searchpersons
+      with:
+        q: tools.q
+        limit: tools.limit
+        offset: tools.offset
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-person-report
+      description: Get A Person Report
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-persons.getperson
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-public-contracts-person
+      description: List Public Contracts For Person
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-persons.getpersoncontracts
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.

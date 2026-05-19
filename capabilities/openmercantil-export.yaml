@@ -1,0 +1,243 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Export
+  description: 'OpenMercantil Public API — Export. 5 operations. Lead operation: Export A Company Report. Self-contained Naftiko
+    capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Export
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-export
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Export business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-company-slug-export
+      path: /api/v1/company/{slug}/export
+      operations:
+      - name: exportcompany
+        method: GET
+        description: Export A Company Report
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: format
+          in: query
+          type: string
+    - name: api-v1-contracts-top-companies.csv
+      path: /api/v1/contracts/top-companies.csv
+      operations:
+      - name: gettopcompaniesbycontractscsv
+        method: GET
+        description: Top Companies By Public Contracts As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-contracts-top-persons.csv
+      path: /api/v1/contracts/top-persons.csv
+      operations:
+      - name: gettoppersonsbycontractscsv
+        method: GET
+        description: Top Persons By Public Contracts As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-export-events
+      path: /api/v1/export/events
+      operations:
+      - name: exportevents
+        method: GET
+        description: Export Events
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: year
+          in: query
+          type: integer
+        - name: format
+          in: query
+          type: string
+    - name: api-v1-sectores-stats.csv
+      path: /api/v1/sectores/stats.csv
+      operations:
+      - name: getsectorstatscsv
+        method: GET
+        description: Export Sector Aggregate Statistics As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-export-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Export. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/company/{slug}/export
+      name: api-v1-company-slug-export
+      description: REST surface for api-v1-company-slug-export.
+      operations:
+      - method: GET
+        name: exportcompany
+        description: Export A Company Report
+        call: openmercantil-export.exportcompany
+        with:
+          slug: rest.slug
+          format: rest.format
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/contracts/top-companies-csv
+      name: api-v1-contracts-top-companies-csv
+      description: REST surface for api-v1-contracts-top-companies.csv.
+      operations:
+      - method: GET
+        name: gettopcompaniesbycontractscsv
+        description: Top Companies By Public Contracts As CSV
+        call: openmercantil-export.gettopcompaniesbycontractscsv
+        with:
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/contracts/top-persons-csv
+      name: api-v1-contracts-top-persons-csv
+      description: REST surface for api-v1-contracts-top-persons.csv.
+      operations:
+      - method: GET
+        name: gettoppersonsbycontractscsv
+        description: Top Persons By Public Contracts As CSV
+        call: openmercantil-export.gettoppersonsbycontractscsv
+        with:
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/export/events
+      name: api-v1-export-events
+      description: REST surface for api-v1-export-events.
+      operations:
+      - method: GET
+        name: exportevents
+        description: Export Events
+        call: openmercantil-export.exportevents
+        with:
+          year: rest.year
+          format: rest.format
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/sectores/stats-csv
+      name: api-v1-sectores-stats-csv
+      description: REST surface for api-v1-sectores-stats.csv.
+      operations:
+      - method: GET
+        name: getsectorstatscsv
+        description: Export Sector Aggregate Statistics As CSV
+        call: openmercantil-export.getsectorstatscsv
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-export-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Export. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: export-company-report
+      description: Export A Company Report
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-export.exportcompany
+      with:
+        slug: tools.slug
+        format: tools.format
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: top-companies-public-contracts-csv
+      description: Top Companies By Public Contracts As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-export.gettopcompaniesbycontractscsv
+      with:
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: top-persons-public-contracts-csv
+      description: Top Persons By Public Contracts As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-export.gettoppersonsbycontractscsv
+      with:
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: export-events
+      description: Export Events
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-export.exportevents
+      with:
+        year: tools.year
+        format: tools.format
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: export-sector-aggregate-statistics-csv
+      description: Export Sector Aggregate Statistics As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-export.getsectorstatscsv
+      outputParameters:
+      - type: object
+        mapping: $.

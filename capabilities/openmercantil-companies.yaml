@@ -1,0 +1,646 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Companies
+  description: 'OpenMercantil Public API — Companies. 14 operations. Lead operation: Get A Company Report. Self-contained
+    Naftiko capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Companies
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-companies
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Companies business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-company-slug
+      path: /api/v1/company/{slug}
+      operations:
+      - name: getcompany
+        method: GET
+        description: Get A Company Report
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          description: Company slug, typically `{name}-{cif}`.
+          required: true
+    - name: api-v1-company-slug-activity
+      path: /api/v1/company/{slug}/activity
+      operations:
+      - name: getcompanyactivity
+        method: GET
+        description: Get Company Activity Timeseries
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-cnmv
+      path: /api/v1/company/{slug}/cnmv
+      operations:
+      - name: getcompanycnmv
+        method: GET
+        description: Get CNMV Records For Company
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-embargoes
+      path: /api/v1/company/{slug}/embargoes
+      operations:
+      - name: getcompanyembargoes
+        method: GET
+        description: List Company Embargoes
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-events
+      path: /api/v1/company/{slug}/events
+      operations:
+      - name: getcompanyevents
+        method: GET
+        description: Get Paginated Company Events
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: year
+          in: query
+          type: integer
+        - name: page
+          in: query
+          type: integer
+        - name: page_size
+          in: query
+          type: integer
+    - name: api-v1-company-slug-export
+      path: /api/v1/company/{slug}/export
+      operations:
+      - name: exportcompany
+        method: GET
+        description: Export A Company Report
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: format
+          in: query
+          type: string
+    - name: api-v1-company-slug-geocode
+      path: /api/v1/company/{slug}/geocode
+      operations:
+      - name: geocodecompany
+        method: GET
+        description: Geocode A Company Address
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: force
+          in: query
+          type: integer
+          description: Set to 1 to bypass cache and force a live geocoding lookup.
+    - name: api-v1-company-slug-grants
+      path: /api/v1/company/{slug}/grants
+      operations:
+      - name: getcompanygrants
+        method: GET
+        description: List Company Grants From BDNS
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-network
+      path: /api/v1/company/{slug}/network
+      operations:
+      - name: getcompanynetwork
+        method: GET
+        description: Get Company Relationship Network
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-officers
+      path: /api/v1/company/{slug}/officers
+      operations:
+      - name: getcompanyofficers
+        method: GET
+        description: List Company Officers
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-sanctions
+      path: /api/v1/company/{slug}/sanctions
+      operations:
+      - name: getcompanysanctions
+        method: GET
+        description: List Company Sanctions
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-score
+      path: /api/v1/company/{slug}/score
+      operations:
+      - name: getcompanyscore
+        method: GET
+        description: Get Company Score
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    - name: api-v1-company-slug-similar
+      path: /api/v1/company/{slug}/similar
+      operations:
+      - name: getsimilarcompanies
+        method: GET
+        description: List Similar Companies
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-company-slug-trust-score
+      path: /api/v1/company/{slug}/trust-score
+      operations:
+      - name: getcompanytrustscore
+        method: GET
+        description: Get Company Trust Score
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-companies-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Companies. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/company/{slug}
+      name: api-v1-company-slug
+      description: REST surface for api-v1-company-slug.
+      operations:
+      - method: GET
+        name: getcompany
+        description: Get A Company Report
+        call: openmercantil-companies.getcompany
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/activity
+      name: api-v1-company-slug-activity
+      description: REST surface for api-v1-company-slug-activity.
+      operations:
+      - method: GET
+        name: getcompanyactivity
+        description: Get Company Activity Timeseries
+        call: openmercantil-companies.getcompanyactivity
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/cnmv
+      name: api-v1-company-slug-cnmv
+      description: REST surface for api-v1-company-slug-cnmv.
+      operations:
+      - method: GET
+        name: getcompanycnmv
+        description: Get CNMV Records For Company
+        call: openmercantil-companies.getcompanycnmv
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/embargoes
+      name: api-v1-company-slug-embargoes
+      description: REST surface for api-v1-company-slug-embargoes.
+      operations:
+      - method: GET
+        name: getcompanyembargoes
+        description: List Company Embargoes
+        call: openmercantil-companies.getcompanyembargoes
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/events
+      name: api-v1-company-slug-events
+      description: REST surface for api-v1-company-slug-events.
+      operations:
+      - method: GET
+        name: getcompanyevents
+        description: Get Paginated Company Events
+        call: openmercantil-companies.getcompanyevents
+        with:
+          slug: rest.slug
+          year: rest.year
+          page: rest.page
+          page_size: rest.page_size
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/export
+      name: api-v1-company-slug-export
+      description: REST surface for api-v1-company-slug-export.
+      operations:
+      - method: GET
+        name: exportcompany
+        description: Export A Company Report
+        call: openmercantil-companies.exportcompany
+        with:
+          slug: rest.slug
+          format: rest.format
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/geocode
+      name: api-v1-company-slug-geocode
+      description: REST surface for api-v1-company-slug-geocode.
+      operations:
+      - method: GET
+        name: geocodecompany
+        description: Geocode A Company Address
+        call: openmercantil-companies.geocodecompany
+        with:
+          slug: rest.slug
+          force: rest.force
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/grants
+      name: api-v1-company-slug-grants
+      description: REST surface for api-v1-company-slug-grants.
+      operations:
+      - method: GET
+        name: getcompanygrants
+        description: List Company Grants From BDNS
+        call: openmercantil-companies.getcompanygrants
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/network
+      name: api-v1-company-slug-network
+      description: REST surface for api-v1-company-slug-network.
+      operations:
+      - method: GET
+        name: getcompanynetwork
+        description: Get Company Relationship Network
+        call: openmercantil-companies.getcompanynetwork
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/officers
+      name: api-v1-company-slug-officers
+      description: REST surface for api-v1-company-slug-officers.
+      operations:
+      - method: GET
+        name: getcompanyofficers
+        description: List Company Officers
+        call: openmercantil-companies.getcompanyofficers
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/sanctions
+      name: api-v1-company-slug-sanctions
+      description: REST surface for api-v1-company-slug-sanctions.
+      operations:
+      - method: GET
+        name: getcompanysanctions
+        description: List Company Sanctions
+        call: openmercantil-companies.getcompanysanctions
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/score
+      name: api-v1-company-slug-score
+      description: REST surface for api-v1-company-slug-score.
+      operations:
+      - method: GET
+        name: getcompanyscore
+        description: Get Company Score
+        call: openmercantil-companies.getcompanyscore
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/similar
+      name: api-v1-company-slug-similar
+      description: REST surface for api-v1-company-slug-similar.
+      operations:
+      - method: GET
+        name: getsimilarcompanies
+        description: List Similar Companies
+        call: openmercantil-companies.getsimilarcompanies
+        with:
+          slug: rest.slug
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/company/{slug}/trust-score
+      name: api-v1-company-slug-trust-score
+      description: REST surface for api-v1-company-slug-trust-score.
+      operations:
+      - method: GET
+        name: getcompanytrustscore
+        description: Get Company Trust Score
+        call: openmercantil-companies.getcompanytrustscore
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-companies-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Companies. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: get-company-report
+      description: Get A Company Report
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompany
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-company-activity-timeseries
+      description: Get Company Activity Timeseries
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanyactivity
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-cnmv-records-company
+      description: Get CNMV Records For Company
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanycnmv
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-company-embargoes
+      description: List Company Embargoes
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanyembargoes
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-paginated-company-events
+      description: Get Paginated Company Events
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanyevents
+      with:
+        slug: tools.slug
+        year: tools.year
+        page: tools.page
+        page_size: tools.page_size
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: export-company-report
+      description: Export A Company Report
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.exportcompany
+      with:
+        slug: tools.slug
+        format: tools.format
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: geocode-company-address
+      description: Geocode A Company Address
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.geocodecompany
+      with:
+        slug: tools.slug
+        force: tools.force
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-company-grants-bdns
+      description: List Company Grants From BDNS
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanygrants
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-company-relationship-network
+      description: Get Company Relationship Network
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanynetwork
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-company-officers
+      description: List Company Officers
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanyofficers
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-company-sanctions
+      description: List Company Sanctions
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanysanctions
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-company-score
+      description: Get Company Score
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanyscore
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-similar-companies
+      description: List Similar Companies
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getsimilarcompanies
+      with:
+        slug: tools.slug
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-company-trust-score
+      description: Get Company Trust Score
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-companies.getcompanytrustscore
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.

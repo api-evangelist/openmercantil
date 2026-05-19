@@ -1,0 +1,72 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — System
+  description: 'OpenMercantil Public API — System. 1 operations. Lead operation: Service Health. Self-contained Naftiko capability
+    covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - System
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-system
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — System business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-health
+      path: /api/v1/health
+      operations:
+      - name: gethealth
+        method: GET
+        description: Service Health
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-system-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — System. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/health
+      name: api-v1-health
+      description: REST surface for api-v1-health.
+      operations:
+      - method: GET
+        name: gethealth
+        description: Service Health
+        call: openmercantil-system.gethealth
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-system-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — System. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: service-health
+      description: Service Health
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-system.gethealth
+      outputParameters:
+      - type: object
+        mapping: $.

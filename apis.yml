@@ -6,140 +6,154 @@ image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
 access: 3rd-Party
 position: Consuming
 created: '2026-05-09'
-modified: '2026-05-16'
+modified: '2026-05-19'
 specificationVersion: '0.19'
-description: >-
-  OpenMercantil is an independent public-data API for Spanish company
-  intelligence. It indexes the Boletin Oficial del Registro Mercantil (BORME)
-  and cross-references it with 29+ public sources (CNMV, OEPM, PLACSP, BDNS,
-  OpenSanctions, CCAA gazettes, CNMC, CENDOJ and more) to expose company
-  search, structured company reports, registry event timelines, officer
-  records, CNAE sector navigation, daily summaries, public-procurement
-  rankings, a v1.4 cross-source trust score, and CSV/JSON exports. The public
-  REST API is free, requires no API key, and is rate-limited per IP. The
-  project is informational and does not replace official Registro Mercantil
-  certificates.
+description: OpenMercantil is an independent public-data API for Spanish company intelligence. It indexes the Boletin Oficial
+  del Registro Mercantil (BORME) and cross-references it with 29+ public sources (CNMV, OEPM, PLACSP, BDNS, OpenSanctions,
+  CCAA gazettes, CNMC, CENDOJ and more) to expose company search, structured company reports, registry event timelines, officer
+  records, CNAE sector navigation, daily summaries, public-procurement rankings, a v1.4 cross-source trust score, and CSV/JSON
+  exports. The public REST API is free, requires no API key, and is rate-limited per IP. The project is informational and
+  does not replace official Registro Mercantil certificates.
 tags:
-  - Open Data
-  - Spain
-  - Company Data
-  - Business Registry
-  - BORME
-  - Public Records
-  - Spanish Companies
-  - CIF
-  - CNAE
-  - Public Procurement
-  - PLACSP
-  - CNMV
-  - OEPM
-  - BDNS
-  - OpenSanctions
-  - Public-Interest Data
-  - Spanish Open Data
-  - REST API
-  - JSON
-  - CSV
-  - Geocoding
-  - Trust Score
-  - Registry Timeline
-  - Daily Summary
+- Open Data
+- Spain
+- Company Data
+- Business Registry
+- BORME
+- Public Records
+- Spanish Companies
+- CIF
+- CNAE
+- Public Procurement
+- PLACSP
+- CNMV
+- OEPM
+- BDNS
+- OpenSanctions
+- Public-Interest Data
+- Spanish Open Data
+- REST API
+- JSON
+- CSV
+- Geocoding
+- Trust Score
+- Registry Timeline
+- Daily Summary
 apis:
-  - aid: openmercantil:openmercantil-public-api
-    name: OpenMercantil Public API
-    humanURL: https://openmercantil.es/api/documentacion
-    baseURL: https://openmercantil.es
-    tags:
-      - Search
-      - Companies
-      - Persons
-      - Daily
-      - Export
-      - Sectors
-      - Score
-      - Sources
-      - Contracts
-      - Network
-      - Geocode
-      - Stats
-      - Billing
-      - System
-    properties:
-      - url: openapi/openmercantil-openapi.yml
-        type: OpenAPI
-      - url: https://openmercantil.es/openapi.json
-        type: OpenAPI
-      - url: https://openmercantil.es/api/documentacion
-        type: Documentation
-      - url: https://openmercantil.es/apis.json
-        type: APIsJSON
-    description: >-
-      Public JSON REST API exposing Spanish company search, company reports,
-      registry event timelines, officer records, person reports, daily BORME
-      summaries, CNAE sector navigation, public-procurement rankings,
-      cross-source trust scores, geocoding, exports, integrated public-data
-      source status and service health. Versioned under /api/v1/, no API key
-      required, ~60 req/min/IP rate limit on the anonymous tier, with
-      X-RateLimit-* and Retry-After headers signaling capacity.
-
-maintainers:
-  - FN: OpenMercantil
-    email: social@openmercantil.es
-  - FN: Pablo Cirre
-    url: https://github.com/PabloCirre
-
-common:
-  - name: Website
-    url: https://openmercantil.es/
-    type: Website
-  - name: API Documentation
-    url: https://openmercantil.es/api/documentacion
+- aid: openmercantil:openmercantil-public-api
+  name: OpenMercantil Public API
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Search
+  - Companies
+  - Persons
+  - Daily
+  - Export
+  - Sectors
+  - Score
+  - Sources
+  - Contracts
+  - Network
+  - Geocode
+  - Stats
+  - Billing
+  - System
+  properties:
+  - url: openapi/openmercantil-openapi.yml
+    type: OpenAPI
+  - url: https://openmercantil.es/openapi.json
+    type: OpenAPI
+  - url: https://openmercantil.es/api/documentacion
     type: Documentation
-  - name: APIs.json
-    url: https://openmercantil.es/apis.json
+  - url: https://openmercantil.es/apis.json
     type: APIsJSON
-  - name: Pricing
-    url: https://openmercantil.es/precios
-    type: Pricing
-  - name: Terms Of Use
-    url: https://openmercantil.es/terminos-de-uso
-    type: TermsOfService
-  - name: Support
-    url: https://openmercantil.es/soporte
-    type: Support
-  - name: Downloads
-    url: https://openmercantil.es/descargas
-    type: Downloads
-  - name: GitHub
-    url: https://github.com/PabloCirre/OpenBorme
-    type: GitHubProject
-  - url: json-schema/openmercantil-company-schema.json
-    type: JSONSchema
-  - url: json-schema/openmercantil-event-schema.json
-    type: JSONSchema
-  - url: json-structure/openmercantil-company-structure.json
-    type: JSONStructure
-  - url: json-ld/openmercantil-context.jsonld
-    type: JSONLDContext
-  - url: examples/openmercantil-search-companies-example.json
-    type: Example
-  - url: examples/openmercantil-get-company-example.json
-    type: Example
-  - url: examples/openmercantil-get-company-events-example.json
-    type: Example
-  - url: examples/openmercantil-health-example.json
-    type: Example
-  - url: rules/openmercantil-rules.yml
-    type: SpectralRuleset
-  - url: capabilities/spanish-company-intelligence.yaml
-    type: NaftikoCapability
-  - url: vocabulary/openmercantil-vocabulary.yml
-    type: Vocabulary
-  - url: plans/openmercantil-plans-pricing.yml
-    type: Plans
-  - url: rate-limits/openmercantil-rate-limits.yml
-    type: RateLimits
-  - url: finops/openmercantil-finops.yml
-    type: FinOps
-
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-billing.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-companies.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-contracts.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-daily.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-export.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-geocode.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-network.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-persons.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-score.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-search.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-sectors.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-sources.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-stats.yaml
+  - type: NaftikoCapability
+    url: capabilities/openmercantil-system.yaml
+  description: Public JSON REST API exposing Spanish company search, company reports, registry event timelines, officer records,
+    person reports, daily BORME summaries, CNAE sector navigation, public-procurement rankings, cross-source trust scores,
+    geocoding, exports, integrated public-data source status and service health. Versioned under /api/v1/, no API key required,
+    ~60 req/min/IP rate limit on the anonymous tier, with X-RateLimit-* and Retry-After headers signaling capacity.
+maintainers:
+- FN: OpenMercantil
+  email: social@openmercantil.es
+- FN: Pablo Cirre
+  url: https://github.com/PabloCirre
+common:
+- name: Website
+  url: https://openmercantil.es/
+  type: Website
+- name: API Documentation
+  url: https://openmercantil.es/api/documentacion
+  type: Documentation
+- name: APIs.json
+  url: https://openmercantil.es/apis.json
+  type: APIsJSON
+- name: Pricing
+  url: https://openmercantil.es/precios
+  type: Pricing
+- name: Terms Of Use
+  url: https://openmercantil.es/terminos-de-uso
+  type: TermsOfService
+- name: Support
+  url: https://openmercantil.es/soporte
+  type: Support
+- name: Downloads
+  url: https://openmercantil.es/descargas
+  type: Downloads
+- name: GitHub
+  url: https://github.com/PabloCirre/OpenBorme
+  type: GitHubProject
+- url: json-schema/openmercantil-company-schema.json
+  type: JSONSchema
+- url: json-schema/openmercantil-event-schema.json
+  type: JSONSchema
+- url: json-structure/openmercantil-company-structure.json
+  type: JSONStructure
+- url: json-ld/openmercantil-context.jsonld
+  type: JSONLDContext
+- url: examples/openmercantil-search-companies-example.json
+  type: Example
+- url: examples/openmercantil-get-company-example.json
+  type: Example
+- url: examples/openmercantil-get-company-events-example.json
+  type: Example
+- url: examples/openmercantil-health-example.json
+  type: Example
+- url: rules/openmercantil-rules.yml
+  type: SpectralRuleset
+- url: vocabulary/openmercantil-vocabulary.yml
+  type: Vocabulary
+- url: plans/openmercantil-plans-pricing.yml
+  type: Plans
+- url: rate-limits/openmercantil-rate-limits.yml
+  type: RateLimits
+- url: finops/openmercantil-finops.yml
+  type: FinOps
 url-source: https://openmercantil.es/

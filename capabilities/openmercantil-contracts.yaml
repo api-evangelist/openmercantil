@@ -1,0 +1,251 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Contracts
+  description: 'OpenMercantil Public API — Contracts. 5 operations. Lead operation: Top Companies By Public Contracts. Self-contained
+    Naftiko capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Contracts
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-contracts
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Contracts business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-contracts-top-companies
+      path: /api/v1/contracts/top-companies
+      operations:
+      - name: gettopcompaniesbycontracts
+        method: GET
+        description: Top Companies By Public Contracts
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+        - name: province
+          in: query
+          type: string
+        - name: cnae
+          in: query
+          type: string
+    - name: api-v1-contracts-top-companies.csv
+      path: /api/v1/contracts/top-companies.csv
+      operations:
+      - name: gettopcompaniesbycontractscsv
+        method: GET
+        description: Top Companies By Public Contracts As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-contracts-top-persons
+      path: /api/v1/contracts/top-persons
+      operations:
+      - name: gettoppersonsbycontracts
+        method: GET
+        description: Top Persons By Public Contracts
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-contracts-top-persons.csv
+      path: /api/v1/contracts/top-persons.csv
+      operations:
+      - name: gettoppersonsbycontractscsv
+        method: GET
+        description: Top Persons By Public Contracts As CSV
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: limit
+          in: query
+          type: integer
+    - name: api-v1-persona-slug-contracts
+      path: /api/v1/persona/{slug}/contracts
+      operations:
+      - name: getpersoncontracts
+        method: GET
+        description: List Public Contracts For Person
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: slug
+          in: path
+          type: string
+          required: true
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-contracts-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Contracts. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/contracts/top-companies
+      name: api-v1-contracts-top-companies
+      description: REST surface for api-v1-contracts-top-companies.
+      operations:
+      - method: GET
+        name: gettopcompaniesbycontracts
+        description: Top Companies By Public Contracts
+        call: openmercantil-contracts.gettopcompaniesbycontracts
+        with:
+          limit: rest.limit
+          province: rest.province
+          cnae: rest.cnae
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/contracts/top-companies-csv
+      name: api-v1-contracts-top-companies-csv
+      description: REST surface for api-v1-contracts-top-companies.csv.
+      operations:
+      - method: GET
+        name: gettopcompaniesbycontractscsv
+        description: Top Companies By Public Contracts As CSV
+        call: openmercantil-contracts.gettopcompaniesbycontractscsv
+        with:
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/contracts/top-persons
+      name: api-v1-contracts-top-persons
+      description: REST surface for api-v1-contracts-top-persons.
+      operations:
+      - method: GET
+        name: gettoppersonsbycontracts
+        description: Top Persons By Public Contracts
+        call: openmercantil-contracts.gettoppersonsbycontracts
+        with:
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/contracts/top-persons-csv
+      name: api-v1-contracts-top-persons-csv
+      description: REST surface for api-v1-contracts-top-persons.csv.
+      operations:
+      - method: GET
+        name: gettoppersonsbycontractscsv
+        description: Top Persons By Public Contracts As CSV
+        call: openmercantil-contracts.gettoppersonsbycontractscsv
+        with:
+          limit: rest.limit
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/persona/{slug}/contracts
+      name: api-v1-persona-slug-contracts
+      description: REST surface for api-v1-persona-slug-contracts.
+      operations:
+      - method: GET
+        name: getpersoncontracts
+        description: List Public Contracts For Person
+        call: openmercantil-contracts.getpersoncontracts
+        with:
+          slug: rest.slug
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-contracts-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Contracts. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: top-companies-public-contracts
+      description: Top Companies By Public Contracts
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-contracts.gettopcompaniesbycontracts
+      with:
+        limit: tools.limit
+        province: tools.province
+        cnae: tools.cnae
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: top-companies-public-contracts-csv
+      description: Top Companies By Public Contracts As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-contracts.gettopcompaniesbycontractscsv
+      with:
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: top-persons-public-contracts
+      description: Top Persons By Public Contracts
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-contracts.gettoppersonsbycontracts
+      with:
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: top-persons-public-contracts-csv
+      description: Top Persons By Public Contracts As CSV
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-contracts.gettoppersonsbycontractscsv
+      with:
+        limit: tools.limit
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-public-contracts-person
+      description: List Public Contracts For Person
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-contracts.getpersoncontracts
+      with:
+        slug: tools.slug
+      outputParameters:
+      - type: object
+        mapping: $.

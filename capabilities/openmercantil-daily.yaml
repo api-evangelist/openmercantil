@@ -1,0 +1,123 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: OpenMercantil Public API — Daily
+  description: 'OpenMercantil Public API — Daily. 2 operations. Lead operation: Get Daily BORME Summary. Self-contained Naftiko
+    capability covering one Openmercantil business surface.'
+  tags:
+  - Openmercantil
+  - Daily
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    OPENMERCANTIL_API_KEY: OPENMERCANTIL_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: openmercantil-daily
+    baseUri: https://openmercantil.es
+    description: OpenMercantil Public API — Daily business capability. Self-contained, no shared references.
+    resources:
+    - name: api-v1-daily-date
+      path: /api/v1/daily/{date}
+      operations:
+      - name: getdaily
+        method: GET
+        description: Get Daily BORME Summary
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: date
+          in: path
+          type: string
+          description: ISO 8601 date (YYYY-MM-DD).
+          required: true
+    - name: api-v1-summary-date-date
+      path: /api/v1/summary/date/{date}
+      operations:
+      - name: getsummaryfordate
+        method: GET
+        description: Get Summary For A Date
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: date
+          in: path
+          type: string
+          required: true
+    authentication:
+      type: apikey
+      key: session
+      value: '{{env.OPENMERCANTIL_API_KEY}}'
+      placement: cookie
+  exposes:
+  - type: rest
+    namespace: openmercantil-daily-rest
+    port: 8080
+    description: REST adapter for OpenMercantil Public API — Daily. One Spectral-compliant resource per consumed operation,
+      prefixed with /v1.
+    resources:
+    - path: /v1/api/v1/daily/{date}
+      name: api-v1-daily-date
+      description: REST surface for api-v1-daily-date.
+      operations:
+      - method: GET
+        name: getdaily
+        description: Get Daily BORME Summary
+        call: openmercantil-daily.getdaily
+        with:
+          date: rest.date
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/v1/summary/date/{date}
+      name: api-v1-summary-date-date
+      description: REST surface for api-v1-summary-date-date.
+      operations:
+      - method: GET
+        name: getsummaryfordate
+        description: Get Summary For A Date
+        call: openmercantil-daily.getsummaryfordate
+        with:
+          date: rest.date
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: openmercantil-daily-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for OpenMercantil Public API — Daily. One tool per consumed operation, routed inline through
+      this capability's consumes block.
+    tools:
+    - name: get-daily-borme-summary
+      description: Get Daily BORME Summary
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-daily.getdaily
+      with:
+        date: tools.date
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: get-summary-date
+      description: Get Summary For A Date
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: openmercantil-daily.getsummaryfordate
+      with:
+        date: tools.date
+      outputParameters:
+      - type: object
+        mapping: $.
