@@ -156,4 +156,6 @@ common:
   type: RateLimits
 - url: finops/openmercantil-finops.yml
   type: FinOps
+- type: LLMsTxt
+  url: https://openmercantil.es/llms.txt
 url-source: https://openmercantil.es/
