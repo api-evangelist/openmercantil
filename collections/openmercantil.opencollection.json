@@ -1,0 +1,776 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Search",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Search Spanish Companies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/search",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query",
+                "description": "Search query, minimum 2 characters."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of results."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset."
+              }
+            ]
+          },
+          "docs": "Search companies (and optionally persons) by name, alias or CIF using a prefix index. Returns results ordered by relevance. Public and rate-limited."
+        },
+        {
+          "info": {
+            "name": "Search Persons",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/person/search",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Search persons (officers, administrators, beneficial owners) by name."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Companies",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get A Company Report",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path",
+                "description": "Company slug, typically `{name}-{cif}`."
+              }
+            ]
+          },
+          "docs": "Return the structured company report for a known OpenMercantil slug."
+        },
+        {
+          "info": {
+            "name": "Get Paginated Company Events",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/events",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "year",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "page",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "page_size",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Return BORME events for a known company slug, optionally filtered by year."
+        },
+        {
+          "info": {
+            "name": "List Company Officers",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/officers",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List officers (administrators, apoderados, auditors) currently or historically associated with the company."
+        },
+        {
+          "info": {
+            "name": "Export A Company Report",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/export",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "format",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Export a company report in JSON or CSV format."
+        },
+        {
+          "info": {
+            "name": "Get Company Score",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/score",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the OpenMercantil composite company score (introduced in v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get Company Activity Timeseries",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/activity",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return a time series of registry activity events for the company (v1.1)."
+        },
+        {
+          "info": {
+            "name": "List Similar Companies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/similar",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Return companies similar to the given slug based on CNAE sector and structural signals (v1.1)."
+        },
+        {
+          "info": {
+            "name": "List Company Grants From BDNS",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/grants",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return public grants associated with the company from the BDNS dataset (v1.2)."
+        },
+        {
+          "info": {
+            "name": "List Company Sanctions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/sanctions",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return sanctions hits associated with the company from OpenSanctions and competition authorities (v1.2)."
+        },
+        {
+          "info": {
+            "name": "Get CNMV Records For Company",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/cnmv",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return CNMV (Spanish securities regulator) records for the company (v1.2)."
+        },
+        {
+          "info": {
+            "name": "Geocode A Company Address",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/geocode",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "force",
+                "value": "",
+                "type": "query",
+                "description": "Set to 1 to bypass cache and force a live geocoding lookup."
+              }
+            ]
+          },
+          "docs": "Resolve the registered address of the company to coordinates via Nominatim/OSM with caching (v1.2). Use `force=1` to bypass the cache."
+        },
+        {
+          "info": {
+            "name": "Get Company Trust Score",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/trust-score",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the OpenMercantil trust score combining BORME, CNMV, OEPM, PLACSP, BOE and sanctions signals (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Get Company Relationship Network",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/network",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the company's officer-and-shareholder relationship graph (v1.4)."
+        },
+        {
+          "info": {
+            "name": "List Company Embargoes",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/embargoes",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List public embargoes (seizures) recorded against the company (v1.4)."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Persons",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get A Person Report",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/person/:slug",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the structured person report including roles and historical positions."
+        },
+        {
+          "info": {
+            "name": "List Public Contracts For Person",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/persona/:slug/contracts",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List public procurement (PLACSP) contracts associated with the person (v1.4)."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Daily",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get Daily BORME Summary",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/daily/:date",
+            "params": [
+              {
+                "name": "date",
+                "value": "",
+                "type": "path",
+                "description": "ISO 8601 date (YYYY-MM-DD)."
+              }
+            ]
+          },
+          "docs": "Return the daily BORME summary for the given ISO date."
+        },
+        {
+          "info": {
+            "name": "Get Summary For A Date",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/summary/date/:date",
+            "params": [
+              {
+                "name": "date",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the consolidated public-record summary for a given date across BORME and integrated sources."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Export",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Export Events",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/export/events",
+            "params": [
+              {
+                "name": "year",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "format",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Export BORME events in bulk for a given year or year/range, in JSON or CSV."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Sectors",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get CNAE Hierarchy Tree",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/cnae/tree"
+          },
+          "docs": "Return the hierarchical CNAE 2009 sector taxonomy (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get CNAE Code Info",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/cnae/:code",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the CNAE 2009 sector descriptor for a given code (v1.1)."
+        },
+        {
+          "info": {
+            "name": "List Companies In A Sector",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sector/:code/companies",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "List companies in a CNAE sector (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get Sector Financial Ratios",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sector/:code/ratios",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return aggregated financial ratios for a CNAE sector (BdE data) (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get Sector Aggregate Statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats"
+          },
+          "docs": "Return aggregate company counts and growth statistics across CNAE sectors."
+        },
+        {
+          "info": {
+            "name": "Export Sector Aggregate Statistics As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats.csv"
+          },
+          "docs": "CSV download of aggregate sector statistics."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Stats",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get Aggregate Statistics By Autonomous Community",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/ccaa/stats"
+          },
+          "docs": "Return aggregate company statistics grouped by Spanish autonomous community (CCAA)."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Sources",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get External Sources Status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sources/status"
+          },
+          "docs": "Return freshness, last-ingested timestamps, and status for each integrated external public-data source (v1.2)."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Contracts",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Top Companies By Public Contracts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-companies",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "province",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "cnae",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Ranking of companies by public-procurement contract volume, optionally filtered by province and CNAE (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Companies By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-companies.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-companies-by-contracts ranking (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Persons By Public Contracts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-persons",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Ranking of persons by public-procurement contract volume (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Persons By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-persons.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-persons-by-contracts ranking (v1.4)."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Billing",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create Stripe Checkout Session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://openmercantil.es/api/v1/checkout",
+            "auth": {
+              "type": "apikey",
+              "key": "session",
+              "value": "{{session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Create a Stripe Checkout session for a Pro / Business / Agency subscription. Authentication required."
+        },
+        {
+          "info": {
+            "name": "Create Stripe One-Time Donation Session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://openmercantil.es/api/v1/donation",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a Stripe one-time payment session for a donation. Anonymous donations are allowed."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "System",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Service Health",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/health"
+          },
+          "docs": "Return service status, freshness and dataset counters when available."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
