@@ -114,13 +114,13 @@ common:
   - url: json-ld/openmercantil-context.jsonld
     type: JSONLDContext
   - url: examples/openmercantil-search-companies-example.json
-    type: Example
+    type: Examples
   - url: examples/openmercantil-get-company-example.json
-    type: Example
+    type: Examples
   - url: examples/openmercantil-get-company-events-example.json
-    type: Example
+    type: Examples
   - url: examples/openmercantil-health-example.json
-    type: Example
+    type: Examples
   - url: rules/openmercantil-rules.yml
     type: SpectralRuleset
   - url: vocabulary/openmercantil-vocabulary.yml
@@ -131,6 +131,6 @@ common:
     type: RateLimits
   - url: finops/openmercantil-finops.yml
     type: FinOps
-  - type: LLMsTxt
+  - type: LlmsText
     url: https://openmercantil.es/llms.txt
 url-source: https://openmercantil.es/
