@@ -1,0 +1,16 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/openmercantil-openapi.yml
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - cookie
+schemes:
+- name: sessionCookie
+  type: apiKey
+  in: cookie
+  parameter: session
+  description: Session cookie issued after web sign-in, required only for billing endpoints.
+  sources:
+  - openapi/openmercantil-openapi.yml

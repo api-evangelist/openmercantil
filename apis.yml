@@ -81,6 +81,10 @@ maintainers:
   - FN: Pablo Cirre
     url: https://github.com/PabloCirre
 common:
+  - type: DomainSecurity
+    url: security/openmercantil-domain-security.yml
+  - type: Authentication
+    url: authentication/openmercantil-authentication.yml
   - name: Website
     url: https://openmercantil.es/
     type: Website
