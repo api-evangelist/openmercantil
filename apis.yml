@@ -81,6 +81,8 @@ maintainers:
   - FN: Pablo Cirre
     url: https://github.com/PabloCirre
 common:
+  - type: AgenticAccess
+    url: agentic-access/openmercantil-agentic-access.yml
   - type: DomainSecurity
     url: security/openmercantil-domain-security.yml
   - type: Authentication
