@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: OpenMercantil Public Billing Daily API
+  version: 1.4.0
+  description: 'Public JSON API for Spanish company information derived from BORME and other
+
+    public sources. OpenMercantil is independent and informational; it is not
+
+    the BOE, BORME or Registro Mercantil and does not replace official
+
+    certificates or registry extracts. The API is free and public, requires no
+
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+
+    available and documented at https://openmercantil.es/api/documentacion.
+
+    '
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Daily
+  description: Daily BORME summary feeds
+paths:
+  /api/v1/daily/{date}:
+    get:
+      tags:
+      - Daily
+      summary: Get Daily BORME Summary
+      operationId: getDaily
+      description: Return the daily BORME summary for the given ISO date.
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2026-04-17'
+        description: ISO 8601 date (YYYY-MM-DD).
+      responses:
+        '200':
+          description: Daily summary
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/summary/date/{date}:
+    get:
+      tags:
+      - Daily
+      summary: Get Summary For A Date
+      operationId: getSummaryForDate
+      description: Return the consolidated public-record summary for a given date across BORME and integrated sources.
+      parameters:
+      - name: date
+        in: path
+        required: true
+        schema:
+          type: string
+          format: date
+          example: '2026-04-17'
+      responses:
+        '200':
+          description: Date summary
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.

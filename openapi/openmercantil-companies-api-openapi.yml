@@ -1,0 +1,623 @@
+openapi: 3.0.3
+info:
+  title: OpenMercantil Public Billing Companies API
+  version: 1.4.0
+  description: 'Public JSON API for Spanish company information derived from BORME and other
+
+    public sources. OpenMercantil is independent and informational; it is not
+
+    the BOE, BORME or Registro Mercantil and does not replace official
+
+    certificates or registry extracts. The API is free and public, requires no
+
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+
+    available and documented at https://openmercantil.es/api/documentacion.
+
+    '
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Companies
+  description: Company reports, registry events, officers and export
+paths:
+  /api/v1/company/{slug}:
+    get:
+      tags:
+      - Companies
+      summary: Get A Company Report
+      operationId: getCompany
+      description: Return the structured company report for a known OpenMercantil slug.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: mercadona-sa-a46103834
+        description: Company slug, typically `{name}-{cif}`.
+      responses:
+        '200':
+          description: Company report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/events:
+    get:
+      tags:
+      - Companies
+      summary: Get Paginated Company Events
+      operationId: getCompanyEvents
+      description: Return BORME events for a known company slug, optionally filtered by year.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      - name: year
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 2020
+          maximum: 2029
+          example: 2025
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+      responses:
+        '200':
+          description: Paginated event list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/officers:
+    get:
+      tags:
+      - Companies
+      summary: List Company Officers
+      operationId: getCompanyOfficers
+      description: List officers (administrators, apoderados, auditors) currently or historically associated with the company.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Officers list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficerList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/export:
+    get:
+      tags:
+      - Companies
+      summary: Export A Company Report
+      operationId: exportCompany
+      description: Export a company report in JSON or CSV format.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      - name: format
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - json
+          - csv
+          default: json
+      responses:
+        '200':
+          description: Exported report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+            text/csv:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/score:
+    get:
+      tags:
+      - Companies
+      summary: Get Company Score
+      operationId: getCompanyScore
+      description: Return the OpenMercantil composite company score (introduced in v1.1).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/activity:
+    get:
+      tags:
+      - Companies
+      summary: Get Company Activity Timeseries
+      operationId: getCompanyActivity
+      description: Return a time series of registry activity events for the company (v1.1).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Activity timeseries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/similar:
+    get:
+      tags:
+      - Companies
+      summary: List Similar Companies
+      operationId: getSimilarCompanies
+      description: Return companies similar to the given slug based on CNAE sector and structural signals (v1.1).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 5
+      responses:
+        '200':
+          description: Similar companies
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/grants:
+    get:
+      tags:
+      - Companies
+      summary: List Company Grants From BDNS
+      operationId: getCompanyGrants
+      description: Return public grants associated with the company from the BDNS dataset (v1.2).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Grants list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/sanctions:
+    get:
+      tags:
+      - Companies
+      summary: List Company Sanctions
+      operationId: getCompanySanctions
+      description: Return sanctions hits associated with the company from OpenSanctions and competition authorities (v1.2).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Sanctions list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/cnmv:
+    get:
+      tags:
+      - Companies
+      summary: Get CNMV Records For Company
+      operationId: getCompanyCnmv
+      description: Return CNMV (Spanish securities regulator) records for the company (v1.2).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: CNMV records
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/geocode:
+    get:
+      tags:
+      - Companies
+      summary: Geocode A Company Address
+      operationId: geocodeCompany
+      description: Resolve the registered address of the company to coordinates via Nominatim/OSM with caching (v1.2). Use `force=1` to bypass the cache.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      - name: force
+        in: query
+        required: false
+        schema:
+          type: integer
+          enum:
+          - 0
+          - 1
+          default: 0
+        description: Set to 1 to bypass cache and force a live geocoding lookup.
+      responses:
+        '200':
+          description: Geocode response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geocode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/trust-score:
+    get:
+      tags:
+      - Companies
+      summary: Get Company Trust Score
+      operationId: getCompanyTrustScore
+      description: Return the OpenMercantil trust score combining BORME, CNMV, OEPM, PLACSP, BOE and sanctions signals (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Trust score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/network:
+    get:
+      tags:
+      - Companies
+      summary: Get Company Relationship Network
+      operationId: getCompanyNetwork
+      description: Return the company's officer-and-shareholder relationship graph (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Network graph
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/embargoes:
+    get:
+      tags:
+      - Companies
+      summary: List Company Embargoes
+      operationId: getCompanyEmbargoes
+      description: List public embargoes (seizures) recorded against the company (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Embargoes list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    EventList:
+      type: object
+      properties:
+        slug:
+          type: string
+        year:
+          type: integer
+          nullable: true
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyEvent'
+      additionalProperties: true
+    Officer:
+      type: object
+      properties:
+        person_slug:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        appointed:
+          type: string
+          format: date
+          nullable: true
+        ceased:
+          type: string
+          format: date
+          nullable: true
+      additionalProperties: true
+    CompanyReport:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        cif:
+          type: string
+        registered_address:
+          type: string
+        province:
+          type: string
+        registry:
+          type: string
+        legal_form:
+          type: string
+        status:
+          type: string
+        cnae:
+          type: string
+        founding_date:
+          type: string
+          format: date
+          nullable: true
+        last_event:
+          type: string
+          nullable: true
+        events_count:
+          type: integer
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    OfficerList:
+      type: object
+      properties:
+        slug:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Officer'
+      additionalProperties: true
+    CompanyEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          description: BORME act type (e.g., Constitucion, Nombramientos, Ceses).
+        text:
+          type: string
+        source_url:
+          type: string
+          format: uri
+          nullable: true
+      additionalProperties: true
+    Geocode:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+        source:
+          type: string
+      additionalProperties: true
+    TrustScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        trust_score:
+          type: number
+        signals:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    CompanyScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        score:
+          type: number
+        components:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
