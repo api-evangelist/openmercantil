@@ -2,7 +2,20 @@ aid: openmercantil
 url: https://raw.githubusercontent.com/api-evangelist/openmercantil/refs/heads/main/apis.yml
 name: OpenMercantil
 type: Index
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: paid
+  onboarding: open
+  trial: true
+  try_now: true
+  public: true
+  label: Paid (free trial) · Open access
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/openmercantil.png
 access: 3rd-Party
 position: Consuming
 created: '2026-05-09'
@@ -41,40 +54,202 @@ tags:
   - Registry Timeline
   - Daily Summary
 apis:
-  - aid: openmercantil:openmercantil-public-api
-    name: OpenMercantil Public API
-    humanURL: https://openmercantil.es/api/documentacion
-    baseURL: https://openmercantil.es
-    tags:
-      - Search
-      - Companies
-      - Persons
-      - Daily
-      - Export
-      - Sectors
-      - Score
-      - Sources
-      - Contracts
-      - Network
-      - Geocode
-      - Stats
-      - Billing
-      - System
-    properties:
-      - url: openapi/openmercantil-openapi.yml
-        type: OpenAPI
-      - url: https://openmercantil.es/openapi.json
-        type: OpenAPI
-      - url: https://openmercantil.es/api/documentacion
-        type: Documentation
-      - url: https://openmercantil.es/apis.json
-        type: APIsJSON
-    description: >-
-      Public JSON REST API exposing Spanish company search, company reports, registry event timelines, officer records,
-      person reports, daily BORME summaries, CNAE sector navigation, public-procurement rankings, cross-source trust
-      scores, geocoding, exports, integrated public-data source status and service health. Versioned under /api/v1/, no
-      API key required, ~60 req/min/IP rate limit on the anonymous tier, with X-RateLimit-* and Retry-After headers
-      signaling capacity.
+- aid: openmercantil:openmercantil-billing-api
+  name: OpenMercantil Billing API
+  description: Stripe checkout and donation endpoints
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Billing
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-billing-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-companies-api
+  name: OpenMercantil Companies API
+  description: Company reports, registry events, officers and export
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Companies
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-companies-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-contracts-api
+  name: OpenMercantil Contracts API
+  description: Public procurement (PLACSP) rankings
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Contracts
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-contracts-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-daily-api
+  name: OpenMercantil Daily API
+  description: Daily BORME summary feeds
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Daily
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-daily-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-export-api
+  name: OpenMercantil Export API
+  description: Bulk and per-resource export endpoints
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Export
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-export-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-geocode-api
+  name: OpenMercantil Geocode API
+  description: Geolocation enrichment
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Geocode
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-geocode-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-network-api
+  name: OpenMercantil Network API
+  description: Company relationship network and embargoes
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Network
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-network-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-persons-api
+  name: OpenMercantil Persons API
+  description: Person search and person reports
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Persons
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-persons-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-score-api
+  name: OpenMercantil Score API
+  description: Company score, trust score and activity timeseries
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Score
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-score-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-search-api
+  name: OpenMercantil Search API
+  description: Company and person search endpoints
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Search
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-search-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-sectors-api
+  name: OpenMercantil Sectors API
+  description: CNAE sector taxonomy and sector statistics
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Sectors
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-sectors-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-sources-api
+  name: OpenMercantil Sources API
+  description: External sources and dataset freshness
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Sources
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-sources-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-stats-api
+  name: OpenMercantil Stats API
+  description: Aggregate statistics by region and sector
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Stats
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-stats-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-system-api
+  name: OpenMercantil System API
+  description: Service health and metadata
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - System
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-system-api-openapi.yml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
 maintainers:
   - FN: OpenMercantil
     email: social@openmercantil.es
