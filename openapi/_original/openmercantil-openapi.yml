@@ -1,0 +1,1355 @@
+openapi: 3.0.3
+info:
+  title: OpenMercantil Public API
+  version: 1.4.0
+  description: |
+    Public JSON API for Spanish company information derived from BORME and other
+    public sources. OpenMercantil is independent and informational; it is not
+    the BOE, BORME or Registro Mercantil and does not replace official
+    certificates or registry extracts. The API is free and public, requires no
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+    available and documented at https://openmercantil.es/api/documentacion.
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+  - url: https://openmercantil.es
+    description: Production
+tags:
+  - name: Search
+    description: Company and person search endpoints
+  - name: Companies
+    description: Company reports, registry events, officers and export
+  - name: Persons
+    description: Person search and person reports
+  - name: Daily
+    description: Daily BORME summary feeds
+  - name: Export
+    description: Bulk and per-resource export endpoints
+  - name: Sectors
+    description: CNAE sector taxonomy and sector statistics
+  - name: Score
+    description: Company score, trust score and activity timeseries
+  - name: Sources
+    description: External sources and dataset freshness
+  - name: Contracts
+    description: Public procurement (PLACSP) rankings
+  - name: Network
+    description: Company relationship network and embargoes
+  - name: Geocode
+    description: Geolocation enrichment
+  - name: Stats
+    description: Aggregate statistics by region and sector
+  - name: Billing
+    description: Stripe checkout and donation endpoints
+  - name: System
+    description: Service health and metadata
+paths:
+  /api/v1/search:
+    get:
+      tags:
+        - Search
+      summary: Search Spanish Companies
+      operationId: searchCompanies
+      description: Search companies (and optionally persons) by name, alias or CIF using a prefix index. Returns results ordered by relevance. Public and rate-limited.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            example: mercadona
+          description: Search query, minimum 2 characters.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum number of results.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Pagination offset.
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}:
+    get:
+      tags:
+        - Companies
+      summary: Get A Company Report
+      operationId: getCompany
+      description: Return the structured company report for a known OpenMercantil slug.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mercadona-sa-a46103834
+          description: Company slug, typically `{name}-{cif}`.
+      responses:
+        '200':
+          description: Company report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/events:
+    get:
+      tags:
+        - Companies
+      summary: Get Paginated Company Events
+      operationId: getCompanyEvents
+      description: Return BORME events for a known company slug, optionally filtered by year.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 2020
+            maximum: 2029
+            example: 2025
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Paginated event list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/officers:
+    get:
+      tags:
+        - Companies
+      summary: List Company Officers
+      operationId: getCompanyOfficers
+      description: List officers (administrators, apoderados, auditors) currently or historically associated with the company.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Officers list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficerList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/export:
+    get:
+      tags:
+        - Companies
+        - Export
+      summary: Export A Company Report
+      operationId: exportCompany
+      description: Export a company report in JSON or CSV format.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+            default: json
+      responses:
+        '200':
+          description: Exported report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+            text/csv:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/score:
+    get:
+      tags:
+        - Companies
+        - Score
+      summary: Get Company Score
+      operationId: getCompanyScore
+      description: Return the OpenMercantil composite company score (introduced in v1.1).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/activity:
+    get:
+      tags:
+        - Companies
+        - Score
+      summary: Get Company Activity Timeseries
+      operationId: getCompanyActivity
+      description: Return a time series of registry activity events for the company (v1.1).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Activity timeseries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/similar:
+    get:
+      tags:
+        - Companies
+      summary: List Similar Companies
+      operationId: getSimilarCompanies
+      description: Return companies similar to the given slug based on CNAE sector and structural signals (v1.1).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 5
+      responses:
+        '200':
+          description: Similar companies
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/grants:
+    get:
+      tags:
+        - Companies
+        - Sources
+      summary: List Company Grants From BDNS
+      operationId: getCompanyGrants
+      description: Return public grants associated with the company from the BDNS dataset (v1.2).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Grants list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/sanctions:
+    get:
+      tags:
+        - Companies
+        - Sources
+      summary: List Company Sanctions
+      operationId: getCompanySanctions
+      description: Return sanctions hits associated with the company from OpenSanctions and competition authorities (v1.2).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Sanctions list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/cnmv:
+    get:
+      tags:
+        - Companies
+        - Sources
+      summary: Get CNMV Records For Company
+      operationId: getCompanyCnmv
+      description: Return CNMV (Spanish securities regulator) records for the company (v1.2).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: CNMV records
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/geocode:
+    get:
+      tags:
+        - Companies
+        - Geocode
+      summary: Geocode A Company Address
+      operationId: geocodeCompany
+      description: Resolve the registered address of the company to coordinates via Nominatim/OSM with caching (v1.2). Use `force=1` to bypass the cache.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+            default: 0
+          description: Set to 1 to bypass cache and force a live geocoding lookup.
+      responses:
+        '200':
+          description: Geocode response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Geocode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/trust-score:
+    get:
+      tags:
+        - Companies
+        - Score
+      summary: Get Company Trust Score
+      operationId: getCompanyTrustScore
+      description: Return the OpenMercantil trust score combining BORME, CNMV, OEPM, PLACSP, BOE and sanctions signals (v1.4).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Trust score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/network:
+    get:
+      tags:
+        - Companies
+        - Network
+      summary: Get Company Relationship Network
+      operationId: getCompanyNetwork
+      description: Return the company's officer-and-shareholder relationship graph (v1.4).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Network graph
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/embargoes:
+    get:
+      tags:
+        - Companies
+        - Network
+      summary: List Company Embargoes
+      operationId: getCompanyEmbargoes
+      description: List public embargoes (seizures) recorded against the company (v1.4).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Embargoes list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/person/search:
+    get:
+      tags:
+        - Search
+        - Persons
+      summary: Search Persons
+      operationId: searchPersons
+      description: Search persons (officers, administrators, beneficial owners) by name.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            example: amancio ortega
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Person search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/person/{slug}:
+    get:
+      tags:
+        - Persons
+      summary: Get A Person Report
+      operationId: getPerson
+      description: Return the structured person report including roles and historical positions.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: amancio-ortega-gaona
+      responses:
+        '200':
+          description: Person report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/persona/{slug}/contracts:
+    get:
+      tags:
+        - Persons
+        - Contracts
+      summary: List Public Contracts For Person
+      operationId: getPersonContracts
+      description: List public procurement (PLACSP) contracts associated with the person (v1.4).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: amancio-ortega-gaona
+      responses:
+        '200':
+          description: Contracts list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/daily/{date}:
+    get:
+      tags:
+        - Daily
+      summary: Get Daily BORME Summary
+      operationId: getDaily
+      description: Return the daily BORME summary for the given ISO date.
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2026-04-17'
+          description: ISO 8601 date (YYYY-MM-DD).
+      responses:
+        '200':
+          description: Daily summary
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/summary/date/{date}:
+    get:
+      tags:
+        - Daily
+      summary: Get Summary For A Date
+      operationId: getSummaryForDate
+      description: Return the consolidated public-record summary for a given date across BORME and integrated sources.
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: '2026-04-17'
+      responses:
+        '200':
+          description: Date summary
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/export/events:
+    get:
+      tags:
+        - Export
+      summary: Export Events
+      operationId: exportEvents
+      description: Export BORME events in bulk for a given year or year/range, in JSON or CSV.
+      parameters:
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 2020
+            maximum: 2029
+            example: 2025
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+            default: csv
+      responses:
+        '200':
+          description: Export stream
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/cnae/tree:
+    get:
+      tags:
+        - Sectors
+      summary: Get CNAE Hierarchy Tree
+      operationId: getCnaeTree
+      description: Return the hierarchical CNAE 2009 sector taxonomy (v1.1).
+      responses:
+        '200':
+          description: CNAE tree
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/cnae/{code}:
+    get:
+      tags:
+        - Sectors
+      summary: Get CNAE Code Info
+      operationId: getCnaeCode
+      description: Return the CNAE 2009 sector descriptor for a given code (v1.1).
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '4711'
+      responses:
+        '200':
+          description: CNAE descriptor
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sector/{code}/companies:
+    get:
+      tags:
+        - Sectors
+      summary: List Companies In A Sector
+      operationId: getSectorCompanies
+      description: List companies in a CNAE sector (v1.1).
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '4711'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Sector companies
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sector/{code}/ratios:
+    get:
+      tags:
+        - Sectors
+      summary: Get Sector Financial Ratios
+      operationId: getSectorRatios
+      description: Return aggregated financial ratios for a CNAE sector (BdE data) (v1.1).
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '4711'
+      responses:
+        '200':
+          description: Sector ratios
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sectores/stats:
+    get:
+      tags:
+        - Sectors
+        - Stats
+      summary: Get Sector Aggregate Statistics
+      operationId: getSectorStats
+      description: Return aggregate company counts and growth statistics across CNAE sectors.
+      responses:
+        '200':
+          description: Sector stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sectores/stats.csv:
+    get:
+      tags:
+        - Sectors
+        - Stats
+        - Export
+      summary: Export Sector Aggregate Statistics As CSV
+      operationId: getSectorStatsCsv
+      description: CSV download of aggregate sector statistics.
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/ccaa/stats:
+    get:
+      tags:
+        - Stats
+      summary: Get Aggregate Statistics By Autonomous Community
+      operationId: getCcaaStats
+      description: Return aggregate company statistics grouped by Spanish autonomous community (CCAA).
+      responses:
+        '200':
+          description: CCAA stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sources/status:
+    get:
+      tags:
+        - Sources
+      summary: Get External Sources Status
+      operationId: getSourcesStatus
+      description: Return freshness, last-ingested timestamps, and status for each integrated external public-data source (v1.2).
+      responses:
+        '200':
+          description: Sources status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcesStatus'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-companies:
+    get:
+      tags:
+        - Contracts
+      summary: Top Companies By Public Contracts
+      operationId: getTopCompaniesByContracts
+      description: Ranking of companies by public-procurement contract volume, optionally filtered by province and CNAE (v1.4).
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 50
+        - name: province
+          in: query
+          required: false
+          schema:
+            type: string
+            example: madrid
+        - name: cnae
+          in: query
+          required: false
+          schema:
+            type: string
+            example: F
+      responses:
+        '200':
+          description: Top companies ranking
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-companies.csv:
+    get:
+      tags:
+        - Contracts
+        - Export
+      summary: Top Companies By Public Contracts As CSV
+      operationId: getTopCompaniesByContractsCsv
+      description: CSV download of the top-companies-by-contracts ranking (v1.4).
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-persons:
+    get:
+      tags:
+        - Contracts
+      summary: Top Persons By Public Contracts
+      operationId: getTopPersonsByContracts
+      description: Ranking of persons by public-procurement contract volume (v1.4).
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 30
+      responses:
+        '200':
+          description: Top persons ranking
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-persons.csv:
+    get:
+      tags:
+        - Contracts
+        - Export
+      summary: Top Persons By Public Contracts As CSV
+      operationId: getTopPersonsByContractsCsv
+      description: CSV download of the top-persons-by-contracts ranking (v1.4).
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/checkout:
+    post:
+      tags:
+        - Billing
+      summary: Create Stripe Checkout Session
+      operationId: createCheckoutSession
+      description: Create a Stripe Checkout session for a Pro / Business / Agency subscription. Authentication required.
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Stripe checkout session created
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/donation:
+    post:
+      tags:
+        - Billing
+      summary: Create Stripe One-Time Donation Session
+      operationId: createDonationSession
+      description: Create a Stripe one-time payment session for a donation. Anonymous donations are allowed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount_cents:
+                  type: integer
+                  minimum: 500
+                  maximum: 100000
+                  description: Donation amount in EUR cents (500 - 100000).
+              required:
+                - amount_cents
+      responses:
+        '200':
+          description: Donation session created
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/health:
+    get:
+      tags:
+        - System
+      summary: Service Health
+      operationId: getHealth
+      description: Return service status, freshness and dataset counters when available.
+      responses:
+        '200':
+          description: Health response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - query
+        - count
+        - items
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+        offset:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+    CompanySearchItem:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
+          type: integer
+        last_seen:
+          type: string
+          nullable: true
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    CompanyReport:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        cif:
+          type: string
+        registered_address:
+          type: string
+        province:
+          type: string
+        registry:
+          type: string
+        legal_form:
+          type: string
+        status:
+          type: string
+        cnae:
+          type: string
+        founding_date:
+          type: string
+          format: date
+          nullable: true
+        last_event:
+          type: string
+          nullable: true
+        events_count:
+          type: integer
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    EventList:
+      type: object
+      properties:
+        slug:
+          type: string
+        year:
+          type: integer
+          nullable: true
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyEvent'
+      additionalProperties: true
+    CompanyEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          description: BORME act type (e.g., Constitucion, Nombramientos, Ceses).
+        text:
+          type: string
+        source_url:
+          type: string
+          format: uri
+          nullable: true
+      additionalProperties: true
+    OfficerList:
+      type: object
+      properties:
+        slug:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Officer'
+      additionalProperties: true
+    Officer:
+      type: object
+      properties:
+        person_slug:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        appointed:
+          type: string
+          format: date
+          nullable: true
+        ceased:
+          type: string
+          format: date
+          nullable: true
+      additionalProperties: true
+    PersonSearchResponse:
+      type: object
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonSearchItem'
+      additionalProperties: true
+    PersonSearchItem:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        company_count:
+          type: integer
+      additionalProperties: true
+    PersonReport:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Officer'
+      additionalProperties: true
+    CompanyScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        score:
+          type: number
+        components:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    TrustScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        trust_score:
+          type: number
+        signals:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    Geocode:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+        source:
+          type: string
+      additionalProperties: true
+    SourcesStatus:
+      type: object
+      properties:
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              last_ingested:
+                type: string
+                nullable: true
+              status:
+                type: string
+            additionalProperties: true
+      additionalProperties: true
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        version:
+          type: string
+        companies_indexed:
+          type: integer
+        events_indexed:
+          type: integer
+        last_updated:
+          type: string
+          nullable: true
+      additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

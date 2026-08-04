@@ -1,0 +1,40 @@
+{
+  "provider": "openmercantil",
+  "sources": [
+    "openmercantil-billing-api-openapi.yml",
+    "openmercantil-companies-api-openapi.yml",
+    "openmercantil-contracts-api-openapi.yml",
+    "openmercantil-daily-api-openapi.yml",
+    "openmercantil-export-api-openapi.yml",
+    "openmercantil-geocode-api-openapi.yml",
+    "openmercantil-network-api-openapi.yml",
+    "openmercantil-persons-api-openapi.yml",
+    "openmercantil-score-api-openapi.yml",
+    "openmercantil-search-api-openapi.yml",
+    "openmercantil-sectors-api-openapi.yml",
+    "openmercantil-sources-api-openapi.yml",
+    "openmercantil-stats-api-openapi.yml",
+    "openmercantil-system-api-openapi.yml"
+  ],
+  "outputs": [
+    "openmercantil-billing-api-openapi.yml",
+    "openmercantil-companies-api-openapi.yml",
+    "openmercantil-contracts-api-openapi.yml",
+    "openmercantil-daily-api-openapi.yml",
+    "openmercantil-export-api-openapi.yml",
+    "openmercantil-geocode-api-openapi.yml",
+    "openmercantil-network-api-openapi.yml",
+    "openmercantil-persons-api-openapi.yml",
+    "openmercantil-score-api-openapi.yml",
+    "openmercantil-search-api-openapi.yml",
+    "openmercantil-sectors-api-openapi.yml",
+    "openmercantil-sources-api-openapi.yml",
+    "openmercantil-stats-api-openapi.yml",
+    "openmercantil-system-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
