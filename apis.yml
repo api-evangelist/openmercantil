@@ -3,60 +3,95 @@ url: https://raw.githubusercontent.com/api-evangelist/openmercantil/refs/heads/m
 name: OpenMercantil
 type: Index
 accessModel:
-  pricing: paid
+  pricing: freemium
   onboarding: open
   trial: true
   try_now: true
   public: true
-  label: Paid (free trial) · Open access
+  label: Freemium (free trial) · Open access
   confidence: high
   source:
   - plans
   - authentication
-  generated: '2026-07-22'
+  generated: '2026-08-14'
   method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/openmercantil.png
 access: 3rd-Party
 position: Consuming
 created: '2026-05-09'
-modified: '2026-05-19'
+modified: '2026-08-14'
 specificationVersion: '0.19'
-description: >-
-  OpenMercantil is an independent public-data API for Spanish company intelligence. It indexes the Boletin Oficial del
-  Registro Mercantil (BORME) and cross-references it with 29+ public sources (CNMV, OEPM, PLACSP, BDNS, OpenSanctions,
-  CCAA gazettes, CNMC, CENDOJ and more) to expose company search, structured company reports, registry event timelines,
-  officer records, CNAE sector navigation, daily summaries, public-procurement rankings, a v1.4 cross-source trust
-  score, and CSV/JSON exports. The public REST API is free, requires no API key, and is rate-limited per IP. The project
-  is informational and does not replace official Registro Mercantil certificates.
+description: OpenMercantil is an independent public-data API for Spanish company intelligence. It indexes the Boletin
+  Oficial del Registro Mercantil (BORME) and cross-references it with 80+ official public sources (BOE, CNMV, CNMC,
+  AEAT, AEPD, PLACSP, TED EU, BDNS, OEPM, EPO, WIPO, CENDOJ, GLEIF, OpenSanctions, ICIJ and more) to expose company
+  and person search, structured company reports, BORME registry event timelines, documentary officer mentions, CNAE
+  sector navigation and ratios, daily BORME summaries, public-procurement notices and rankings, documentary risk
+  signals, a corporate relationship graph, a Spanish mercantile-law corpus that bridges registry acts to the governing
+  BOE norm, account-plane datasets and HMAC-signed outbound webhooks, and CSV/JSON bulk exports. The live OpenAPI
+  3.1 contract (v1.9.3) declares 118 paths and 139 operations. The public read plane is free and anonymous with
+  no API key, rate-limited at 60 req/min and 200 req/day per IP, with paid Profesional, MAX and Enterprise tiers
+  raising the quota. Derived data is CC BY 4.0 and every response carries its own source and attribution metadata.
+  The project is informational and does not replace official Registro Mercantil certificates.
 tags:
-  - Open Data
-  - Spain
-  - Company Data
-  - Business Registry
-  - BORME
-  - Public Records
-  - Spanish Companies
-  - CIF
-  - CNAE
-  - Public Procurement
-  - PLACSP
-  - CNMV
-  - OEPM
-  - BDNS
-  - OpenSanctions
-  - Public-Interest Data
-  - Spanish Open Data
-  - REST API
-  - JSON
-  - CSV
-  - Geocoding
-  - Trust Score
-  - Registry Timeline
-  - Daily Summary
+- BDNS
+- BORME
+- Business Registry
+- CIF
+- CNAE
+- CNMV
+- CSV
+- Company Data
+- Company Search
+- Corporate Registry
+- DCAT-AP
+- Daily Summary
+- Geocoding
+- JSON
+- Legal Data
+- Mercantile Law
+- OEPM
+- Open Data
+- Open Government Data
+- OpenAPI
+- OpenSanctions
+- PLACSP
+- Public Procurement
+- Public Records
+- Public-Interest Data
+- REST API
+- Registry Timeline
+- Risk Signals
+- Sanctions
+- Spain
+- Spanish Companies
+- Spanish Open Data
+- Tenders
+- Trust Score
+- Webhooks
 apis:
+- aid: openmercantil:openmercantil-api-credentials-api
+  name: OpenMercantil API Credentials API
+  description: 'Account API credential management: list, create, rotate and revoke opaque omk_* API keys. Secrets
+    are returned once and recoverable only via an identical Idempotency-Key replay inside 24 hours.'
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - API Credentials
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-api-credentials-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-api-credentials-overlay.yaml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-billing-api
   name: OpenMercantil Billing API
-  description: Stripe checkout and donation endpoints
+  description: Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded, idempotent
+    and never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -64,13 +99,35 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-billing-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-billing-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-borme-api
+  name: OpenMercantil BORME API
+  description: Daily BORME publications, multi-source timeline and registry events
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - BORME
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-borme-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-borme-overlay.yaml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-companies-api
   name: OpenMercantil Companies API
-  description: Company reports, registry events, officers and export
+  description: Company reports and registry events
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -78,83 +135,96 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-companies-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-companies-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-contracts-api
-  name: OpenMercantil Contracts API
-  description: Public procurement (PLACSP) rankings
+- aid: openmercantil:openmercantil-datasets-api
+  name: OpenMercantil Datasets API
+  description: Bulk exports (CSV / JSON / aggregated stats)
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Contracts
+  - Datasets
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-contracts-api-openapi.yml
+    url: openapi/openmercantil-datasets-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-datasets-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-daily-api
-  name: OpenMercantil Daily API
-  description: Daily BORME summary feeds
+- aid: openmercantil:openmercantil-graph-api
+  name: OpenMercantil Graph API
+  description: Corporate and person-to-company relationship graphs. Every emitted record retains the source-specific
+    terms authorized by the active public source catalog; no blanket relicensing applies.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Daily
+  - Graph
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-daily-api-openapi.yml
+    url: openapi/openmercantil-graph-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-graph-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-export-api
-  name: OpenMercantil Export API
-  description: Bulk and per-resource export endpoints
+- aid: openmercantil:openmercantil-integrations-api
+  name: OpenMercantil Integrations API
+  description: Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets or operator
+    actions.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Export
+  - Integrations
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-export-api-openapi.yml
+    url: openapi/openmercantil-integrations-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-integrations-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-geocode-api
-  name: OpenMercantil Geocode API
-  description: Geolocation enrichment
+- aid: openmercantil:openmercantil-legal-api
+  name: OpenMercantil Legal API
+  description: 'Spanish mercantile-law layer (derecho mercantil): legislation corpus + article texts + act→norm
+    bridge. Distributes the consolidated BOE legal corpus structured by OpenMercantil so LLMs and agents can cite
+    it as a source. License: consolidated text from the BOE, reused under Ley 37/2007 (re-use of public sector information);
+    the official version is always boe.es. Informational only — NOT legal advice. Court judgments are NOT exposed
+    here (CENDOJ is kept as a citation-index only, per CGPJ…'
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Geocode
+  - Legal
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-geocode-api-openapi.yml
+    url: openapi/openmercantil-legal-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-legal-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
-  - type: APIsJSON
-    url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-network-api
-  name: OpenMercantil Network API
-  description: Company relationship network and embargoes
-  humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
-  tags:
-  - Network
-  properties:
-  - type: OpenAPI
-    url: openapi/openmercantil-network-api-openapi.yml
-  - type: Documentation
-    url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-persons-api
   name: OpenMercantil Persons API
-  description: Person search and person reports
+  description: Documentary mentions of natural persons in BORME (officer roles). Persons treated as documentary
+    mentions only — no DNI, no contact data, no scoring.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -162,22 +232,48 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-persons-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-persons-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-score-api
-  name: OpenMercantil Score API
-  description: Company score, trust score and activity timeseries
+- aid: openmercantil:openmercantil-public-procurement-api
+  name: OpenMercantil Public Procurement API
+  description: Public procurement awards (PLACSP) and grants (BDNS)
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Score
+  - Public Procurement
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-score-api-openapi.yml
+    url: openapi/openmercantil-public-procurement-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-public-procurement-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+- aid: openmercantil:openmercantil-risk-signals-api
+  name: OpenMercantil Risk Signals API
+  description: Documentary risk signals from public sources (AEPD, CNMC, concursos, AEAT moroso, CENDOJ)
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Risk Signals
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-risk-signals-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-risk-signals-overlay.yaml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-search-api
@@ -190,13 +286,17 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-search-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-search-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-sectors-api
   name: OpenMercantil Sectors API
-  description: CNAE sector taxonomy and sector statistics
+  description: CNAE sector aggregates, ratios and company listings
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -204,13 +304,17 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-sectors-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-sectors-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-sources-api
   name: OpenMercantil Sources API
-  description: External sources and dataset freshness
+  description: Source catalog metadata, freshness and integration status
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -218,22 +322,31 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-sources-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-sources-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-stats-api
-  name: OpenMercantil Stats API
-  description: Aggregate statistics by region and sector
+- aid: openmercantil:openmercantil-support-api
+  name: OpenMercantil Support API
+  description: Customer-support writes. Anonymous creation requires explicit privacy consent; replies require an
+    authenticated owner session and CSRF. Ticket data is never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
-  - Stats
+  - Support
   properties:
   - type: OpenAPI
-    url: openapi/openmercantil-stats-api-openapi.yml
+    url: openapi/openmercantil-support-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-support-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-system-api
@@ -246,72 +359,179 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/openmercantil-system-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-system-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
   - type: APIsJSON
     url: https://openmercantil.es/apis.json
-maintainers:
-  - FN: OpenMercantil
-    email: social@openmercantil.es
-  - FN: Pablo Cirre
-    url: https://github.com/PabloCirre
-common:
-  - type: AgenticAccess
-    url: agentic-access/openmercantil-agentic-access.yml
-  - type: DomainSecurity
-    url: security/openmercantil-domain-security.yml
-  - type: Authentication
-    url: authentication/openmercantil-authentication.yml
-  - name: Website
-    url: https://openmercantil.es/
-    type: Website
-  - name: API Documentation
+- aid: openmercantil:openmercantil-user-api
+  name: OpenMercantil User API
+  description: Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires session
+    cookie (browser) and X-CSRF-Token header for mutations.
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - User
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-user-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-user-overlay.yaml
+  - type: Documentation
     url: https://openmercantil.es/api/documentacion
-    type: Documentation
-  - name: APIs.json
+  - type: APIReference
+    url: https://openmercantil.es/docs
+  - type: APIsJSON
     url: https://openmercantil.es/apis.json
-    type: APIsJSON
-  - name: Pricing
-    url: https://openmercantil.es/precios
-    type: Pricing
-  - name: Terms Of Use
-    url: https://openmercantil.es/terminos-de-uso
-    type: TermsOfService
-  - name: Support
-    url: https://openmercantil.es/soporte
-    type: Support
-  - name: Downloads
-    url: https://openmercantil.es/descargas
-    type: Downloads
-  - name: GitHub
-    url: https://github.com/PabloCirre/OpenBorme
-    type: GitHubProject
-  - url: json-schema/openmercantil-company-schema.json
-    type: JSONSchema
-  - url: json-schema/openmercantil-event-schema.json
-    type: JSONSchema
-  - url: json-structure/openmercantil-company-structure.json
-    type: JSONStructure
-  - url: json-ld/openmercantil-context.jsonld
-    type: JSONLDContext
-  - url: examples/openmercantil-search-companies-example.json
-    type: Examples
-  - url: examples/openmercantil-get-company-example.json
-    type: Examples
-  - url: examples/openmercantil-get-company-events-example.json
-    type: Examples
-  - url: examples/openmercantil-health-example.json
-    type: Examples
-  - url: rules/openmercantil-rules.yml
-    type: SpectralRuleset
-  - url: vocabulary/openmercantil-vocabulary.yml
-    type: Vocabulary
-  - url: plans/openmercantil-plans-pricing.yml
-    type: Plans
-  - url: rate-limits/openmercantil-rate-limits.yml
-    type: RateLimits
-  - url: finops/openmercantil-finops.yml
-    type: FinOps
-  - type: LlmsText
-    url: https://openmercantil.es/llms.txt
+- aid: openmercantil:openmercantil-webhooks-api
+  name: OpenMercantil Webhooks API
+  description: 'Account outbound webhooks: register, update, rotate the HMAC signing secret and delete event subscriptions.
+    Three subscribable event types; deliveries are signed and fail closed on unknown events.'
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-webhooks-api-openapi.yml
+  - type: Overlay
+    url: overlays/openmercantil-webhooks-overlay.yaml
+  - type: Documentation
+    url: https://openmercantil.es/api/documentacion
+  - type: APIReference
+    url: https://openmercantil.es/docs
+  - type: APIsJSON
+    url: https://openmercantil.es/apis.json
+  - type: Webhooks
+    url: asyncapi/openmercantil-webhooks.yml
+maintainers:
+- FN: OpenMercantil
+  email: social@openmercantil.es
+- FN: Pablo Cirre
+  url: https://github.com/PabloCirre
+common:
+- type: AgenticAccess
+  url: agentic-access/openmercantil-agentic-access.yml
+- type: DomainSecurity
+  url: security/openmercantil-domain-security.yml
+- type: Authentication
+  url: authentication/openmercantil-authentication.yml
+- name: Website
+  url: https://openmercantil.es/
+  type: Website
+- name: API Documentation
+  url: https://openmercantil.es/api/documentacion
+  type: Documentation
+- name: APIs.json
+  url: https://openmercantil.es/apis.json
+  type: APIsJSON
+- name: Pricing
+  url: https://openmercantil.es/precios
+  type: Pricing
+- name: Terms Of Use
+  url: https://openmercantil.es/terminos-de-uso
+  type: TermsOfService
+- name: Support
+  url: https://openmercantil.es/soporte
+  type: Support
+- name: Downloads
+  url: https://openmercantil.es/descargas
+  type: Downloads
+- name: GitHub (maintainer account, published in /humans.txt)
+  url: https://github.com/PabloCirre
+  type: GitHubOrganization
+- url: json-schema/openmercantil-company-schema.json
+  type: JSONSchema
+- url: json-schema/openmercantil-event-schema.json
+  type: JSONSchema
+- url: json-structure/openmercantil-company-structure.json
+  type: JSONStructure
+- url: json-ld/openmercantil-context.jsonld
+  type: JSONLDContext
+- url: examples/openmercantil-search-companies-example.json
+  type: Examples
+- url: examples/openmercantil-get-company-example.json
+  type: Examples
+- url: examples/openmercantil-get-company-events-example.json
+  type: Examples
+- url: examples/openmercantil-health-example.json
+  type: Examples
+- url: rules/openmercantil-rules.yml
+  type: SpectralRuleset
+- url: vocabulary/openmercantil-vocabulary.yml
+  type: Vocabulary
+- url: plans/openmercantil-plans-pricing.yml
+  type: Plans
+- url: rate-limits/openmercantil-rate-limits.yml
+  type: RateLimits
+- url: finops/openmercantil-finops.yml
+  type: FinOps
+- type: LLMsTxt
+  url: https://openmercantil.es/llms.txt
+- type: Packages
+  url: packages/openmercantil-packages.yml
+- type: Conventions
+  url: conventions/openmercantil-conventions.yml
+- type: Idempotency
+  url: conventions/openmercantil-conventions.yml
+- type: ErrorCatalog
+  url: errors/openmercantil-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/openmercantil-lifecycle.yml
+- type: StatusPage
+  url: https://openmercantil.es/status
+  name: Service Status
+- type: Deprecation
+  url: lifecycle/openmercantil-lifecycle.yml
+- type: ChangeLog
+  url: changelog/openmercantil-changelog.yml
+- type: Conformance
+  url: conformance/openmercantil-conformance.yml
+- type: Compliance
+  url: conformance/openmercantil-conformance.yml
+- type: OAuthScopes
+  url: scopes/openmercantil-scopes.yml
+- type: VulnerabilityDisclosure
+  url: security/openmercantil-vulnerability-disclosure.yml
+- type: Security
+  url: security/openmercantil-vulnerability-disclosure.yml
+- type: TrustCenter
+  url: security/openmercantil-trust-center.yml
+- type: DataModel
+  url: data-model/openmercantil-data-model.yml
+- type: Webhooks
+  url: asyncapi/openmercantil-webhooks.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/openmercantil-llms.txt
+- type: DeveloperPortal
+  url: https://openmercantil.es/api
+  name: Developer Portal
+- type: APIReference
+  url: https://openmercantil.es/docs
+  name: Swagger UI Reference
+- type: GettingStarted
+  url: https://openmercantil.es/api/documentacion
+  name: Quickstart
+- type: OpenAPI
+  url: https://openmercantil.es/openapi.json
+  name: Full OpenAPI 3.1 (v1.9.3)
+- type: SignUp
+  url: https://openmercantil.es/mi-cuenta/login
+  name: Sign Up / Login
+- type: PrivacyPolicy
+  url: https://openmercantil.es/privacidad
+  name: Privacy Policy
+- type: HelpCenter
+  url: https://openmercantil.es/faq
+  name: FAQ
 url-source: https://openmercantil.es/
+x-enrichment:
+  date: '2026-08-14'
+  status: enriched
+  artifacts_added: 50
+  pass: local-v1
