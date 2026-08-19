@@ -20,7 +20,7 @@ access: 3rd-Party
 position: Consuming
 created: '2026-05-09'
 modified: '2026-08-14'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 description: OpenMercantil is an independent public-data API for Spanish company intelligence. It indexes the Boletin
   Oficial del Registro Mercantil (BORME) and cross-references it with 80+ official public sources (BOE, CNMV, CNMC,
   AEAT, AEPD, PLACSP, TED EU, BDNS, OEPM, EPO, WIPO, CENDOJ, GLEIF, OpenSanctions, ICIJ and more) to expose company
