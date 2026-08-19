@@ -1,0 +1,55 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Daily API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Daily",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get Daily BORME Summary",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/daily/:date",
+            "params": [
+              {
+                "name": "date",
+                "value": "",
+                "type": "path",
+                "description": "ISO 8601 date (YYYY-MM-DD)."
+              }
+            ]
+          },
+          "docs": "Return the daily BORME summary for the given ISO date."
+        },
+        {
+          "info": {
+            "name": "Get Summary For A Date",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/summary/date/:date",
+            "params": [
+              {
+                "name": "date",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the consolidated public-record summary for a given date across BORME and integrated sources."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

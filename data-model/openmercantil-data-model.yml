@@ -1,0 +1,290 @@
+generated: '2026-08-14'
+method: derived
+source: >-
+  openapi/_original/openmercantil-openapi-1.9.3.json (203 component schemas,
+  $ref edges and id-reference fields), cross-checked against the object
+  reference at https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Entity-relationship graph for the OpenMercantil public data model, derived
+  from the $ref edges and *_slug id-reference fields in the live OpenAPI 3.1
+  contract. The model has one gravitational centre — the company, keyed by a
+  slug of the form {name}-{cif} — and everything else hangs off it: BORME
+  registry acts, documentary officer mentions, procurement notices, grants,
+  sanctions, sector aggregates and the mercantile-law corpus.
+identity:
+  primary_key: slug
+  slug_form: '{normalized-name}-{cif}'
+  slug_examples:
+    - inditex-sa-a15075062
+    - mercadona-sa-a46103834
+  natural_key: CIF/NIF (Spanish tax identifier)
+  person_key: person slug (documentary mention identifier — never a DNI/NIE)
+  resolution_contract:
+    name: x-company-identity-contract
+    version: '1.0'
+    projection: company_public_v2 (immutable, generation-bound corporate sidecar)
+    states:
+      published: canonical corporate slug admitted
+      safe_alias: canonicalized server-side; canonical URL returned in Content-Location
+      withheld: >-
+        neutral 404 — covers absent, natural-person, and ambiguous or
+        quarantined identities alike, so a 404 is NOT proof of non-existence
+      unavailable: 503 with no-store; clients must not infer absence
+    note: >-
+      This preflight runs on every /api/v1/company/{slug}*, /api/v1/empresa/
+      {slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or
+      dataset lookup, and MCP company tools inherit it through REST.
+core_entities:
+  - name: Company
+    schema: CompanyIdentity
+    key: slug
+    description: >-
+      The central entity. Registry identity plus derived KPIs. Exposed through
+      CompanyReport, which composes identity, events, officers and summary.
+    exposed_by:
+      - getCompanyBySlug
+      - getEmpresaBySlugFacts
+      - compareCompanies
+      - getSearch
+  - name: CompanyReport
+    schema: CompanyReport
+    description: >-
+      The composed company document. Notably carries its own provenance:
+      `_data_sources_used`, `_attributions` and `_source_catalog` travel with
+      the payload, so a consumer can tell which upstream sources and licences
+      apply to the record it just received.
+  - name: BormeEvent
+    schema: BormeEvent
+    description: >-
+      A single registry act published in the BORME. Retains the official
+      BORME-A-YYYY-NNN-NN identifier and a source_url to the BOE PDF.
+    key_fields: [id, date, publish_date, type, act_type, title, province, source, source_url]
+  - name: OfficerDocumentaryMention
+    schema: OfficerDocumentaryMention
+    description: >-
+      A documentary mention of a natural person in an officer role — explicitly
+      not a profile. Links to a person slug, never a DNI/NIE.
+  - name: PersonDocumentaryReport
+    schema: PersonDocumentaryReport
+    description: >-
+      Person-side view, split into active_positions and inactive_positions.
+      Carries projection metadata and the same provenance sidecar.
+  - name: TenderNotice
+    schema: TenderNotice
+    description: >-
+      A PLACSP public procurement notice with typed monetary amounts, a buyer
+      party and (where awarded) a supplier party. Only legal persons are
+      exposed as suppliers, for GDPR reasons.
+  - name: LegalNormFull
+    schema: LegalNormFull
+    description: >-
+      A Spanish mercantile-law norm from the consolidated BOE corpus, with key
+      articles, the BORME act types it regulates, and a citable fact.
+  - name: CnaeNode
+    schema: CnaeNode
+    description: A node in the CNAE sector taxonomy tree.
+  - name: PublicSourceMetadata
+    schema: PublicSourceMetadata
+    description: >-
+      An entry in the versioned public-source catalog — the licensing spine of
+      the whole model.
+relationships:
+  - from: CompanyReport
+    to: CompanyIdentity
+    type: has_one
+    via: company
+  - from: CompanyReport
+    to: BormeEvent
+    type: has_many
+    via: events
+  - from: CompanyReport
+    to: OfficerDocumentaryMention
+    type: has_many
+    via: officers
+  - from: CompanyReport
+    to: PublicSourcePolicyMetadata
+    type: has_many
+    via: _data_sources_used
+  - from: CompanyReport
+    to: SourceCatalogEnvelope
+    type: has_one
+    via: _source_catalog
+  - from: OfficerDocumentaryMention
+    to: Person
+    type: belongs_to
+    via: person_slug
+  - from: PersonDocumentaryReport
+    to: PersonDocumentaryPosition
+    type: has_many
+    via: active_positions
+  - from: PersonDocumentaryReport
+    to: PersonDocumentaryPosition
+    type: has_many
+    via: inactive_positions
+  - from: PersonDocumentaryReport
+    to: PersonPublicProjectionMetadata
+    type: has_one
+    via: projection
+  - from: PersonDocumentaryPosition
+    to: Company
+    type: belongs_to
+    via: company_slug
+  - from: DailySummary
+    to: BormeEvent
+    type: has_many
+    via: events
+  - from: TenderNotice
+    to: TenderParty
+    type: has_one
+    via: buyer
+  - from: TenderNotice
+    to: TenderParty
+    type: has_one
+    via: supplier
+  - from: TenderNotice
+    to: TenderMoney
+    type: has_one
+    via: amounts
+  - from: TenderParty
+    to: Company
+    type: belongs_to
+    via: company_slug
+  - from: TenderLot
+    to: TenderMoney
+    type: has_one
+    via: [budget_total, budget_tax_exclusive, estimated_total]
+  - from: TenderResult
+    to: TenderResultSupplier
+    type: has_many
+    via: suppliers
+  - from: TenderStats
+    to: TenderGeography
+    type: has_one
+    via: geography
+  - from: TenderStats
+    to: TenderDataQuality
+    type: has_one
+    via: data_quality
+  - from: LegalReportDocument
+    to: LegalReportAxis
+    type: has_many
+    via: axes
+  - from: LegalReportAxis
+    to: LegalNorm
+    type: belongs_to
+    via: norm_slug
+  - from: CompanySourceCoverageRecord
+    to: CompanyIntegrationSourceMetadata
+    type: has_one
+    via: metadata
+  - from: CompanyIntegrationSourceMetadata
+    to: CompanyIntegrationAcquisitionCoverage
+    type: has_one
+    via: acquisition_coverage
+  - from: PublicIntegration
+    to: PublicIntegrationCoverage
+    type: has_one
+    via: coverage
+  - from: PublicIntegration
+    to: PublicIntegrationEgressPolicy
+    type: has_one
+    via: egress_policy
+  - from: PublicIntegration
+    to: PublicIntegrationTransport
+    type: has_one
+    via: transport
+  - from: UserSegment
+    to: User
+    type: belongs_to
+    via: user_id
+  - from: UserSegment
+    to: UserSegmentStoredFilters
+    type: has_one
+    via: filters
+  - from: UserList
+    to: User
+    type: belongs_to
+    via: user_id
+  - from: UserNote
+    to: User
+    type: belongs_to
+    via: user_id
+  - from: UserTag
+    to: User
+    type: belongs_to
+    via: user_id
+  - from: OutboundWebhook
+    to: OutboundWebhookEventSubscriptionsV1
+    type: has_one
+    via: events
+company_attached_records:
+  note: >-
+    A long tail of single-source records attach to a company slug through the
+    /api/v1/company/{slug}/* routes rather than through an in-schema $ref.
+    Recorded here because the relationship is real even though the edge lives
+    in the URL, not the payload.
+  records:
+    - schema: GrantRecord
+      source: BDNS
+      route: /api/v1/company/{slug}/grants
+    - schema: DocumentarySanction
+      source: OpenSanctions
+      route: /api/v1/company/{slug}/sanctions
+    - schema: EmbargoRecord
+      route: /api/v1/company/{slug}/embargoes
+    - schema: CnmvListingRecord
+      source: CNMV
+      route: /api/v1/company/{slug}/cnmv
+    - schema: CnmvEventRecord
+      source: CNMV
+    - schema: TedContractRecord
+      source: TED EU
+      route: /api/v1/company/{slug}/ted
+    - schema: WikidataCompanyRecord
+      source: Wikidata
+      route: /api/v1/company/{slug}/wikidata
+    - schema: BdeSectorMetric
+      source: Banco de España
+      route: /api/v1/company/{slug}/bde
+    - schema: FinancialAccountsRecord
+    - schema: RelationshipRecord
+      route: /api/v1/company/{slug}/relationships
+    - schema: GraphEdge
+      route: /api/v1/grafo/{slug}
+graph_surface:
+  entities:
+    - GraphEdge
+    - PersonGraphCompany
+    - RelationshipRecord
+  operations:
+    - getGrafoBySlug
+    - getGrafoPersonaBySlug
+    - getCompanyBySlugRelationships
+  caveat: >-
+    The contract states every emitted graph record retains the source-specific
+    terms authorised by the active public source catalog, and the provider's
+    llms.txt states that any shown relationship is a documentary coincidence or
+    a publicly published link — it does not by itself imply effective control,
+    liability, irregularity or a current relationship.
+provenance_in_payload:
+  fields:
+    - _data_sources_used
+    - _attributions
+    - _source_catalog
+  headers:
+    - X-Data-Sources
+    - X-Attribution-Required
+    - X-Source-Catalog-Version
+  note: >-
+    Worth highlighting for anyone modelling this API: licensing provenance is a
+    first-class part of the data model, present both in the payload and in the
+    response headers, because OpenMercantil does not relicense upstream content
+    under a blanket licence.
+counts:
+  component_schemas: 203
+  object_entities_identified: 76
+  relationships_derived: 46
+  operations: 139
+render: null

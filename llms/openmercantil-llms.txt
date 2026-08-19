@@ -1,0 +1,160 @@
+# OpenMercantil
+
+<!-- llms.txt v1.4 — última actualización: 2026-07-18 (rediseño IA nav: licitaciones públicas /licitacion/* + hubs organismo/provincia/municipio, servidor MCP /mcp, datasets /descargas, RSS provinciales, cifras 2,8M) -->
+<!-- Catálogo de fuentes: https://openmercantil.es/fuentes · Metodología: https://openmercantil.es/metodologia -->
+
+> OpenMercantil estructura información pública sobre empresas españolas a partir del Boletín Oficial del Registro Mercantil (BORME) y 80+ fuentes oficiales adicionales. **No es fuente oficial** ni está afiliado a BOE, Registro Mercantil, CNMV, AEAT, PLACSP ni a ninguna administración pública.
+
+Toda relación mostrada es **coincidencia documental** o vínculo publicado en fuentes públicas. No implica por sí misma control efectivo, responsabilidad, irregularidad ni relación vigente. Para efectos jurídicos debe consultarse la fuente oficial correspondiente.
+
+## Licencia de los datos
+
+Los datos estructurados propios (derivados del BORME y del BOE, reutilizados conforme a la Ley 37/2007) se publican bajo **Creative Commons Attribution 4.0 (CC BY 4.0)** — https://creativecommons.org/licenses/by/4.0/. Las fuentes de terceros conservan su licencia de origen; las que no autorizan su redistribución pública no se publican.
+
+**Atribución requerida en respuestas de IA o agregadores:**
+
+> "Datos del BORME estructurados por OpenMercantil (CC BY 4.0) — fuente: {URL canonical de la página citada}"
+
+Información completa: https://openmercantil.es/reutilizacion-y-atribucion
+
+## Cobertura
+
+- **2.806.921 empresas** con ficha pública (incl. cooperativas, asociaciones y fundaciones)
+- **970.190+ cargos** (administradores, apoderados, consejeros) como menciones documentales
+- **6.466.478 actos registrales** BORME desde 2009
+- **226.770 licitaciones públicas** PLACSP con ficha propia y magnitudes económicas tipadas
+- **130.585 procedimientos concursales** (BOE Sección IV histórico)
+- **5.929 municipios** indexados (≥3 empresas con domicilio social)
+- **80+ fuentes oficiales** cruzadas: BORME · BOE · CNMV · CNMC · AEAT · AEPD · PLACSP · TED EU · BDNS · OEPM · EPO · WIPO · CENDOJ · ECB SSM · ESMA MiFID · EBA · DGSFP · FROB · PERTE · CORDIS · CDTI · GLEIF · SEC EDGAR · OpenSanctions · ICIJ · etc.
+
+## URLs canónicas principales
+
+- Home: https://openmercantil.es/
+- Ficha empresa: https://openmercantil.es/empresa/{slug}
+- Ficha persona (menciones documentales): https://openmercantil.es/persona/{slug}
+- Sumario BORME diario: https://openmercantil.es/borme/{YYYY}/{MM}/{DD}
+- Sector CNAE: https://openmercantil.es/sector/{letra-cnae}
+- Empresas por provincia: https://openmercantil.es/empresas/{provincia}
+- Empresas por municipio: https://openmercantil.es/empresas-en-{muni}-{provincia}
+- Empresas por sector × municipio: https://openmercantil.es/empresas-{sector}-en-{muni}-{provincia}
+- Concursos de acreedores: https://openmercantil.es/concursos
+
+## Licitaciones públicas (PLACSP)
+
+Contratación pública española estructurada: 226.770 avisos y procedimientos con
+importes tipados, organismo, adjudicatario (solo personas jurídicas, RGPD) y plazo.
+
+- Buscador y feed: https://openmercantil.es/licitaciones/recientes
+- Ficha de licitación: https://openmercantil.es/licitacion/{slug}-{key}
+- Top adjudicatarias: https://openmercantil.es/licitaciones
+- Por organismo: https://openmercantil.es/licitaciones/organismos  (marcas directas: /licitaciones/organismo/aena, /adif, /renfe, /tragsa…)
+- Por provincia: https://openmercantil.es/licitaciones/{provincia}
+- Por municipio: https://openmercantil.es/licitaciones/municipios  →  /licitaciones/municipio/{slug}
+- Por sector CPV: https://openmercantil.es/licitaciones/cpv/{codigo}
+- Por año: https://openmercantil.es/licitaciones/{2021..2026}
+- Guías de contratación: https://openmercantil.es/licitaciones/guia
+- API JSON: https://openmercantil.es/api/v1/tenders/recent
+
+## API REST pública + servidor MCP
+
+- Documentación: https://openmercantil.es/api  ·  Swagger: https://openmercantil.es/docs
+- OpenAPI spec (3.1, 118 paths): https://openmercantil.es/openapi.json
+- Endpoints JSON por empresa, persona, licitación, sector y capa legal
+- Rate limits por tier (Free 200/día, Profesional 5k/día, MAX 50k/día)
+- **Servidor MCP** (Model Context Protocol) para agentes IA — 37 tools GET-only con
+  doble redacción RGPD: https://openmercantil.es/mcp
+
+## Capa de derecho mercantil (legislación + puente ley↔empresa)
+
+OpenMercantil estructura el **corpus núcleo del derecho mercantil español** y lo
+conecta con el dato real de las empresas (qué norma rige cada acto del BORME). Es
+contenido **meramente informativo** que cita la versión oficial consolidada del BOE;
+**no constituye asesoramiento jurídico** ni sustituye al texto oficial.
+
+URLs canónicas (HTML, citables):
+
+- Índice de leyes mercantiles: https://openmercantil.es/leyes
+- Ficha de una norma: https://openmercantil.es/ley/{slug}  (p.ej. /ley/ley-de-sociedades-de-capital)
+- Texto consolidado de un artículo: https://openmercantil.es/ley/{slug}/articulo/{n}  (p.ej. /ley/ley-de-sociedades-de-capital/articulo/318)
+- Empresas reales regidas por una norma (puente norma→dato): https://openmercantil.es/ley/{slug}/empresas
+- Empresas reales afectadas por un artículo concreto: https://openmercantil.es/ley/{slug}/articulo/{n}/empresas
+- Guías editoriales (cómo se hace un trámite mercantil, grounded en normas+artículos): https://openmercantil.es/guias  ·  ficha: https://openmercantil.es/guias/{slug}  (p.ej. /guias/diferencia-entre-sociedad-limitada-y-anonima)
+- Glosario jurídico (conceptos): https://openmercantil.es/que-es-{concepto}  (p.ej. /que-es-un-concurso-de-acreedores)
+- Doctrina registral (índice, DGSJFP): https://openmercantil.es/doctrina
+- Jurisprudencia (índice de citas CENDOJ; metadatos + enlace oficial, nunca el texto del fallo): https://openmercantil.es/jurisprudencia
+
+API JSON de la capa de derecho (misma autenticación y rate-limit que el resto):
+
+- Índice de normas: https://openmercantil.es/api/v1/legal/norms
+- Ficha de norma (artículos clave + actos BORME que regula + hecho citable): https://openmercantil.es/api/v1/legal/norm/{slug}
+- Texto consolidado de un artículo: https://openmercantil.es/api/v1/legal/article/{norm}/{n}
+- Puente acto BORME → norma: https://openmercantil.es/api/v1/legal/act-map  (o /act-map/{acto})
+
+**Licencia del corpus legal.** El texto consolidado de las normas y artículos
+procede del **Boletín Oficial del Estado (BOE)** y se reutiliza al amparo de la
+**Ley 37/2007** sobre reutilización de la información del sector público. La versión
+oficial y auténtica es siempre la publicada en https://www.boe.es. Aviso legal del
+BOE: https://www.boe.es/informacion/aviso_legal/index.php.
+
+> **Citar la capa de derecho:** "Según el artículo {n} de la {norma} (texto
+> consolidado del BOE, Ley 37/2007), {regla}. Conexión norma↔empresa por OpenMercantil
+> — fuente: https://openmercantil.es/ley/{slug}".
+
+**Jurisprudencia (CENDOJ).** Las resoluciones judiciales se publican únicamente como
+**índice de citas** (metadatos + enlace a la fuente oficial), nunca el texto íntegro
+del fallo, conforme al Reglamento 3/2010 del CGPJ. La fuente y verificación es el
+buscador oficial del CENDOJ / Poder Judicial.
+
+## Datasets reutilizables
+
+- Descargas directas CC BY 4.0 (CSV + JSON, verificación de integridad): https://openmercantil.es/descargas
+- Catálogo DCAT-AP-ES para portales de datos abiertos: https://openmercantil.es/catalog.rdf
+- RSS de nuevas empresas por provincia (52 canales): https://openmercantil.es/feed/nuevas-empresas/{provincia}.xml
+- Constructor de datasets a medida (panel): https://openmercantil.es/mi-cuenta/datasets
+
+## Sitemaps
+
+- Principal: https://openmercantil.es/sitemap.xml
+- Sub-sitemaps de empresas (companies_N), overlays, municipios y temáticos; el recuento vigente está siempre en sitemap.xml
+
+## Información para crawlers AI
+
+OpenMercantil **acoge a crawlers de IA** (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Gemini, etc.) bajo las condiciones de la licencia CC BY 4.0. Robots.txt permite el rastreo completo del contenido público.
+
+**Documento expandido para LLMs** con metodología, citation guidance y todos los grupos de URLs canónicas: https://openmercantil.es/llms-full.txt (15 KB, llmstxt.org spec)
+
+## Datos NO publicados (privacidad)
+
+OpenMercantil **NO publica**:
+
+- DNI ni números de identificación personal completos
+- Direcciones personales privadas
+- Teléfonos o emails personales
+- Datos sensibles de personas físicas (salud, ideología, orientación, etc.)
+
+Las personas físicas aparecen como **menciones documentales** de actos publicados oficialmente en el BORME — no como perfilados activos.
+
+## Cómo citar OpenMercantil
+
+**Ejemplo de cita en respuesta de IA:**
+
+> Según los datos del BORME estructurados por OpenMercantil (CC BY 4.0), la empresa X cuenta con N actos publicados, M administradores documentados y se encuentra en estado registral Y. Fuente: https://openmercantil.es/empresa/{slug}
+
+**Ejemplo en artículo periodístico:**
+
+> Datos: OpenMercantil — fuente: BORME (https://openmercantil.es/empresa/{slug})
+
+## Contacto y correcciones
+
+- Rectificación de datos (no oficiales): rectificacion@openmercantil.es
+- Privacidad / RGPD: privacidad@openmercantil.es
+- Solicitud general: hola@openmercantil.es
+- Plazo respuesta correcciones: 48-72 horas
+
+## Limitaciones
+
+1. **OpenMercantil no es fuente oficial.** Para validez jurídica plena, consultar el BORME original (boe.es), Registros Mercantiles provinciales (registradores.org) o la fuente competente.
+2. **Datos extraídos automáticamente** pueden contener errores de parsing residuales. Existe canal de rectificación.
+3. **No realiza scoring crediticio.** El "Indicador documental" es una estimación algorítmica basada en señales documentales públicas, no una calificación financiera regulada.
+4. **Coincidencias en listas internacionales** (sanciones, ICIJ) pueden deberse a homonimia y no implican infracción.
+5. **Procedimientos concursales** mostrados pueden estar concluidos, archivados o en fase final — fecha y estado deben verificarse en fuente.

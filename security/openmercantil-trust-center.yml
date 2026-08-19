@@ -1,0 +1,64 @@
+generated: '2026-08-14'
+method: searched
+source: https://openmercantil.es/seguridad
+docs: https://openmercantil.es/seguridad
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  OpenMercantil has no trust portal in the vendor sense — no trust.domain
+  subdomain, no document request flow, no auditor reports. What it has instead
+  is a single public page, /seguridad, that functions as a trust center for a
+  transparency-first open-data project: it enumerates implemented controls,
+  named regulatory regimes, the vulnerability-disclosure process, and an
+  explicit "what we deliberately do NOT do" section.
+trust_center:
+  published: true
+  type: public-security-page
+  url: https://openmercantil.es/seguridad
+  subdomain: null
+  gated: false
+  document_request_flow: false
+  auditor_reports_available: false
+  subprocessor_list_published: false
+  status_page: https://openmercantil.es/status
+  privacy_policy: https://openmercantil.es/privacidad
+  legal_notice: https://openmercantil.es/aviso-legal
+  acceptable_use: https://openmercantil.es/uso-razonable
+  gdpr_rights_channel: https://openmercantil.es/privacidad
+  methodology: https://openmercantil.es/metodologia
+  source_catalog: https://openmercantil.es/fuentes
+  corrections_channel: https://openmercantil.es/correcciones
+certifications: []
+certifications_note: >-
+  No SOC 2, ISO 27001, PCI DSS, HIPAA or FedRAMP. None is claimed, and the
+  page does not imply any. Recorded as a verified absence rather than a gap
+  the provider is hiding — the project is maintained by a single named
+  individual (Pablo Cirre, Granada) who publishes his identity, methodology and
+  contact details at /humans.txt.
+regulatory_regimes:
+  - name: GDPR
+    reference: Regulation (EU) 2016/679
+  - name: LOPDGDD
+    reference: Ley Orgánica 3/2018 (Spain)
+  - name: Ley 37/2007
+    reference: Public-sector information re-use (transposing EU Directive 2019/1024)
+  - name: LSSI-CE
+    reference: Ley 34/2002 (Spain)
+  - name: AEPD cookie guidance
+    reference: AEPD 2024 guidance / RD 13/2012
+  - name: CGPJ Reglamento 3/2010
+    reference: Re-use of judicial decisions — CENDOJ kept as citation index only
+data_protection_posture:
+  never_published:
+    - Full DNI/NIE or personal identification numbers
+    - Private personal addresses
+    - Personal phone numbers or email addresses
+    - Special-category data about natural persons
+  natural_persons: >-
+    Treated strictly as documentary mentions of officially published BORME
+    acts — not as active profiles, and never scored.
+  credit_scoring: >-
+    Explicitly not performed. The "Indicador documental" is described as an
+    educational algorithmic estimate over public documentary signals, not a
+    regulated credit rating.
+  payment_data: Never touches provider infrastructure; Stripe Checkout only.

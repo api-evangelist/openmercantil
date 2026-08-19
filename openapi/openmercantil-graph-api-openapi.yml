@@ -1,0 +1,841 @@
+openapi: 3.1.0
+info:
+  title: OpenMercantil Graph API
+  version: 1.9.3
+  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
+    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
+    and does NOT replace official certificates or registry extracts.
+
+
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
+    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
+    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+
+
+    **License and attribution.** Source-specific metadata in each response and the active versioned source
+    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
+    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
+    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
+    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+
+
+    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: Source-specific upstream terms; see response catalog metadata
+    url: https://openmercantil.es/terminos-de-uso
+  x-publisher:
+    name: OpenMercantil
+    url: https://openmercantil.es/
+    email: social@openmercantil.es
+  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
+  x-temporal: 2009-01-01/..
+  x-language: es
+  x-dcat-catalog: https://openmercantil.es/catalog.rdf
+  x-rate-limit:
+    free:
+      per_min: 60
+      per_day: 200
+      kind: anonymous-ip
+    profesional:
+      per_min: 120
+      per_day: 5000
+      kind: api-key
+    max:
+      per_min: 600
+      per_day: 50000
+      kind: api-key
+    enterprise:
+      per_min: 1200
+      per_day: 500000
+      kind: contract
+  x-methodology: https://openmercantil.es/metodologia
+  x-sources: https://openmercantil.es/fuentes
+  x-corrections: https://openmercantil.es/correcciones
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
+    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
+    GET read plane.
+  x-account-segment-contract:
+    projection: company_public_v2 immutable corporate sidecar
+    synchronous_row_cap: 500
+    bounded_count_cap: 50001
+    count_semantics: The segment run response count is the number of rows returned, never a global total.
+      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
+      50001.
+    related_web_dataset_surface:
+      preview_path: /mi-cuenta/datasets/preview
+      export_path: /mi-cuenta/datasets/export.csv
+      synchronous_export_max_rows: 500
+      overflow_status: 503
+      overflow_error: async_export_required
+  x-company-identity-contract:
+    version: '1.0'
+    projection: company_public_v2 immutable generation-bound corporate sidecar
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
+      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
+      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
+      preflights through REST.
+    resolution:
+      published: canonical corporate slug admitted
+      safe_alias: internally canonicalized and Content-Location emitted
+      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
+      unavailable: 503 with no-store; clients must not infer absence
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
+      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    public_company_count: company_public_projection_state.row_count
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Graph
+  description: Corporate and person-to-company relationship graphs. Every emitted record retains the source-specific
+    terms authorized by the active public source catalog; no blanket relicensing applies.
+paths:
+  /api/v1/grafo/{slug}:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getGrafoBySlug
+      x-query-contract:
+        allowed:
+        - max_children
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+        range: 422 validation_failed
+      tags:
+      - Graph
+      summary: Get corporate graph for a company
+      description: Return a graph centered on a company admitted by company_public_v2. Each GLEIF parent/child
+        candidate is independently batch-admitted and its public identity is overlaid from the same sidecar;
+        absent, personal or ambiguous candidates are omitted. SEC external nodes remain withheld until
+        they have an external corporate-identity projection. Source-specific license metadata prevails.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: endesa-energia-sa
+        description: Company slug.
+      - name: max_children
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+        description: Maximum number of children entities returned.
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      responses:
+        '200':
+          description: Company corporate graph
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            Cache-Control:
+              schema:
+                type: string
+              description: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyGraphResponse'
+        '304':
+          description: The admitted graph projection has not changed.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/LegalLayerUnavailable'
+  /api/v1/grafo/persona/{slug}:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: people:read
+      operationId: getGrafoPersonaBySlug
+      x-query-contract:
+        allowed:
+        - limit
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+        range: 422 validation_failed
+      tags:
+      - Graph
+      summary: Get person-to-company graph
+      description: Return a private/no-store BORME-only graph derived from an exact person_public_v1 report.
+        Every company edge is revalidated against the same company_public_v2 generation. It contains no
+        UK/external-person enrichment and does not infer identity, control or vigency. Withheld/absent
+        is neutral 404; unavailable authority is 503/no-store.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: florentino-perez-rodriguez
+        description: Person slug.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+        description: Maximum number of companies returned.
+      responses:
+        '200':
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            Cache-Control:
+              schema:
+                type: string
+                const: private, no-store
+          description: Person graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonGraphResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/LegalLayerUnavailable'
+  /api/v1/company/{slug}/network:
+    get:
+      operationId: getCompanyBySlugNetwork
+      tags:
+      - Companies
+      - Graph
+      summary: Documentary network projection (temporarily unavailable)
+      description: The former synchronous graph calculation is disabled because its cold path exceeded
+        the request budget. This route returns 503 until an indexed, legally governed offline projection
+        is available.
+      deprecated: true
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          description: Offline projection required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineProjectionError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms
+        must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the
+        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
+        sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog
+        used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
+        lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
+  responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
+        unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
+              activa.
+            source_catalog_version: 2026-07-12.2
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses
+        an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    CompanyGraphResponse:
+      type: object
+      required:
+      - schema_version
+      - canonical_url
+      - center
+      - parents
+      - children
+      - coverage
+      - as_of
+      properties:
+        schema_version:
+          type: string
+          example: '1'
+        canonical_url:
+          type: string
+          format: uri
+        center:
+          type: object
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+            cif:
+              type: string
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+        counts:
+          type: object
+          properties:
+            parents:
+              type: integer
+            children:
+              type: integer
+        coverage:
+          type: object
+          additionalProperties:
+            type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        as_of:
+          type: string
+          format: date
+          example: '2026-05-18'
+        ttl_seconds:
+          type: integer
+          const: 0
+          example: 0
+    ErrorResponse:
+      type: object
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
+        these fields further where required.
+      required:
+      - error
+      properties:
+        error:
+          type: string
+          minLength: 1
+        message:
+          type: string
+        detail:
+          type: string
+        code:
+          type: string
+        status:
+          type:
+          - integer
+          - string
+        projection:
+          type: string
+        reason:
+          type: string
+        source_catalog_version:
+          type: string
+        allowed_parameters:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        slug:
+          type: string
+        key:
+          type: string
+        maximum:
+          type: integer
+          minimum: 1
+        parameter:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        max_bytes:
+          type: integer
+          minimum: 1
+        allowed:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        valid:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        date:
+          type: string
+        login_url:
+          type: string
+        plan:
+          type: string
+        limited_by:
+          type: string
+          enum:
+          - minute
+          - day
+        daily_limit:
+          type: integer
+          minimum: 1
+        reset_at:
+          type: integer
+          minimum: 1
+        reset_at_human:
+          type: string
+          format: date-time
+        retry_after_s:
+          type: integer
+          minimum: 1
+        retry_after:
+          type: integer
+          minimum: 1
+        upgrade:
+          type: string
+          format: uri
+        upgrade_url:
+          type: string
+        action:
+          type: string
+        limit:
+          type: integer
+          minimum: 0
+        remaining:
+          type: integer
+          minimum: 0
+        needed:
+          type: integer
+          minimum: 0
+        shortfall:
+          type: integer
+          minimum: 0
+        ok:
+          type: boolean
+        _alias_of:
+          type: string
+      additionalProperties: false
+    GraphEdge:
+      type: object
+      properties:
+        slug:
+          type:
+          - string
+          - 'null'
+          example: endesa-sa
+        name:
+          type: string
+          example: ENDESA SA
+        rel_type:
+          type: string
+          example: IS_DIRECTLY_CONSOLIDATED_BY
+        source_slug:
+          type: string
+          description: Canonical dataset slug authorized by the active source policy.
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    OfflineProjectionError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        projection:
+          type:
+          - string
+          - 'null'
+        derivation:
+          type:
+          - string
+          - 'null'
+        detail:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PersonGraphCompany:
+      type: object
+      required:
+      - slug
+      - name
+      - rel_type
+      - role
+      - since
+      - until
+      - documentary_status
+      - vigency_verified
+      - source_slug
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
+          type: string
+          minLength: 1
+        rel_type:
+          type: string
+          const: OFFICER_OF
+        role:
+          type: string
+        since:
+          type:
+          - string
+          - 'null'
+          format: date
+        until:
+          type:
+          - string
+          - 'null'
+          format: date
+        documentary_status:
+          type: string
+          enum:
+          - open_documentary_mention
+          - historical_documentary_mention
+        vigency_verified:
+          type: boolean
+          const: false
+        source_slug:
+          type: string
+          const: borme
+      additionalProperties: false
+    PersonGraphResponse:
+      type: object
+      required:
+      - schema_version
+      - status
+      - canonical_url
+      - center
+      - companies
+      - coverage
+      - projection
+      - as_of
+      - ttl_seconds
+      - subject_type
+      - identity_resolution
+      - _legal_notice
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+          const: person_graph_v1
+        status:
+          type: string
+          const: available
+        canonical_url:
+          type: string
+          format: uri
+        center:
+          type: object
+          required:
+          - slug
+          - name
+          - companies_count
+          - first_seen
+          - last_seen
+          - subject_type
+          - identity_resolution
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+            companies_count:
+              type: integer
+              minimum: 1
+            first_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            last_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            subject_type:
+              type: string
+              const: person_documentary_mentions
+            identity_resolution:
+              type: string
+              const: not_performed
+          additionalProperties: false
+        companies:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/PersonGraphCompany'
+        coverage:
+          type: object
+          required:
+          - borme_officer_edges
+          - external_person_enrichment
+          properties:
+            borme_officer_edges:
+              type: string
+              const: included
+            external_person_enrichment:
+              type: string
+              const: withheld_not_in_person_public_v1
+          additionalProperties: false
+        projection:
+          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
+        as_of:
+          type: string
+          format: date
+        ttl_seconds:
+          type: integer
+          const: 0
+        subject_type:
+          type: string
+          const: person_documentary_mentions
+        identity_resolution:
+          type: string
+          const: not_performed
+        _legal_notice:
+          type: string
+          minLength: 1
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    PersonPublicProjectionMetadata:
+      type: object
+      required:
+      - name
+      - schema_version
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
+      properties:
+        name:
+          type: string
+          const: person_public_v1
+        schema_version:
+          type: string
+          const: '1.0'
+        contract_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar
+            el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
+        a credential with the operation's x-api-credential-scope (or public:read) selects its account
+        quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
+        accepted by X-API-Key. It is not a JWT or OAuth access token.'

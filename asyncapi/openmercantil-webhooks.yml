@@ -1,0 +1,139 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  openapi/_original/openmercantil-openapi-1.9.3.json (Webhooks-tagged
+  operations and OutboundWebhook* component schemas)
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  OpenMercantil ships an outbound webhook surface on the authenticated account
+  plane: account holders register HTTPS endpoints, subscribe to a fixed
+  allowlist of event types, and receive HMAC-signed deliveries. There is no
+  AsyncAPI document — the event surface is declared entirely inside the
+  OpenAPI 3.1 contract via the `OutboundWebhook*` schemas and an
+  `x-webhook-event-contract-version` extension. This file captures that
+  catalog; no AsyncAPI is fabricated.
+asyncapi_published: false
+asyncapi_note: >-
+  No /asyncapi.yaml, no AsyncAPI document in the GitHub org and no event
+  catalog page. The webhook contract is fully machine-readable, but expressed
+  in OpenAPI extensions rather than AsyncAPI. Emitting `Webhooks`, not
+  `AsyncAPI`.
+webhooks:
+  supported: true
+  direction: outbound
+  contract_version: '1.0'
+  plane: account
+  auth_required: session cookie (ob_sess) + X-CSRF-Token
+  transport: HTTPS only
+  url_constraint: '^https:// (enforced by schema pattern)'
+  max_subscriptions_per_hook: 3
+  signing:
+    method: HMAC
+    key_identifier: key_id (public identifier of the current signing key)
+    secret_prefix: non-secret identification prefix, max 12 chars
+    secret_format: '64 hex characters'
+    secret_storage: encrypted
+    secret_visibility: >-
+      Returned exactly once, in the create/rotate response, plus identical
+      Idempotency-Key replays within the 24-hour recovery window. Never
+      returned by list.
+    rotation_supported: true
+  idempotency:
+    required_on:
+      - createUserWebhook
+      - rotateUserWebhookSecret
+    header: Idempotency-Key
+    window_hours: 24
+    conflict_status: 409
+  delivery_health:
+    field: last_success_at
+    worker_health_schema: WebhookWorkerHealth
+  fail_closed: >-
+    Unknown event types, wildcard subscriptions and unsupported schema
+    versions are rejected rather than silently accepted. Adding an event
+    requires an explicit runtime, OpenAPI and contract-test change, so existing
+    subscriptions can never implicitly gain future events.
+subscribable_events:
+  count: 3
+  note: >-
+    Events with a currently wired durable producer. An empty subscription input
+    is normalised to alert.triggered.
+  events:
+    - name: alert.triggered
+      description: A user-configured alert matched.
+      subscribable: true
+    - name: tender.matched
+      description: A public procurement tender matched the account's criteria.
+      subscribable: true
+    - name: tender.deadline
+      description: A tracked tender deadline is approaching.
+      subscribable: true
+contracted_events:
+  count: 8
+  note: >-
+    Event names with a defined payload contract in this API version. Only the
+    three above are currently subscribable; the rest are contracted-but-unwired
+    and are rejected at subscription time. Recorded because it is an unusually
+    honest forward declaration — the payload shape is fixed before the producer
+    exists.
+  events:
+    - name: alert.triggered
+      wired: true
+    - name: tender.matched
+      wired: true
+    - name: tender.deadline
+      wired: true
+    - name: borme.daily
+      wired: false
+    - name: cartera.change
+      wired: false
+    - name: sanction.matched
+      wired: false
+    - name: segment.executed
+      wired: false
+    - name: webhook.test
+      wired: false
+management_operations:
+  - operationId: listUserWebhooks
+    method: GET
+    path: /api/v1/user/webhooks
+    summary: List outbound webhook metadata
+  - operationId: createUserWebhook
+    method: POST
+    path: /api/v1/user/webhooks
+    summary: Create an outbound webhook
+    idempotency_key_required: true
+  - operationId: updateUserWebhook
+    method: PATCH
+    path: /api/v1/user/webhooks/{id}
+    summary: Update an outbound webhook
+  - operationId: deleteUserWebhook
+    method: DELETE
+    path: /api/v1/user/webhooks/{id}
+    summary: Delete an outbound webhook
+  - operationId: rotateUserWebhookSecret
+    method: POST
+    path: /api/v1/user/webhooks/{id}/rotate
+    summary: Rotate an outbound webhook signing secret
+    idempotency_key_required: true
+inbound_callbacks:
+  - operationId: receiveStripeWebhook
+    method: POST
+    path: /api/v1/stripe-webhook
+    direction: inbound
+    provider: Stripe
+    verification: >-
+      Signature verified against the exact signed raw bytes, not a
+      reserialized object.
+    idempotency_key: Stripe event.id (durable)
+    max_body_bytes: 524288
+    note: >-
+      A provider callback, not a customer-facing event surface. Listed for
+      completeness; it is excluded from the public MCP plane.
+availability_note: >-
+  The pricing page lists webhooks under the MAX tier as "en el roadmap · acceso
+  anticipado incluido" (roadmap, early access included), while the 1.9.3
+  contract already declares the full CRUD and rotation surface as live. The
+  contract is ahead of the pricing copy; recorded as observed.

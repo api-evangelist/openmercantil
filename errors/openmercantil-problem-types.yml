@@ -1,0 +1,231 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  openapi/_original/openmercantil-openapi-1.9.3.json (4xx/5xx responses and
+  error component schemas) enriched from
+  https://openmercantil.es/api/documentacion
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Error catalog for the OpenMercantil v1 REST API, derived from the 4xx/5xx
+  responses declared across 139 operations in the live OpenAPI 3.1 contract and
+  enriched with the error table published on the API reference. OpenMercantil
+  does NOT use RFC 9457 problem+json; it uses a closed compatibility envelope
+  keyed on a machine-readable `error` slug.
+format: custom-json
+rfc9457: false
+content_type: application/json
+envelope:
+  required:
+    - error
+  fields:
+    error: Machine-readable slug. The only guaranteed field.
+    message: Human-readable summary.
+    detail: Longer human-readable explanation.
+    code: Secondary code, where a route defines one.
+    status: HTTP status, integer or string.
+    reason: Narrower cause discriminator on fail-closed routes.
+    projection: The immutable projection whose absence caused a 503.
+    source_catalog_version: Public-source catalog version in force.
+    allowed_parameters: Permitted parameter names, on parameter rejections.
+    fields: Offending field names, on validation failures.
+    max_bytes: Byte ceiling, on 413.
+    retry_after: Seconds to wait, on anti-abuse ceilings.
+  example: '{"error": "not_found", "message": "Company slug not found", "status": 404}'
+status_summary:
+  '400': 71
+  '401': 58
+  '402': 5
+  '403': 44
+  '404': 68
+  '409': 8
+  '413': 7
+  '422': 27
+  '429': 91
+  '500': 13
+  '502': 1
+  '503': 102
+problem_types:
+  - error: invalid_parameter
+    status: 400
+    title: Invalid or malformed parameter
+    detail: >-
+      A required parameter is missing or a supplied value fails its declared
+      schema — a missing `q`, a malformed date, an out-of-range limit. The
+      response may carry `allowed_parameters` or `fields`.
+    remediation: >-
+      Validate against the operation's parameter schema in the OpenAPI
+      document before retrying; do not retry the identical request.
+    retryable: false
+  - error: unauthenticated
+    status: 401
+    title: Session or credential required
+    detail: >-
+      An account-plane endpoint was called without a valid `ob_sess` session
+      cookie, or with an unknown/revoked `omk_*` credential.
+    remediation: >-
+      Sign in at /mi-cuenta/login for the account plane, or present a valid
+      X-API-Key. Public read endpoints need no credential at all.
+    retryable: false
+  - error: payment_required
+    status: 402
+    title: Plan or credit balance does not cover the request
+    detail: >-
+      The resolved plan does not include the feature (teams, KYC lookups) or
+      the credit balance is insufficient for a paid legal report. The body is
+      `LegalReportPaymentRequiredError`, one of `insufficient_credits` (with
+      `cost`, `balance`, `buy_url`) or `charge_failed`.
+    remediation: Upgrade the plan or top up credits at the returned `buy_url`.
+    retryable: false
+  - error: insufficient_credits
+    status: 402
+    title: Not enough credits for a paid legal report
+    detail: Carries `cost`, `balance` and `buy_url`.
+    remediation: Purchase credits, then retry.
+    retryable: false
+  - error: charge_failed
+    status: 402
+    title: Credit charge could not be applied
+    remediation: Retry once; if it persists, contact support.
+    retryable: true
+  - error: csrf_invalid
+    status: 403
+    title: Missing or invalid CSRF token
+    detail: >-
+      The dominant 403 in this contract (22+12 occurrences). Every account
+      mutation requires an `X-CSRF-Token` header alongside the session cookie.
+    remediation: >-
+      Fetch a fresh token from GET /api/v1/user/me and resend. Tokens are
+      per-session, not per-request.
+    retryable: true
+  - error: forbidden
+    status: 403
+    title: Owner or admin permission required
+    detail: Organization routes require the caller to hold the owner/admin role.
+    remediation: Have an organization owner perform the action or grant the role.
+    retryable: false
+  - error: not_found
+    status: 404
+    title: Resource not found
+    detail: >-
+      Unknown company or person slug. IMPORTANT — under the company identity
+      contract a 404 is deliberately NEUTRAL: it covers absent subjects,
+      slugs classified as natural persons, and ambiguous or quarantined
+      identities alike. A 404 is therefore not proof a company does not exist.
+    remediation: >-
+      Resolve the subject through /api/v1/search by exact CIF or canonical
+      slug rather than constructing slugs client-side.
+    retryable: false
+  - error: idempotency_conflict
+    status: 409
+    title: Idempotency-Key payload conflict or expired replay window
+    detail: >-
+      The key was reused with a different payload, or the 24-hour encrypted
+      replay window has expired.
+    remediation: >-
+      Use a fresh Idempotency-Key for a changed payload. An expired window
+      cannot be recovered — the one-time secret is gone and the credential or
+      webhook must be rotated.
+    retryable: false
+  - error: request_body_too_large
+    status: 413
+    title: Request body exceeds the operation ceiling
+    detail: >-
+      32 KiB on support tickets, replies and legal reports; 512 KiB on the raw
+      Stripe callback. Body carries `max_bytes`.
+    remediation: Trim the payload below the declared `max_bytes`.
+    retryable: false
+  - error: request_body_unreadable
+    status: 400
+    title: Request body could not be read
+    remediation: Send a well-formed JSON body with the declared content type.
+    retryable: false
+  - error: unsupported_filter_combination
+    status: 422
+    title: Individually valid filters have no safe indexed combination
+    detail: >-
+      Each filter is legal on its own but the pair has no index that can serve
+      it within the performance budget. Body carries `rejected_combinations`.
+    remediation: >-
+      Drop one filter or use the bulk dataset downloads at /descargas for
+      arbitrary slicing.
+    retryable: false
+  - error: unsupported_sort_for_anchor
+    status: 422
+    title: Sort order not permitted for this anchor
+    remediation: Use one of the sorts named in the operation's parameter schema.
+    retryable: false
+  - error: rate_limited
+    status: 429
+    title: Rate limit or plan quota exhausted
+    detail: >-
+      The most widely declared error in the contract (91 operations). Free is
+      60 req/min and 200 req/day per IP. Some routes add their own anti-abuse
+      ceiling — 5 support-ticket creations per IP per hour, 20 support replies
+      per 15 minutes, 10 legal-report attempts per 15 minutes.
+    remediation: >-
+      Honour `Retry-After`. Read `X-RateLimit-Remaining` and
+      `X-RateLimit-Reset` proactively. For bulk work use /descargas instead of
+      looping the API.
+    retryable: true
+  - error: internal_error
+    status: 500
+    title: Internal error
+    detail: Corrupt artifact or pipeline failure.
+    remediation: Retry with backoff; report persistent failures to support.
+    retryable: true
+  - error: mail_transport_unavailable
+    status: 502
+    title: Mail transport unavailable
+    detail: Support ticket accepted paths that depend on outbound mail.
+    remediation: Retry later.
+    retryable: true
+  - error: projection_unavailable
+    status: 503
+    title: Fail-closed projection outage
+    detail: >-
+      The immutable projection backing this read is not available. The schema
+      states explicitly that clients MUST NOT reinterpret this as an empty or
+      negative result. Carries `projection` and `Cache-Control: no-store`.
+    remediation: >-
+      Treat as UNKNOWN, never as zero. Retry later; do not cache and do not
+      assert absence.
+    retryable: true
+  - error: company_public_projection_unavailable
+    status: 503
+    title: Company public projection unavailable
+    detail: Narrower form of projection_unavailable for company reads.
+    remediation: Same as projection_unavailable — treat as unknown.
+    retryable: true
+  - error: offline_projection_required
+    status: 503
+    title: Route requires an approved offline projection
+    detail: >-
+      Returned by /api/v1/company/{slug}/geocode and the bulk company export.
+      The synchronous geocode prototype was withdrawn; the live route never
+      calls Nominatim or writes SQLite in the request path.
+    remediation: >-
+      Use the dataset downloads at /descargas; the route stays 503 until an
+      approved projection exists.
+    retryable: false
+  - error: legal_layer_unavailable
+    status: 503
+    title: Legal layer withheld for licensing reasons
+    detail: >-
+      Datasets whose upstream licence is unknown, under review or restricted
+      are omitted rather than served under a blanket licence.
+    remediation: Consult the source catalog at /fuentes; the omission is deliberate.
+    retryable: false
+  - error: async_export_required
+    status: 503
+    title: Export exceeds the synchronous row cap
+    detail: Synchronous dataset export is capped at 500 rows.
+    remediation: Use the account dataset export flow or the bulk downloads.
+    retryable: false
+decline_codes_applicable: false
+decline_codes_note: >-
+  Not a card acquirer or authorization provider. Stripe Checkout is used for
+  subscriptions, credits and donations, and card data never reaches
+  OpenMercantil servers, so there is no first-party decline-code surface to
+  catalog.

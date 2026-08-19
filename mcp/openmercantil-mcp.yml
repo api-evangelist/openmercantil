@@ -1,0 +1,94 @@
+generated: '2026-08-14'
+method: probed
+source: https://openmercantil.es/mcp
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  OpenMercantil announces a Model Context Protocol server — "37 tools, 3
+  resources, 4 prompts over OpenAPI 1.9.3", GET-only, with double RGPD
+  redaction — on a dedicated product page at https://openmercantil.es/mcp. The
+  server is NOT publicly reachable. The page states in the provider's own
+  words: "Servidor MCP construido · en despliegue controlado" (built, in
+  controlled rollout) and invites interested parties to write in for early
+  access. A live JSON-RPC probe confirms the endpoint is not serving MCP.
+notes: >-
+  POST https://openmercantil.es/mcp with a well-formed
+  {"jsonrpc":"2.0","id":1,"method":"tools/list"} body and
+  Accept: application/json, text/event-stream returns HTTP 200 with
+  content-type text/html — the marketing landing page, not a JSON-RPC
+  response. The same is true of an `initialize` call. This is exactly the
+  soft-200 false positive the pipeline warns about: a 200 here is NOT
+  evidence of an agent surface. NO `MCPServer` pointer is emitted in apis.yml,
+  because emitting one would credit OpenMercantil with a callable agent
+  surface that no agent can currently call. Re-probe on the next pass; the
+  provider says the package is built, so this is likely to flip to a real
+  remote endpoint.
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: probed
+provider_claims:
+  page: https://openmercantil.es/mcp
+  status_text: 'Servidor MCP construido · en despliegue controlado con verificaciones de seguridad y legalidad'
+  tools_claimed: 37
+  resources_claimed: 3
+  prompts_claimed: 4
+  built_over: OpenAPI 1.9.3
+  read_only: true
+  posture: >-
+    GET-only, positive allowlist of sources, double RGPD redaction (DNI/NIE,
+    emails and phone numbers never emitted), no account operations, no SQL, no
+    shell.
+  early_access_contact: https://openmercantil.es/soporte
+  tool_names_published: false
+x-evidence:
+  - fetched: '2026-08-14'
+    method: POST
+    url: https://openmercantil.es/mcp
+    body: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+    http_status: 200
+    content_type: text/html; charset=UTF-8
+    result: html-landing-page-not-jsonrpc
+  - fetched: '2026-08-14'
+    method: POST
+    url: https://openmercantil.es/mcp
+    body: '{"jsonrpc":"2.0","id":1,"method":"initialize"}'
+    http_status: 200
+    content_type: text/html; charset=UTF-8
+    result: html-landing-page-not-jsonrpc
+  - fetched: '2026-08-14'
+    method: GET
+    url: https://openmercantil.es/.well-known/oauth-protected-resource
+    http_status: 404
+  - fetched: '2026-08-14'
+    method: GET
+    url: https://openmercantil.es/.well-known/oauth-authorization-server
+    http_status: 404
+mcp_read_plane_in_contract:
+  note: >-
+    The OpenAPI 1.9.3 document itself carries the provider's MCP boundary as
+    machine-readable annotations, so the eligible surface can be stated exactly
+    even though the tool names are unpublished. `info.x-contract-status` reads:
+    "The public MCP consumes only the allowlisted GET read plane."
+  operations_marked_x_mcp_excluded: 5
+  excluded_operations:
+    - createSupportTicket
+    - replySupportTicket
+    - createCompanyLegalReport
+    - receiveStripeWebhook
+    - postLegacyBillingPortal
+  credential_scopes_on_read_plane:
+    - companies:read
+    - people:read
+    - integrations:read
+    - legal:read
+    - tenders:read
+  crosswalk_not_emitted_because: >-
+    The provider publishes a tool COUNT (37) but no tool NAMES or inputSchemas,
+    and the live server does not answer tools/list. Binding invented tool names
+    to real operationIds would fabricate the crosswalk, so mcp/
+    openmercantil-tool-crosswalk.yml is deliberately not written until the
+    server answers.

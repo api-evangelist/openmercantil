@@ -1,0 +1,77 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Search API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Search",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Search Spanish Companies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/search",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query",
+                "description": "Search query, minimum 2 characters."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of results."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Pagination offset."
+              }
+            ]
+          },
+          "docs": "Search companies (and optionally persons) by name, alias or CIF using a prefix index. Returns results ordered by relevance. Public and rate-limited."
+        },
+        {
+          "info": {
+            "name": "Search Persons",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/person/search",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Search persons (officers, administrators, beneficial owners) by name."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

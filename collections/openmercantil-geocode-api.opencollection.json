@@ -1,0 +1,42 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Geocode API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Geocode",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Geocode A Company Address",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/geocode",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "force",
+                "value": "",
+                "type": "query",
+                "description": "Set to 1 to bypass cache and force a live geocoding lookup."
+              }
+            ]
+          },
+          "docs": "Resolve the registered address of the company to coordinates via Nominatim/OSM with caching (v1.2). Use `force=1` to bypass the cache."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

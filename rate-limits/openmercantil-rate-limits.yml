@@ -1,11 +1,18 @@
 specification: API Commons Rate Limits
 specificationVersion: '0.1'
 schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://openmercantil.es/api/documentacion (published rate-limit table),
+  openapi/_original/openmercantil-openapi-1.9.3.json (info.x-rate-limit) and
+  live response headers observed on GET /api/v1/search
+docs: https://openmercantil.es/api/documentacion
 provider: OpenMercantil
 providerId: openmercantil
 created: '2026-05-16'
-modified: '2026-05-16'
-reconciled: false
+modified: '2026-08-14'
+reconciled: true
 tags:
   - Open Data
   - Spain
@@ -16,81 +23,130 @@ tags:
   - Rate Limiting
   - Throttling
 description: >-
-  Machine-readable rate limit definitions for the OpenMercantil public API.
-  The anonymous public tier is documented at ~60 requests per minute per
-  source IP, signaled via X-RateLimit-* headers and Retry-After on 429.
-  Higher per-plan rate limits are alluded to in the API documentation but not
-  enumerated publicly; values below for paid tiers are scaffold defaults and
-  must be reconciled with the provider.
+  Published rate limits for the OpenMercantil v1 REST API. All four tiers are
+  now enumerated by the provider in two independent places that agree — a
+  rate-limit table on the API reference and a machine-readable
+  `info.x-rate-limit` object inside the OpenAPI 3.1 contract. The free tier is
+  anonymous and metered per source IP; paid tiers are metered per account and
+  selected by an `omk_*` API credential.
 notes: >-
-  Free-tier limit (60 req/min/IP) and rate-limit headers confirmed from
-  https://openmercantil.es/api/documentacion. Per-plan rate limit specifics
-  for Profesional / MAX are referenced ("rate limit por plan") but not
-  published, so paid-tier numbers below are placeholders.
+  Supersedes the 2026-05-16 scaffold, whose Profesional and MAX numbers were
+  explicit placeholders. Every figure below is now provider-published. Verified
+  live on 2026-08-14: an unauthenticated GET /api/v1/search returned
+  X-RateLimit-Limit 200, X-RateLimit-Remaining 199 and X-OpenMercantil-Plan
+  Free, which matches the documented free daily quota exactly — the header
+  reports the DAILY quota, not the per-minute one.
 headers:
   limit: X-RateLimit-Limit
   remaining: X-RateLimit-Remaining
   reset: X-RateLimit-Reset
   retryAfter: Retry-After
+  plan: X-OpenMercantil-Plan
+header_semantics:
+  X-RateLimit-Limit: Daily quota of the resolved plan (e.g. 200 on Free).
+  X-RateLimit-Remaining: Requests left in the current daily window.
+  X-RateLimit-Reset: Unix timestamp at which the counter resets.
+  X-OpenMercantil-Plan: 'Resolved plan label: Free, Profesional, MAX or Enterprise.'
+  Retry-After: Seconds to wait. Sent only on 429 responses.
+cors_exposed: true
+standard: >-
+  The reference cites draft-ietf-httpapi-ratelimit-headers, but the emitted
+  spelling is the legacy X-RateLimit-* convention rather than the draft's
+  RateLimit / RateLimit-Policy fields.
 responseCodes:
   throttled: 429
   quotaExceeded: 429
   serviceUnavailable: 503
 limits:
   - tier: free
-    name: Public Anonymous Tier
+    name: Free
     scope: ip
-    metric: requests_per_minute
-    limit: 60
+    access: anonymous, per source IP
+    credential_required: false
+    windows:
+      - metric: requests_per_minute
+        limit: 60
+        timeFrame: minute
+      - metric: requests_per_day
+        limit: 200
+        timeFrame: day
+    metric: requests_per_day
+    limit: 200
     burst: 60
-    timeFrame: minute
+    timeFrame: day
     applies:
       - OpenMercantil Public API
   - tier: profesional
-    name: Profesional Tier (Placeholder)
+    name: Profesional
     scope: account
-    metric: requests_per_minute
-    limit: 240
-    burst: 240
-    timeFrame: minute
+    access: personal API key
+    credential_required: true
+    windows:
+      - metric: requests_per_minute
+        limit: 120
+        timeFrame: minute
+      - metric: requests_per_day
+        limit: 5000
+        timeFrame: day
+    metric: requests_per_day
+    limit: 5000
+    burst: 120
+    timeFrame: day
     applies:
       - OpenMercantil Public API
   - tier: max
-    name: MAX Tier (Placeholder)
+    name: MAX
     scope: account
-    metric: requests_per_minute
-    limit: 1200
-    burst: 1200
-    timeFrame: minute
+    access: personal API key
+    credential_required: true
+    windows:
+      - metric: requests_per_minute
+        limit: 600
+        timeFrame: minute
+      - metric: requests_per_day
+        limit: 50000
+        timeFrame: day
+    metric: requests_per_day
+    limit: 50000
+    burst: 600
+    timeFrame: day
     applies:
       - OpenMercantil Public API
-policies:
-  - name: Backoff Strategy
-    description: >-
-      On 429 responses, clients should honor the Retry-After header and apply
-      exponential backoff with jitter for subsequent requests.
-  - name: Sliding Window
-    description: >-
-      Rate limits are enforced over a sliding window per source IP on the
-      anonymous tier. X-RateLimit-Reset signals the Unix timestamp at which the
-      counter resets.
-  - name: Fair Use
-    description: >-
-      OpenMercantil is a public-interest free service. Sustained scraping or
-      bulk-extraction patterns may be throttled even within published limits;
-      bulk consumers should prefer the dedicated export endpoints
-      (/api/v1/export/events, /api/v1/sectores/stats.csv) and observe ETag /
-      cache headers.
-  - name: Geocode Source Limit
-    description: >-
-      The /api/v1/company/{slug}/geocode endpoint is fronted by an upstream
-      Nominatim/OSM rate limit of approximately 1 request per second on cache
-      misses; cache hits are unconstrained.
-  - name: Anonymous Access
-    description: >-
-      All public read endpoints are accessible without authentication. Only the
-      billing endpoints (/api/v1/checkout, /api/v1/donation) require session
-      authentication.
-maintainers:
-  - FN: Kin Lane
-    email: kin@apievangelist.com
+  - tier: enterprise
+    name: Enterprise
+    scope: account
+    access: contract
+    credential_required: true
+    windows:
+      - metric: requests_per_minute
+        limit: 1200
+        timeFrame: minute
+        note: From info.x-rate-limit; the reference table says "a convenir" (negotiable).
+      - metric: requests_per_day
+        limit: 500000
+        timeFrame: day
+        note: Published as "500.000+".
+    metric: requests_per_day
+    limit: 500000
+    burst: 1200
+    timeFrame: day
+    applies:
+      - OpenMercantil Public API
+per_operation_ceilings:
+  note: >-
+    Several write routes carry an anti-abuse ceiling in addition to the plan
+    quota, declared per-operation as `x-rate-limit` in the contract.
+  ceilings:
+    - operationId: createSupportTicket
+      limit: 5 ticket creations per client IP per hour
+    - operationId: replySupportTicket
+      limit: 20 replies per user per 15 minutes, 100 per day
+    - operationId: createCompanyLegalReport
+      limit: 10 attempts per user per 15 minutes, 50 per day
+    - operationId: getExportEvents
+      limit: export-specific rate limit (429 declared, figure not published)
+limit_count: 4
+bulk_guidance: >-
+  The provider explicitly directs high-volume consumers to the CC BY 4.0
+  dataset downloads at https://openmercantil.es/descargas rather than looping
+  the API.

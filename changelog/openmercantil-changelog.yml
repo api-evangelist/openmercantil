@@ -1,0 +1,96 @@
+generated: '2026-08-14'
+method: searched
+source: https://openmercantil.es/api/documentacion#changelog
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Dated API changelog published as a table on the OpenMercantil API reference.
+  Four released versions are documented, v1.0 through v1.4, each with a date
+  and an enumeration of the endpoints added or withdrawn.
+scheme: semantic-ish (major.minor, no patch entries published)
+current_documented_version: '1.4'
+current_contract_version: '1.9.3'
+version_drift:
+  drift: true
+  detail: >-
+    The live OpenAPI document at https://openmercantil.es/openapi.json declares
+    info.version 1.9.3 and 139 operations, while the published changelog stops
+    at v1.4 (2026-05-05) and the reference page still describes a much smaller
+    surface. Five minor versions of change — the User account plane, API
+    credentials, outbound webhooks, the Legal layer, Risk Signals, Datasets and
+    Support — are live in the contract but absent from the changelog.
+  recorded: '2026-08-14'
+  remediation_for_provider: >-
+    Extend the changelog table through 1.9.3, or drop the entries and point at
+    a dated release feed. Consumers currently have no published record of when
+    the webhook, credential and legal surfaces shipped.
+entries:
+  - version: '1.4'
+    date: '2026-05-05'
+    breaking: false
+    additions:
+      - /company/{slug}/trust-score
+      - /company/{slug}/embargoes
+      - /company/{slug}/network
+      - /persona/{slug}/contracts
+      - /contracts/top-companies
+      - /contracts/top-persons
+      - /contracts/top-persons.csv
+      - /sectores/stats
+      - /ccaa/stats
+    removals:
+      - >-
+        Synchronous geocode prototype withdrawn; the live geocode route now
+        requires an approved offline projection.
+    highlights: >-
+      Risk and relationship surfaces (trust score, embargoes, corporate
+      network) plus public-procurement rankings and CCAA/sector aggregate
+      statistics with CSV/JSON variants.
+  - version: '1.2'
+    date: '2026-04-27'
+    breaking: false
+    additions:
+      - /grants (BDNS)
+      - /sanctions (OpenSanctions)
+      - /cnmv
+      - /sources/status
+    highlights: >-
+      Governed public-source endpoints, per-source freshness reporting, and
+      geocode restricted to consuming an approved offline projection only.
+  - version: '1.1'
+    date: '2026-04-27'
+    breaking: false
+    additions:
+      - CNAE tree, code lookup and sector company listings
+      - Company score, activity timeseries and similar-company endpoints
+      - Sector financial ratios (Banco de España)
+      - POST /checkout
+      - POST /donation
+    highlights: CNAE taxonomy, company scoring and the first Stripe billing endpoints.
+  - version: '1.0'
+    date: '2026-04-17'
+    breaking: false
+    additions:
+      - Company and person search
+      - Company and person reports
+      - Daily BORME summary
+      - CSV export
+      - Health check
+      - Public documentation
+    highlights: Initial public release.
+undocumented_since_1_4:
+  note: >-
+    Present in the 1.9.3 contract with no changelog entry. Listed as an honest
+    gap, not as a dated release — no ship dates are published for these.
+  surfaces:
+    - User account plane (65 operations — segments, lists, notes, tags, exports, audit, organizations)
+    - API credential management (omk_* keys — create, rotate, revoke)
+    - Outbound webhooks with HMAC signing and secret rotation
+    - Legal layer (Spanish mercantile-law corpus, article texts, act-to-norm bridge)
+    - Risk Signals (AEPD, CNMC, concursos, AEAT moroso, CENDOJ)
+    - Datasets and bulk export plane
+    - Support ticket API
+    - Integrations connector catalog
+    - Idempotency-Key enforcement on secret-revealing mutations
+    - ETag / If-None-Match conditional reads

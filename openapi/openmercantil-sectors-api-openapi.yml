@@ -1,92 +1,133 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
-  title: OpenMercantil Public Billing Sectors API
-  version: 1.4.0
-  description: 'Public JSON API for Spanish company information derived from BORME and other
+  title: OpenMercantil Sectors API
+  version: 1.9.3
+  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
+    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
+    and does NOT replace official certificates or registry extracts.
 
-    public sources. OpenMercantil is independent and informational; it is not
 
-    the BOE, BORME or Registro Mercantil and does not replace official
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
+    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
+    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
-    certificates or registry extracts. The API is free and public, requires no
 
-    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+    **License and attribution.** Source-specific metadata in each response and the active versioned source
+    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
+    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
+    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
+    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
-    available and documented at https://openmercantil.es/api/documentacion.
 
-    '
+    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
   termsOfService: https://openmercantil.es/terminos-de-uso
   contact:
     name: OpenMercantil
     url: https://openmercantil.es/soporte
     email: social@openmercantil.es
   license:
-    name: CC BY 4.0 For Derived Public-Data Outputs
-    url: https://creativecommons.org/licenses/by/4.0/
+    name: Source-specific upstream terms; see response catalog metadata
+    url: https://openmercantil.es/terminos-de-uso
+  x-publisher:
+    name: OpenMercantil
+    url: https://openmercantil.es/
+    email: social@openmercantil.es
+  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
+  x-temporal: 2009-01-01/..
+  x-language: es
+  x-dcat-catalog: https://openmercantil.es/catalog.rdf
+  x-rate-limit:
+    free:
+      per_min: 60
+      per_day: 200
+      kind: anonymous-ip
+    profesional:
+      per_min: 120
+      per_day: 5000
+      kind: api-key
+    max:
+      per_min: 600
+      per_day: 50000
+      kind: api-key
+    enterprise:
+      per_min: 1200
+      per_day: 500000
+      kind: contract
+  x-methodology: https://openmercantil.es/metodologia
+  x-sources: https://openmercantil.es/fuentes
+  x-corrections: https://openmercantil.es/correcciones
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
+    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
+    GET read plane.
+  x-account-segment-contract:
+    projection: company_public_v2 immutable corporate sidecar
+    synchronous_row_cap: 500
+    bounded_count_cap: 50001
+    count_semantics: The segment run response count is the number of rows returned, never a global total.
+      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
+      50001.
+    related_web_dataset_surface:
+      preview_path: /mi-cuenta/datasets/preview
+      export_path: /mi-cuenta/datasets/export.csv
+      synchronous_export_max_rows: 500
+      overflow_status: 503
+      overflow_error: async_export_required
+  x-company-identity-contract:
+    version: '1.0'
+    projection: company_public_v2 immutable generation-bound corporate sidecar
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
+      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
+      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
+      preflights through REST.
+    resolution:
+      published: canonical corporate slug admitted
+      safe_alias: internally canonicalized and Content-Location emitted
+      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
+      unavailable: 503 with no-store; clients must not infer absence
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
+      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: Sectors
-  description: CNAE sector taxonomy and sector statistics
+  description: CNAE sector aggregates, ratios and company listings
 paths:
-  /api/v1/cnae/tree:
+  /api/v1/sector/{cnae}/companies:
     get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getSectorByCnaeCompanies
+      x-query-contract:
+        allowed:
+        - limit
+        - offset
+        - sort
+        - province
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+        range: 422 validation_failed
+        combinations: province permits only sort=recent|oldest; other documented sort values return 422
       tags:
       - Sectors
-      summary: Get CNAE Hierarchy Tree
-      operationId: getCnaeTree
-      description: Return the hierarchical CNAE 2009 sector taxonomy (v1.1).
-      responses:
-        '200':
-          description: CNAE tree
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-  /api/v1/cnae/{code}:
-    get:
-      tags:
-      - Sectors
-      summary: Get CNAE Code Info
-      operationId: getCnaeCode
-      description: Return the CNAE 2009 sector descriptor for a given code (v1.1).
+      - Companies
+      summary: Get companies by CNAE sector code
+      description: Return companies belonging to a given CNAE (Clasificación Nacional de Actividades Económicas)
+        sector. CNAE codes 1-4 digits (eg. 62 = programación, 6201 = programación informática).
       parameters:
-      - name: code
+      - name: cnae
         in: path
         required: true
         schema:
           type: string
-          example: '4711'
-      responses:
-        '200':
-          description: CNAE descriptor
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-  /api/v1/sector/{code}/companies:
-    get:
-      tags:
-      - Sectors
-      summary: List Companies In A Sector
-      operationId: getSectorCompanies
-      description: List companies in a CNAE sector (v1.1).
-      parameters:
-      - name: code
-        in: path
-        required: true
-        schema:
-          type: string
-          example: '4711'
+          pattern: ^[0-9A-Z]{1,4}$
+          example: '62'
       - name: limit
         in: query
         required: false
@@ -95,79 +136,300 @@ paths:
           minimum: 1
           maximum: 100
           default: 20
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 1000
+          default: 0
+      - name: sort
+        in: query
+        required: false
+        description: With province only recent and oldest are accepted so the request stays index-backed.
+        schema:
+          type: string
+          enum:
+          - acts
+          - recent
+          - oldest
+          - name
+          default: acts
+      - name: province
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 80
       responses:
         '200':
-          description: Sector companies
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+          description: Companies in sector
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/SectorCompaniesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: Required sector-company index unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/sector/{cnae}/ratios:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getSectorByCnaeRatios
+      tags:
+      - Sectors
+      summary: Get sector aggregated ratios
+      description: 'Return Banco de Espana Central de Balances aggregate metrics by two-digit CNAE division
+        and year from the immutable, hash-addressed sector_ratios_public_v1 bundle. Coverage is sector-aggregate
+        only: it contains neither individual-company data nor a company score. The endpoint fails closed
+        with 503, without a raw/request-path fallback, when activation, manifest, file hash or public-source
+        catalog authority cannot be verified.'
+      parameters:
+      - name: cnae
+        in: path
+        required: true
+        description: Exact two-digit CNAE division present in the reviewed BdE aggregate.
+        schema:
+          type: string
+          pattern: ^[0-9]{2}$
+          minLength: 2
+          maxLength: 2
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      responses:
+        '200':
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=3600, must-revalidate
+          description: Sector ratios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorRatiosResponse'
+        '304':
+          description: Not modified; the verified projection generation and legal source authority are
+            unchanged.
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=3600, must-revalidate
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /api/v1/sector/{code}/ratios:
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
+  /api/v1/cnae/tree:
     get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getCnaeTree
       tags:
       - Sectors
-      summary: Get Sector Financial Ratios
-      operationId: getSectorRatios
-      description: Return aggregated financial ratios for a CNAE sector (BdE data) (v1.1).
+      summary: Hierarchical CNAE tree
+      description: Return the CNAE-2009 hierarchy with counts read only from the offline sector projection.
+        Cached 24h; no live aggregation is performed.
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+          description: CNAE tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CnaeTreeResponse'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
+  /api/v1/cnae/{code}:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getCnaeByCode
+      tags:
+      - Sectors
+      summary: CNAE code metadata
+      description: Return CNAE-2009 metadata and an optional company count from the offline projection.
+        A missing projection is represented as null and never triggers a live COUNT.
+      x-rate-limit: plan policy (see info.x-rate-limit)
       parameters:
       - name: code
         in: path
         required: true
         schema:
           type: string
-          example: '4711'
+          pattern: ^[0-9A-Z]{1,4}$
+          example: '6201'
       responses:
         '200':
-          description: Sector ratios
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+          description: CNAE metadata
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                $ref: '#/components/schemas/CnaeNode'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-  /api/v1/sectores/stats:
-    get:
-      tags:
-      - Sectors
-      summary: Get Sector Aggregate Statistics
-      operationId: getSectorStats
-      description: Return aggregate company counts and growth statistics across CNAE sectors.
-      responses:
-        '200':
-          description: Sector stats
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-  /api/v1/sectores/stats.csv:
-    get:
-      tags:
-      - Sectors
-      summary: Export Sector Aggregate Statistics As CSV
-      operationId: getSectorStatsCsv
-      description: CSV download of aggregate sector statistics.
-      responses:
-        '200':
-          description: CSV download
-          content:
-            text/csv:
-              schema:
-                type: string
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
 components:
+  headers:
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms
+        must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the
+        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
+        sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog
+        used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
+        lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification,
+        bounded projection, database helper or required artifact is unavailable. Clients must not infer
+        an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -175,40 +437,339 @@ components:
           description: Seconds to wait before retrying.
           schema:
             type: integer
-        X-RateLimit-Limit:
-          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          description: Remaining requests in the current window.
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          description: Unix timestamp when the rate-limit counter resets.
-          schema:
-            type: integer
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses
+        an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    CnaeNode:
+      type: object
+      description: CNAE node. Catalog loaders may add official explanatory fields.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        level:
+          type:
+          - integer
+          - 'null'
+        parent:
+          type:
+          - string
+          - 'null'
+        companies_count:
+          type:
+          - integer
+          - 'null'
+        count_status:
+          type: string
+          enum:
+          - precomputed
+          - not_precomputed
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CnaeNode'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CnaeTreeResponse:
+      type: object
+      required:
+      - sections
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/CnaeNode'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanySearchItem:
+      type: object
+      required:
+      - slug
+      - name
+      - cif
+      - acts_count
+      properties:
+        slug:
+          type: string
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
+          type: integer
+        last_seen:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        cnae_code:
+          type:
+          - string
+          - 'null'
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        matched_alias:
+          type: string
+          description: Present only when an exact safe alias was matched; slug is always canonical.
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
+        these fields further where required.
+      required:
+      - error
       properties:
         error:
           type: string
+          minLength: 1
         message:
           type: string
-      additionalProperties: true
+        detail:
+          type: string
+        code:
+          type: string
+        status:
+          type:
+          - integer
+          - string
+        projection:
+          type: string
+        reason:
+          type: string
+        source_catalog_version:
+          type: string
+        allowed_parameters:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        slug:
+          type: string
+        key:
+          type: string
+        maximum:
+          type: integer
+          minimum: 1
+        parameter:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        max_bytes:
+          type: integer
+          minimum: 1
+        allowed:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        valid:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        date:
+          type: string
+        login_url:
+          type: string
+        plan:
+          type: string
+        limited_by:
+          type: string
+          enum:
+          - minute
+          - day
+        daily_limit:
+          type: integer
+          minimum: 1
+        reset_at:
+          type: integer
+          minimum: 1
+        reset_at_human:
+          type: string
+          format: date-time
+        retry_after_s:
+          type: integer
+          minimum: 1
+        retry_after:
+          type: integer
+          minimum: 1
+        upgrade:
+          type: string
+          format: uri
+        upgrade_url:
+          type: string
+        action:
+          type: string
+        limit:
+          type: integer
+          minimum: 0
+        remaining:
+          type: integer
+          minimum: 0
+        needed:
+          type: integer
+          minimum: 0
+        shortfall:
+          type: integer
+          minimum: 0
+        ok:
+          type: boolean
+        _alias_of:
+          type: string
+      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
+        or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    SectorCompaniesResponse:
+      type: object
+      required:
+      - code
+      - count
+      - count_status
+      - limit
+      - offset
+      - sort
+      - items
+      properties:
+        code:
+          type: string
+        count:
+          type:
+          - integer
+          - 'null'
+        count_status:
+          type: string
+          enum:
+          - precomputed
+          - not_precomputed
+        limit:
+          type: integer
+        offset:
+          type: integer
+        sort:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+          maxItems: 100
+      additionalProperties: false
+    SectorRatio:
+      type: object
+      required:
+      - year
+      - metric
+      - value
+      - unit
+      - source
+      properties:
+        year:
+          type: integer
+        metric:
+          type: string
+          enum:
+          - margen_neto
+          - roa
+          - roe
+        value:
+          type: number
+        unit:
+          type: string
+          const: '%'
+        source:
+          type: string
+          const: BdE Central de Balances
+      additionalProperties: false
+    SectorRatiosResponse:
+      type: object
+      required:
+      - code
+      - ratios
+      properties:
+        code:
+          type: string
+          pattern: ^[0-9]{2}$
+          minLength: 2
+          maxLength: 2
+        ratios:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectorRatio'
+      additionalProperties: false
   securitySchemes:
-    sessionCookie:
+    apiKey:
       type: apiKey
-      in: cookie
-      name: session
-      description: Session cookie issued after web sign-in, required only for billing endpoints.
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
+        a credential with the operation's x-api-credential-scope (or public:read) selects its account
+        quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
+        accepted by X-API-Key. It is not a JWT or OAuth access token.'

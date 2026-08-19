@@ -1,0 +1,51 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  npm registry search, PyPI, RubyGems, crates.io, GitHub code search and
+  https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  First-party client library survey for the OpenMercantil public API. No
+  official SDK is published in any public package registry. The provider
+  distributes copy-paste curl / Python `requests` / browser `fetch` snippets on
+  the API reference instead, and points heavy consumers at the bulk dataset
+  downloads rather than a client library.
+notes: >-
+  Searched registry.npmjs.org (text=openmercantil, 0 results), PyPI
+  (/pypi/openmercantil/json -> 404), RubyGems (404), crates.io (0 results) and
+  the GitHub code search API on 2026-08-14. The only GitHub repository
+  matching the name outside our own catalog repo is
+  voxgig-sdk/openmercantil-sdk, a machine-generated third-party SDK not linked
+  from or endorsed by openmercantil.es — recorded below as unofficial. No
+  `SDKs` pointer is emitted in apis.yml because the provider ships no
+  first-party client library.
+packages: []
+unofficial:
+  - name: openmercantil-sdk
+    language: multiple
+    registry: none
+    repository: https://github.com/voxgig-sdk/openmercantil-sdk
+    official: false
+    version: null
+    published: null
+    note: >-
+      Third-party generated SDK found via GitHub search on 2026-08-14. Not
+      published to a package registry, not referenced by openmercantil.es, and
+      not maintained by the provider — recorded for completeness only, never
+      counted as a first-party SDK.
+official_sdk_count: 0
+integration_paths:
+  - kind: code-samples
+    description: curl, Python (requests) and JavaScript (fetch) snippets per endpoint
+    url: https://openmercantil.es/api/documentacion
+  - kind: openapi-generator
+    description: >-
+      The provider explicitly recommends generating a client from the OpenAPI
+      3.1 document with openapi-generator, Postman, Insomnia or Stoplight.
+    url: https://openmercantil.es/openapi.json
+  - kind: bulk-datasets
+    description: >-
+      CC BY 4.0 CSV/JSON dataset downloads recommended over looping the API for
+      large workloads.
+    url: https://openmercantil.es/descargas

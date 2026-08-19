@@ -1,0 +1,82 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Persons API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Persons",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Search Persons",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/person/search",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Search persons (officers, administrators, beneficial owners) by name."
+        },
+        {
+          "info": {
+            "name": "Get A Person Report",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/person/:slug",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the structured person report including roles and historical positions."
+        },
+        {
+          "info": {
+            "name": "List Public Contracts For Person",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/persona/:slug/contracts",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List public procurement (PLACSP) contracts associated with the person (v1.4)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

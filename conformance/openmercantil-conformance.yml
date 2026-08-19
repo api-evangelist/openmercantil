@@ -1,0 +1,186 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://openmercantil.es/seguridad, https://openmercantil.es/api/documentacion,
+  https://openmercantil.es/catalog.rdf and
+  openapi/_original/openmercantil-openapi-1.9.3.json
+docs: https://openmercantil.es/seguridad
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Standards and regulatory conformance assertions for OpenMercantil. The
+  provider publishes a detailed technical security and compliance page naming
+  the Spanish and EU regimes it operates under, and the API contract itself
+  carries DCAT-AP-ES catalog metadata. There are no third-party audit
+  certifications (no SOC 2, ISO 27001, PCI DSS or HIPAA) — this is a
+  single-maintainer open-data project, and it says so plainly.
+conformance:
+  - id: openapi-3.1
+    conforms: true
+    evidence: >-
+      https://openmercantil.es/openapi.json parses as OpenAPI 3.1.0 with 118
+      paths / 139 operations, componentised schemas (203), securitySchemes
+      declared and applied, and per-operation summaries, descriptions,
+      operationIds and tags.
+  - id: dcat-ap-es
+    conforms: true
+    evidence: >-
+      https://openmercantil.es/catalog.rdf serves an RDF/XML DCAT-AP-ES
+      catalog (HTTP 200, 37 KB); info.x-dcat-catalog in the OpenAPI document
+      points at it, and info carries x-spatial (EU country authority URI for
+      ESP), x-temporal (2009-01-01/..) and x-language (es).
+  - id: llmstxt
+    conforms: true
+    evidence: >-
+      /llms.txt and /llms-full.txt both HTTP 200 text/plain, following the
+      llmstxt.org structure with an H1, a blockquote summary and sectioned
+      link lists.
+  - id: rfc9457
+    conforms: false
+    evidence: >-
+      No operation declares application/problem+json. Errors use a custom
+      closed envelope keyed on an `error` slug (components.schemas.
+      ErrorResponse). See errors/openmercantil-problem-types.yml.
+  - id: idempotency
+    conforms: true
+    evidence: >-
+      `Idempotency-Key` is a declared header parameter, REQUIRED on four
+      secret-revealing account mutations and optional on three Stripe checkout
+      operations, with a 24-hour encrypted replay window and 409 on payload
+      conflict. Two further operations use server-derived idempotency keys.
+      See conventions/openmercantil-conventions.yml.
+  - id: pagination
+    conforms: true
+    evidence: >-
+      Two declared schemes — limit/offset on search (max limit 100) and
+      page/page_size on company event collections (default page_size 50), with
+      total/pages/count in the response envelope.
+  - id: conditional-requests
+    conforms: true
+    evidence: >-
+      ETag emitted on reads and If-None-Match accepted; 304 declared on 27
+      operations. ETags are bound to the immutable projection generation.
+  - id: ratelimit-headers
+    conforms: partial
+    evidence: >-
+      X-RateLimit-Limit / -Remaining / -Reset plus Retry-After are emitted and
+      CORS-exposed, and the reference cites draft-ietf-httpapi-ratelimit-headers
+      — but the X- prefixed spelling is the legacy convention, not the
+      standard's `RateLimit` / `RateLimit-Policy` fields.
+  - id: oauth2
+    conforms: false
+    evidence: >-
+      No oauth2 securityScheme in the contract; /.well-known/oauth-authorization-server
+      and /.well-known/oauth-protected-resource both 404. Authorization is
+      opaque API credentials plus a session cookie with CSRF.
+  - id: oidc
+    conforms: false
+    evidence: >-
+      /.well-known/openid-configuration 404s. Google Sign-In is offered for
+      human web login only and is not an API authorization surface.
+  - id: cors
+    conforms: true
+    evidence: >-
+      Access-Control-Allow-Origin * with an explicit
+      Access-Control-Expose-Headers list covering the rate-limit, attribution
+      and cache headers; max-age 86400.
+  - id: hsts
+    conforms: true
+    evidence: >-
+      Strict-Transport-Security max-age=31536000; includeSubDomains observed on
+      live responses. Preload is deliberately not submitted yet — the provider
+      states it is waiting on six months of uninterrupted uptime.
+  - id: csp
+    conforms: true
+    evidence: >-
+      Content-Security-Policy with an explicit allowlist, plus
+      X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN,
+      Referrer-Policy strict-origin-when-cross-origin and a Permissions-Policy
+      denying geolocation/camera/microphone.
+  - id: dnssec
+    conforms: false
+    evidence: 'Probed 2026-08-14: no DNSSEC, no CAA records. See security/openmercantil-domain-security.yml.'
+  - id: dmarc
+    conforms: false
+    evidence: 'Probed 2026-08-14: SPF present, DMARC absent.'
+  - id: gdpr
+    conforms: true
+    regime: Regulation (EU) 2016/679
+    evidence: >-
+      https://openmercantil.es/seguridad documents lawful basis, data-subject
+      rights, DPIA where applicable, IP anonymisation in logs (last octet
+      zeroed before persistence), 30-day technical log retention and a
+      dedicated rights channel (privacidad@openmercantil.es). The API contract
+      enforces it structurally: no DNI/NIE, no personal addresses, phones or
+      emails; natural persons appear only as documentary mentions.
+  - id: lopdgdd
+    conforms: true
+    regime: Ley Orgánica 3/2018 (Spain)
+    evidence: Named on https://openmercantil.es/seguridad as the national GDPR adaptation applied.
+  - id: ley-37-2007
+    conforms: true
+    regime: Spanish public-sector information re-use law (transposing EU Directive 2019/1024)
+    evidence: >-
+      Named as the legal basis for BORME/BOE re-use on /seguridad, in the
+      OpenAPI info.description and in llms.txt. The official version of any
+      re-used material remains boe.es.
+  - id: lssi-ce
+    conforms: true
+    regime: Ley 34/2002 (Spain)
+    evidence: Company identification in the legal notice and information-society-service obligations.
+  - id: aepd-cookie-guidance
+    conforms: true
+    regime: AEPD 2024 cookie guidance / RD 13/2012
+    evidence: >-
+      Consent banner with granular categories, Google Consent Mode v2 and
+      Microsoft Clarity Consent API v2 implemented; no advertising script
+      loads before consent.
+  - id: cgpj-reglamento-3-2010
+    conforms: true
+    regime: Spanish judiciary rules on re-use of court decisions
+    evidence: >-
+      CENDOJ material is exposed as a citation index only — metadata plus a
+      link to the official source, never the text of a judgment.
+  - id: pci-dss
+    conforms: not-applicable
+    evidence: >-
+      Card data never reaches OpenMercantil servers. Stripe Checkout and
+      Customer Portal handle all payment information; only customer_id and
+      subscription_id references are stored.
+  - id: soc2
+    conforms: false
+    evidence: No SOC 2 report, attestation or trust portal published.
+  - id: iso27001
+    conforms: false
+    evidence: No ISO 27001 certification published.
+  - id: fhir
+    conforms: not-applicable
+  - id: fapi
+    conforms: not-applicable
+  - id: psd2
+    conforms: not-applicable
+  - id: scim
+    conforms: not-applicable
+  - id: odata
+    conforms: not-applicable
+  - id: json-api
+    conforms: false
+    evidence: Plain JSON envelopes, not JSON:API media type or document structure.
+certifications: []
+certifications_note: >-
+  No third-party audited certifications. Compliance here is regulatory
+  (GDPR/LOPDGDD/Ley 37/2007/LSSI-CE) and self-attested on a public technical
+  page that is unusually specific about what is implemented, what is on the
+  roadmap and what has been deliberately declined.
+data_licensing:
+  own_derived_data: CC BY 4.0
+  own_derived_data_url: https://creativecommons.org/licenses/by/4.0/
+  upstream: >-
+    Source-specific terms prevail per response; no blanket relicensing.
+    Unknown, under-review and restricted datasets are omitted or return 503
+    legal_layer_unavailable.
+  runtime_signalling:
+    - X-Data-Sources
+    - X-Attribution-Required
+    - X-Source-Catalog-Version
+  attribution_policy: https://openmercantil.es/reutilizacion-y-atribucion

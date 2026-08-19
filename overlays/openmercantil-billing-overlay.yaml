@@ -1,0 +1,74 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay — OpenMercantil Billing API
+  version: 1.0.0
+  x-generated: '2026-08-14'
+  x-method: generated
+  x-source: openapi/openmercantil-billing-api-openapi.yml
+extends: ../openapi/openmercantil-billing-api-openapi.yml
+actions:
+- target: $.info
+  description: Cross-link the API Evangelist artifact set derived from this contract.
+  update:
+    x-apievangelist-artifacts:
+      authentication: authentication/openmercantil-authentication.yml
+      scopes: scopes/openmercantil-scopes.yml
+      conventions: conventions/openmercantil-conventions.yml
+      errors: errors/openmercantil-problem-types.yml
+      rate_limits: rate-limits/openmercantil-rate-limits.yml
+      plans: plans/openmercantil-plans-pricing.yml
+      lifecycle: lifecycle/openmercantil-lifecycle.yml
+      changelog: changelog/openmercantil-changelog.yml
+      conformance: conformance/openmercantil-conformance.yml
+      data_model: data-model/openmercantil-data-model.yml
+      webhooks: asyncapi/openmercantil-webhooks.yml
+      security: security/openmercantil-vulnerability-disclosure.yml
+      skills: skills/_index.yml
+    x-apievangelist-provenance:
+      harvested: '2026-08-14'
+      source: https://openmercantil.es/openapi.json
+      source_version: 1.9.3
+      method: searched
+      split: one refined document per OpenAPI tag; components pruned to those this tag references
+- target: $.info
+  description: Record the runtime semantics an agent needs before calling this API.
+  update:
+    x-apievangelist-runtime:
+      auth: 'Anonymous by default on the public read plane. Optional omk_* credential via X-API-Key or Authorization:
+        Bearer selects account quota. Account plane requires ob_sess cookie + X-CSRF-Token.'
+      error_envelope: Custom JSON keyed on `error` — NOT RFC 9457 problem+json.
+      rate_limit_headers:
+      - X-RateLimit-Limit
+      - X-RateLimit-Remaining
+      - X-RateLimit-Reset
+      - X-OpenMercantil-Plan
+      - Retry-After
+      pagination: limit/offset on search; page/page_size on event collections. Max limit 100.
+      conditional_requests: ETag + If-None-Match, 304 supported; ETags are projection-generation bound.
+      fail_closed_503: A 503 projection error means UNKNOWN, never empty. Do not cache, do not assert absence.
+      neutral_404: A 404 on a company slug covers absent, natural-person and quarantined identities alike. It is
+        not proof of non-existence.
+      attribution: Responses carry X-Data-Sources, X-Attribution-Required and X-Source-Catalog-Version. Own derived
+        data is CC BY 4.0; upstream terms are source-specific and prevail.
+- target: $.info
+  description: Flag the idempotency contract on this slice.
+  update:
+    x-apievangelist-idempotency:
+      header: Idempotency-Key
+      retention_hours: 24
+      conflict_status: 409
+      operations:
+      - postCreditsCheckout
+      - postDonationCheckout
+      - postSubscriptionCheckout
+      - receiveStripeWebhook
+- target: $.info
+  description: Summarise deprecated operations in this slice; the contract has no Sunset dates.
+  update:
+    x-apievangelist-deprecations:
+      sunset_dates_published: false
+      rfc8594_headers: false
+      operations:
+      - operationId: postLegacyBillingPortal
+        path: /api/v1/portal
+        replaced_by: /api/v1/billing/portal

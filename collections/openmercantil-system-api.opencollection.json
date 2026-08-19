@@ -1,0 +1,29 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing System API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "System",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Service Health",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/health"
+          },
+          "docs": "Return service status, freshness and dataset counters when available."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

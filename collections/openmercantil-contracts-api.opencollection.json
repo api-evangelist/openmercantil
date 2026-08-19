@@ -1,0 +1,118 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Contracts API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Contracts",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Public Contracts For Person",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/persona/:slug/contracts",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List public procurement (PLACSP) contracts associated with the person (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Companies By Public Contracts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-companies",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "province",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "cnae",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Ranking of companies by public-procurement contract volume, optionally filtered by province and CNAE (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Companies By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-companies.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-companies-by-contracts ranking (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Persons By Public Contracts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-persons",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Ranking of persons by public-procurement contract volume (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Persons By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-persons.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-persons-by-contracts ranking (v1.4)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

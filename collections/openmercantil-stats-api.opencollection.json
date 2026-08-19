@@ -1,0 +1,51 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Stats API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Stats",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get Sector Aggregate Statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats"
+          },
+          "docs": "Return aggregate company counts and growth statistics across CNAE sectors."
+        },
+        {
+          "info": {
+            "name": "Export Sector Aggregate Statistics As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats.csv"
+          },
+          "docs": "CSV download of aggregate sector statistics."
+        },
+        {
+          "info": {
+            "name": "Get Aggregate Statistics By Autonomous Community",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/ccaa/stats"
+          },
+          "docs": "Return aggregate company statistics grouped by Spanish autonomous community (CCAA)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

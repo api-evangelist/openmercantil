@@ -1,0 +1,1572 @@
+openapi: 3.1.0
+info:
+  title: OpenMercantil Datasets API
+  version: 1.9.3
+  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
+    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
+    and does NOT replace official certificates or registry extracts.
+
+
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
+    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
+    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+
+
+    **License and attribution.** Source-specific metadata in each response and the active versioned source
+    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
+    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
+    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
+    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+
+
+    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: Source-specific upstream terms; see response catalog metadata
+    url: https://openmercantil.es/terminos-de-uso
+  x-publisher:
+    name: OpenMercantil
+    url: https://openmercantil.es/
+    email: social@openmercantil.es
+  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
+  x-temporal: 2009-01-01/..
+  x-language: es
+  x-dcat-catalog: https://openmercantil.es/catalog.rdf
+  x-rate-limit:
+    free:
+      per_min: 60
+      per_day: 200
+      kind: anonymous-ip
+    profesional:
+      per_min: 120
+      per_day: 5000
+      kind: api-key
+    max:
+      per_min: 600
+      per_day: 50000
+      kind: api-key
+    enterprise:
+      per_min: 1200
+      per_day: 500000
+      kind: contract
+  x-methodology: https://openmercantil.es/metodologia
+  x-sources: https://openmercantil.es/fuentes
+  x-corrections: https://openmercantil.es/correcciones
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
+    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
+    GET read plane.
+  x-account-segment-contract:
+    projection: company_public_v2 immutable corporate sidecar
+    synchronous_row_cap: 500
+    bounded_count_cap: 50001
+    count_semantics: The segment run response count is the number of rows returned, never a global total.
+      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
+      50001.
+    related_web_dataset_surface:
+      preview_path: /mi-cuenta/datasets/preview
+      export_path: /mi-cuenta/datasets/export.csv
+      synchronous_export_max_rows: 500
+      overflow_status: 503
+      overflow_error: async_export_required
+  x-company-identity-contract:
+    version: '1.0'
+    projection: company_public_v2 immutable generation-bound corporate sidecar
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
+      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
+      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
+      preflights through REST.
+    resolution:
+      published: canonical corporate slug admitted
+      safe_alias: internally canonicalized and Content-Location emitted
+      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
+      unavailable: 503 with no-store; clients must not infer absence
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
+      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    public_company_count: company_public_projection_state.row_count
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Datasets
+  description: Bulk exports (CSV / JSON / aggregated stats)
+paths:
+  /api/v1/datasets/public:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: listPublicCompanyDownloads
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      - Companies
+      summary: List generation-bound public company downloads
+      description: Lists exactly the three bounded public company downloads admitted by company_public
+        artifact contract 1.1. Every member is reverified through the immutable manifest and SHA-256 ledger
+        before this atomic catalog is emitted. A missing, stale or tampered member makes the whole projection
+        unavailable; raw company tables, local paths and legacy docroot fallbacks are never exposed.
+      responses:
+        '200':
+          description: Atomic catalog of the three admitted public company downloads
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCompanyDownloadCatalog'
+        '304':
+          description: The generation-bound download catalog has not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
+  /api/v1/ccaa/stats.json:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getCcaaStatsJson
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      summary: Aggregates by autonomous community (CCAA)
+      description: Return per-CCAA totals from the offline projection. The ETag is bound to the shared
+        asv1 stats generation and uses 60-second must-revalidate caching. Award-procedure counts come
+        only from the corporate PLACSP v3 summary; the deprecated `contracts_count` is an explicitly labelled
+        alias and `contracts_total_eur` is always withheld. Also available without `.json` suffix. Returns
+        503 rather than rebuilding aggregates in PHP-FPM.
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+          description: CCAA stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CcaaStatsResponse'
+        '304':
+          description: The CCAA representation and shared stats generation have not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
+  /api/v1/ccaa/stats:
+    get:
+      operationId: getLegacyCcaaStats
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      summary: Get CCAA aggregates through the suffix-less legacy alias
+      description: Deprecated alias of `GET /api/v1/ccaa/stats.json`. It reads the same bounded offline
+        projection and never rebuilds aggregates in the request path.
+      deprecated: true
+      x-replaced-by: /api/v1/ccaa/stats.json
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          description: CCAA stats
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CcaaStatsResponse'
+        '304':
+          description: The canonical CCAA representation and shared stats generation have not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: Offline projection missing or stale
+  /api/v1/sectores/stats.json:
+    get:
+      security:
+      - {}
+      - apiKey: []
+      - bearerAuth: []
+      x-api-credential-scope: companies:read
+      operationId: getSectoresStatsJson
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      summary: Aggregates by CNAE sector
+      description: Return per-CNAE section totals from the offline projection. The ETag is bound to the
+        shared asv1 stats generation and uses 60-second must-revalidate caching. Procurement fields distinguish
+        award procedures from contracts and never expose an untyped monetary rollup. Also available as
+        CSV. Returns 503 instead of executing a live GROUP BY.
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          headers:
+            X-Data-Sources:
+              $ref: '#/components/headers/XDataSources'
+            X-Source-Catalog-Version:
+              $ref: '#/components/headers/XSourceCatalogVersion'
+            X-Attribution-Required:
+              $ref: '#/components/headers/XAttributionRequired'
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+          description: Sector stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorStatsResponse'
+        '304':
+          description: The sector representation and shared stats generation have not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/PublicReadUnavailable'
+  /api/v1/sectores/stats:
+    get:
+      operationId: getLegacySectoresStats
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      summary: Get CNAE-sector aggregates through the suffix-less legacy alias
+      description: Deprecated alias of `GET /api/v1/sectores/stats.json`. It reads the same bounded offline
+        projection and never executes a live GROUP BY.
+      deprecated: true
+      x-replaced-by: /api/v1/sectores/stats.json
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          description: Sector stats
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SectorStatsResponse'
+        '304':
+          description: The canonical sector representation and shared stats generation have not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: Offline projection missing or stale
+  /api/v1/sectores/stats.csv:
+    get:
+      operationId: getSectoresStatsCsv
+      parameters:
+      - $ref: '#/components/parameters/IfNoneMatchHeader'
+      tags:
+      - Datasets
+      summary: Aggregates by CNAE sector (CSV)
+      description: Offline sector projection rendered as a bounded CSV representation with a shared-asv1
+        generation ETag and 60-second must-revalidate caching; no aggregation occurs in the request path.
+        Canonical `award_procedures_count` and all semantic-status columns are included; `contracts_total_eur`
+        remains empty/withheld.
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '200':
+          description: Sector stats CSV
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+          content:
+            text/csv:
+              schema:
+                type: string
+        '304':
+          description: The bounded sector CSV representation and shared stats generation have not changed
+          headers:
+            ETag:
+              $ref: '#/components/headers/EntityTag'
+            X-OpenMercantil-Stats-Generation:
+              $ref: '#/components/headers/StatsGeneration'
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=60, must-revalidate
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: Offline projection missing or stale
+  /api/v1/contracts/top-companies:
+    get:
+      operationId: getContractsTopCompanies
+      x-query-contract:
+        allowed:
+        - limit
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+        range: 422 validation_failed
+      tags:
+      - Public Procurement
+      - Datasets
+      summary: Corporate suppliers ranked by PLACSP award procedures
+      description: Compatibility alias of `/api/v1/tenders/suppliers`. Reads only `placsp_public_company_summary`,
+        ranks corporate suppliers by award-procedure count and never publishes a monetary ranking or rollup.
+        Natural persons are excluded. `province` and `cnae` are rejected until dedicated offline projections
+        exist.
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+      x-rate-limit: plan policy (see info.x-rate-limit); enforced before projection access
+      responses:
+        '200':
+          description: Sanitized corporate supplier ranking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenderSupplierResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          description: PLACSP public projection unavailable
+  /api/v1/contracts/top-persons:
+    get:
+      operationId: getContractsTopPersons
+      tags:
+      - Public Procurement
+      - Datasets
+      summary: Top persons by PLACSP-signatory companies
+      description: Fail-closed derived route. It always returns 503 before reading data because `person_contracts_v1`
+        is not authorized. A future implementation requires a new reviewed projection and contract version.
+      deprecated: true
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/LegalLayerUnavailable'
+  /api/v1/contracts/top-companies.csv:
+    get:
+      operationId: getContractsTopCompaniesCsv
+      x-query-contract:
+        allowed:
+        - limit
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+        range: 422 validation_failed
+      tags:
+      - Public Procurement
+      - Datasets
+      summary: Corporate suppliers by award procedures (CSV)
+      description: Bounded CSV (maximum 100 rows) generated from `placsp_public_company_summary`. Columns
+        distinguish notice count from award-procedure count and contain no monetary aggregate.
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 100
+      x-rate-limit: plan policy (see info.x-rate-limit); enforced before projection access
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '503':
+          description: PLACSP public projection unavailable
+  /api/v1/contracts/top-persons.csv:
+    get:
+      operationId: getContractsTopPersonsCsv
+      x-query-contract:
+        allowed: []
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+      tags:
+      - Public Procurement
+      - Datasets
+      summary: Top persons by PLACSP-signatory companies (CSV)
+      description: Fail-closed CSV equivalent of `/api/v1/contracts/top-persons`; it always returns 503
+        before reading data.
+      deprecated: true
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      responses:
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/LegalLayerUnavailable'
+  /api/v1/export/events:
+    get:
+      operationId: getExportEvents
+      tags:
+      - Datasets
+      summary: Bulk BORME export (offline artifact required)
+      description: Fail-closed endpoint with no query contract. It always returns 503 until a governed
+        pre-sanitized static artifact contract exists; the API never scans or redacts the full BORME CSV
+        in PHP-FPM.
+      deprecated: true
+      responses:
+        '503':
+          description: Pre-sanitized offline artifact is not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineProjectionError'
+  /api/v1/export/companies:
+    get:
+      operationId: getExportCompanies
+      tags:
+      - Datasets
+      summary: Request an offline company export artifact (currently unavailable)
+      description: The route preserves API credential, exports:read scope, paid-tier and action-budget
+        checks, then always returns 503 offline_export_required. PHP-FPM never filters, sorts, paginates
+        or serializes a bulk company export. The historical query parameters remain documented only so
+        clients can remove them.
+      deprecated: true
+      x-status: offline-artifact-required
+      x-rate-limit: 2/minute and 20/day per authenticated user
+      security:
+      - apiKey: []
+      parameters:
+      - name: provincia
+        in: query
+        required: false
+        deprecated: true
+        description: Exact province value used by the company projection, or `all`.
+        schema:
+          type: string
+          maxLength: 80
+      - name: tipo
+        in: query
+        required: false
+        deprecated: true
+        description: Company-form suffix filter such as SL, SA or SLU.
+        schema:
+          type: string
+          maxLength: 20
+      - name: año
+        in: query
+        required: false
+        deprecated: true
+        description: Four-digit first-seen year. The runtime parameter name contains `ñ`.
+        schema:
+          type: string
+          pattern: ^20\d{2}$
+      - name: limit
+        in: query
+        required: false
+        deprecated: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 5000
+          default: 1000
+      - name: offset
+        in: query
+        required: false
+        deprecated: true
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 100000
+          default: 0
+      - name: formato
+        in: query
+        required: false
+        deprecated: true
+        schema:
+          type: string
+          enum:
+          - csv
+          - json
+          default: csv
+      responses:
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Scope or paid plan required
+        '429':
+          description: Export-specific rate limit exceeded
+        '503':
+          description: A pre-sanitized offline export artifact is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineProjectionError'
+  /api/v1/company/{slug}/export:
+    get:
+      operationId: getCompanyBySlugExport
+      x-query-contract:
+        allowed: []
+        unknown: 400 invalid_parameter
+        non_scalar: 400 invalid_parameter
+        lexical: 400 invalid_parameter
+      tags:
+      - Companies
+      - Datasets
+      summary: Export a single company report
+      description: Return the same policy-filtered cached company projection as the canonical company
+        route, serialized as downloadable JSON. The response is capped at 8 MiB and fails closed instead
+        of rebuilding an oversized payload.
+      x-rate-limit: plan policy (see info.x-rate-limit)
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: Bounded cached company projection unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfflineProjectionError'
+components:
+  headers:
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    StatsGeneration:
+      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
+      schema:
+        type: string
+        pattern: ^asv1-[a-f0-9]{64}$
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms
+        must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the
+        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
+        sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog
+        used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
+        lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
+  responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: The bounded operation failed without exposing internal exception details.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
+        unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
+              activa.
+            source_catalog_version: 2026-07-12.2
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification,
+        bounded projection, database helper or required artifact is unavailable. Clients must not infer
+        an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses
+        an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    AggregateProcurementFields:
+      type: object
+      required:
+      - award_procedures_count
+      - award_procedures_count_status
+      - contracts_count
+      - contracts_count_status
+      - contracts_total_eur
+      - contracts_total_eur_status
+      properties:
+        award_procedures_count:
+          type: integer
+          minimum: 0
+          description: Sum of PLACSP award-procedure counts for corporate suppliers in the public v3 projection.
+            It is not a unique-contract count.
+        award_procedures_count_status:
+          type: string
+          enum:
+          - public_projection_v3
+          - projection_unavailable
+        contracts_count:
+          type: integer
+          minimum: 0
+          deprecated: true
+          description: Compatibility alias of award_procedures_count; consume the canonical field and
+            status instead.
+        contracts_count_status:
+          type: string
+          const: award_procedures_per_corporate_supplier_not_unique_contracts
+        contracts_total_eur:
+          type: 'null'
+          const: null
+          description: 'Always withheld: no rollup mixes budget, estimate and award concepts.'
+        contracts_total_eur_status:
+          type: string
+          const: withheld_no_typed_rollup
+    BormeEvent:
+      type: object
+      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        publish_date:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        act_type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CcaaStatsResponse:
+      type: object
+      required:
+      - count
+      - ccaa
+      - source
+      - updated
+      properties:
+        count:
+          type: integer
+          minimum: 0
+        ccaa:
+          type: array
+          items:
+            $ref: '#/components/schemas/CcaaStatsRow'
+        source:
+          type: string
+        updated:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Offline projection generation time; null when legacy cache provenance is unavailable.
+    CcaaStatsRow:
+      allOf:
+      - $ref: '#/components/schemas/AggregateProcurementFields'
+      - type: object
+        required:
+        - name
+        - total
+        - active
+        - extinct
+        - concurso
+        - total_capital_eur
+        - provinces
+        properties:
+          name:
+            type: string
+          total:
+            type: integer
+            minimum: 0
+          active:
+            type: integer
+            minimum: 0
+          extinct:
+            type: integer
+            minimum: 0
+          concurso:
+            type: integer
+            minimum: 0
+          total_capital_eur:
+            type: integer
+            minimum: 0
+          provinces:
+            type: array
+            items:
+              type: string
+    CompanyIdentity:
+      type: object
+      description: Stable company identity fields. Historical report builders may append documented BORME
+        fields.
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        cif:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        status_detail:
+          type:
+          - string
+          - 'null'
+        status_date:
+          type:
+          - string
+          - 'null'
+        cnae:
+          type:
+          - string
+          - 'null'
+        cnae_source:
+          type:
+          - string
+          - 'null'
+        first_seen:
+          type:
+          - string
+          - 'null'
+        last_seen:
+          type:
+          - string
+          - 'null'
+        acts_count:
+          type: integer
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyReport:
+      type: object
+      description: Sanitized company report. The stable envelope is explicit; versioned BORME report fields
+        may be added.
+      properties:
+        company:
+          $ref: '#/components/schemas/CompanyIdentity'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+        officers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficerDocumentaryMention'
+        summary:
+          type: object
+          description: Versioned aggregate fields emitted by the report artifact.
+          properties: {}
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: array
+          items:
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ErrorResponse:
+      type: object
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
+        these fields further where required.
+      required:
+      - error
+      properties:
+        error:
+          type: string
+          minLength: 1
+        message:
+          type: string
+        detail:
+          type: string
+        code:
+          type: string
+        status:
+          type:
+          - integer
+          - string
+        projection:
+          type: string
+        reason:
+          type: string
+        source_catalog_version:
+          type: string
+        allowed_parameters:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        slug:
+          type: string
+        key:
+          type: string
+        maximum:
+          type: integer
+          minimum: 1
+        parameter:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        max_bytes:
+          type: integer
+          minimum: 1
+        allowed:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        valid:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        date:
+          type: string
+        login_url:
+          type: string
+        plan:
+          type: string
+        limited_by:
+          type: string
+          enum:
+          - minute
+          - day
+        daily_limit:
+          type: integer
+          minimum: 1
+        reset_at:
+          type: integer
+          minimum: 1
+        reset_at_human:
+          type: string
+          format: date-time
+        retry_after_s:
+          type: integer
+          minimum: 1
+        retry_after:
+          type: integer
+          minimum: 1
+        upgrade:
+          type: string
+          format: uri
+        upgrade_url:
+          type: string
+        action:
+          type: string
+        limit:
+          type: integer
+          minimum: 0
+        remaining:
+          type: integer
+          minimum: 0
+        needed:
+          type: integer
+          minimum: 0
+        shortfall:
+          type: integer
+          minimum: 0
+        ok:
+          type: boolean
+        _alias_of:
+          type: string
+      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    OfficerDocumentaryMention:
+      type: object
+      description: Documentary officer mention. It never contains DNI, contact details or a personal address.
+      properties:
+        name:
+          type: string
+        person_slug:
+          type:
+          - string
+          - 'null'
+        role:
+          type:
+          - string
+          - 'null'
+        appointed_at:
+          type:
+          - string
+          - 'null'
+        ended_at:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    OfflineProjectionError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        projection:
+          type:
+          - string
+          - 'null'
+        derivation:
+          type:
+          - string
+          - 'null'
+        detail:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
+        or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    PublicCompanyDownload:
+      type: object
+      additionalProperties: false
+      required:
+      - filename
+      - download_url
+      - media_type
+      - bytes
+      - row_count
+      - sha256
+      - source_generation
+      properties:
+        filename:
+          type: string
+          enum:
+          - muestra_empresas_100.csv
+          - muestra_nuevas_50.json
+          - company_top.json
+        download_url:
+          type: string
+          enum:
+          - /assets/samples/muestra_empresas_100.csv
+          - /assets/samples/muestra_nuevas_50.json
+          - /descargas/company_top.json
+        media_type:
+          type: string
+          enum:
+          - text/csv
+          - application/json
+        bytes:
+          type: integer
+          minimum: 1
+        row_count:
+          type: integer
+          minimum: 0
+        sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+    PublicCompanyDownloadCatalog:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - projection
+      - artifact_contract_version
+      - source_generation
+      - company_count
+      - acts_count_sum
+      - min_first_seen
+      - max_last_seen
+      - count
+      - items
+      - source_metadata
+      - _legal_notice
+      - _source_catalog
+      - _data_sources_used
+      - _attributions
+      properties:
+        schema_version:
+          type: string
+          const: '1.0'
+        projection:
+          type: string
+          const: company_public_download_catalog_v1
+        artifact_contract_version:
+          type: string
+          const: '1.1'
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        company_count:
+          type: integer
+          minimum: 0
+        acts_count_sum:
+          type: integer
+          minimum: 0
+        min_first_seen:
+          type: string
+          format: date
+        max_last_seen:
+          type: string
+          format: date
+        count:
+          type: integer
+          const: 3
+        items:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PublicCompanyDownload'
+        source_metadata:
+          $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _legal_notice:
+          type: string
+          minLength: 1
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          required:
+          - borme
+          properties:
+            borme:
+              type: string
+              minLength: 1
+          additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar
+            el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    SectorStatsResponse:
+      type: object
+      required:
+      - count
+      - sections
+      - source
+      - updated
+      properties:
+        count:
+          type: integer
+          minimum: 0
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectorStatsRow'
+        source:
+          type: string
+        updated:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Offline projection generation time; null when legacy cache provenance is unavailable.
+    SectorStatsRow:
+      allOf:
+      - $ref: '#/components/schemas/AggregateProcurementFields'
+      - type: object
+        required:
+        - section
+        - name
+        - total
+        - active
+        - extinct
+        - concurso
+        - total_capital_eur
+        properties:
+          section:
+            type: string
+            pattern: ^[A-U]$
+          name:
+            type: string
+          total:
+            type: integer
+            minimum: 0
+          active:
+            type: integer
+            minimum: 0
+          extinct:
+            type: integer
+            minimum: 0
+          concurso:
+            type: integer
+            minimum: 0
+          total_capital_eur:
+            type: integer
+            minimum: 0
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    TenderSupplierResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - count
+      - ranking
+      - items
+      - eligibility
+      - data_quality
+      - attribution
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+        count:
+          type: integer
+        ranking:
+          type: string
+          enum:
+          - award_procedures_count_desc
+          - awards_count_desc
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - company_slug
+            - name
+            - cif
+            - notices_count
+            - award_procedures_count
+            - tenders_count
+            - tenders_count_status
+            - awards_count
+            - awards_count_status
+            - buyers_count
+            - first_date
+            - last_date
+            - top_cpv
+            properties:
+              company_slug:
+                type: string
+              name:
+                type: string
+              cif:
+                type: string
+              notices_count:
+                type: integer
+                minimum: 0
+              award_procedures_count:
+                type: integer
+                minimum: 0
+              tenders_count:
+                type: integer
+              tenders_count_status:
+                type: string
+                const: deprecated_alias_of_notices_count
+              awards_count:
+                type: integer
+              awards_count_status:
+                type: string
+                const: deprecated_alias_of_award_procedures_count
+              buyers_count:
+                type: integer
+              first_date:
+                type:
+                - string
+                - 'null'
+                format: date
+              last_date:
+                type:
+                - string
+                - 'null'
+                format: date
+              top_cpv:
+                type:
+                - string
+                - 'null'
+        eligibility:
+          type: string
+        data_quality:
+          type: string
+        attribution:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
+        a credential with the operation's x-api-credential-scope (or public:read) selects its account
+        quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
+        accepted by X-API-Key. It is not a JWT or OAuth access token.'

@@ -1,0 +1,158 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://openmercantil.es/api/documentacion, https://openmercantil.es/status
+  and openapi/_original/openmercantil-openapi-1.9.3.json
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Versioning, deprecation, status and support lifecycle for the OpenMercantil
+  v1 REST API. Versioning is URI-path (`/api/v1`) with the contract itself
+  carrying a semantic version (1.9.3). Deprecation is expressed IN the contract
+  — 14 operations are flagged `deprecated: true`, most with an `x-replaced-by`
+  pointer at the successor path — rather than in a separate prose policy.
+versioning:
+  style: uri-path
+  current_major: v1
+  path_prefix: /api/v1
+  contract_version: 1.9.3
+  contract_url: https://openmercantil.es/openapi.json
+  documented_versions:
+    - v1.0
+    - v1.1
+    - v1.2
+    - v1.4
+  note: >-
+    The published changelog on the API reference stops at v1.4 (2026-05-05)
+    while the live OpenAPI document declares 1.9.3 — the contract is
+    substantially ahead of the human-readable changelog. Recorded as observed,
+    not corrected.
+  breaking_change_policy: >-
+    Superseded routes are kept live and marked deprecated in the contract with
+    an x-replaced-by successor pointer, rather than being removed. No removal
+    date is published for any deprecated route.
+deprecation:
+  policy_published: true
+  policy_location: OpenAPI contract (deprecated + x-replaced-by), not a standalone prose page
+  rfc8594_headers: false
+  sunset_header: false
+  deprecation_header: false
+  sunset_dates_published: false
+  deprecated_operation_count: 14
+  deprecated_operations:
+    - operationId: getLegacyDailySummaryByDate
+      path: /api/v1/summary/date/{date}
+      replaced_by: /api/v1/daily/{date}
+    - operationId: getLegacyCompanyBySlugFacts
+      path: /api/v1/company/{slug}/facts
+      replaced_by: /api/v1/empresa/{slug}/facts
+    - operationId: getLegacyPersonBySlug
+      path: /api/v1/person/{slug}
+      replaced_by: /api/v1/persona/{slug}
+    - operationId: getLegacyCcaaStats
+      path: /api/v1/ccaa/stats
+      replaced_by: /api/v1/ccaa/stats.json
+    - operationId: getLegacySectoresStats
+      path: /api/v1/sectores/stats
+      replaced_by: /api/v1/sectores/stats.json
+    - operationId: getLegacyLegalNorms
+      path: /api/v1/legal/norm
+      replaced_by: /api/v1/legal/norms
+    - operationId: postLegacyBillingPortal
+      path: /api/v1/portal
+      replaced_by: /api/v1/billing/portal
+    - operationId: getPersonaBySlugContracts
+      path: /api/v1/persona/{slug}/contracts
+      replaced_by: null
+    - operationId: getCompanyBySlugGeocode
+      path: /api/v1/company/{slug}/geocode
+      replaced_by: null
+      note: >-
+        Synchronous geocode prototype withdrawn; the route is fail-closed and
+        returns 503 offline_projection_required until an approved
+        company_geocode_v1 projection exists.
+    - operationId: getCompanyBySlugNetwork
+      path: /api/v1/company/{slug}/network
+      replaced_by: null
+    - operationId: getContractsTopPersons
+      path: /api/v1/contracts/top-persons
+      replaced_by: null
+    - operationId: getContractsTopPersonsCsv
+      path: /api/v1/contracts/top-persons.csv
+      replaced_by: null
+    - operationId: getExportEvents
+      path: /api/v1/export/events
+      replaced_by: null
+    - operationId: getExportCompanies
+      path: /api/v1/export/companies
+      replaced_by: null
+      x_status: offline-artifact-required
+status_page:
+  published: true
+  url: https://openmercantil.es/status
+  type: first-party
+  third_party_provider: null
+  components:
+    - SQLite search database (latency measured per request)
+    - BORME dataset freshness
+    - PHP frontend
+    - API v1 REST
+    - SEO sitemaps
+  method: >-
+    Computed live on every page view — each component is evaluated in-request
+    (real SQLite latency, dataset freshness against the current date, API
+    module presence). The provider states plainly there is no external
+    monitoring agent and no historical incident timeline.
+  machine_readable_endpoint: https://openmercantil.es/api/v1/health
+  health_operation: getHealth
+  observed_2026_08_14:
+    overall: 'Operación con incidencias menores'
+    api_v1: operational
+    dataset_freshness: 'stale — last BORME cut 2026-07-09, daily ingest paused, 36 days behind'
+    health_payload_status: stale
+    health_payload_degraded: true
+  note: >-
+    The /api/v1/health endpoint reports its own degradation honestly
+    (`"status":"stale"`, `"degraded":true`, `artifacts_age_hours`), which is a
+    genuinely good machine-readable signal — but on the day of this probe the
+    BORME ingest had been paused for 36 days. Recorded as measured.
+sla:
+  published: false
+  note: >-
+    No uptime SLA, credit schedule or response-time commitment is published for
+    any tier, including MAX. The pricing page states MAX is "subject to
+    reasonable use" and that anomalous use may be limited or suspended.
+support:
+  channels:
+    - type: help-center
+      url: https://openmercantil.es/soporte
+    - type: email
+      value: hola@openmercantil.es
+      scope: general
+    - type: email
+      value: rectificacion@openmercantil.es
+      scope: data rectification (48–72h stated turnaround)
+    - type: email
+      value: privacidad@openmercantil.es
+      scope: privacy / GDPR
+    - type: api
+      url: /api/v1/support/ticket
+      scope: programmatic ticket creation (excluded from the public MCP plane)
+  tiered: true
+  tiers:
+    - plan: Profesional
+      support: email
+    - plan: MAX
+      support: priority
+data_freshness:
+  cadence: daily on business days after official BORME publication (~08:00 CET)
+  coverage: 100% of daily bulletins since 2020-01-01
+  cif_precision: '>98% in Section I, weekly audit'
+  traceability: every act retains its BORME-A-YYYY-NNN-NN identifier and links to the BOE PDF
+roadmap:
+  published: false
+  note: >-
+    No roadmap page. Forward-looking items appear only as inline pricing-page
+    labels ("en el roadmap · acceso anticipado incluido" for advanced datasets
+    and webhooks) and as the MCP server's "controlled rollout" status.

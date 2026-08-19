@@ -1,0 +1,83 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Sources API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Sources",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List Company Grants From BDNS",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/grants",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return public grants associated with the company from the BDNS dataset (v1.2)."
+        },
+        {
+          "info": {
+            "name": "List Company Sanctions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/sanctions",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return sanctions hits associated with the company from OpenSanctions and competition authorities (v1.2)."
+        },
+        {
+          "info": {
+            "name": "Get CNMV Records For Company",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/cnmv",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return CNMV (Spanish securities regulator) records for the company (v1.2)."
+        },
+        {
+          "info": {
+            "name": "Get External Sources Status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sources/status"
+          },
+          "docs": "Return freshness, last-ingested timestamps, and status for each integrated external public-data source (v1.2)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

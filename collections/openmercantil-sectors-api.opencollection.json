@@ -1,0 +1,110 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Sectors API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Sectors",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get CNAE Hierarchy Tree",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/cnae/tree"
+          },
+          "docs": "Return the hierarchical CNAE 2009 sector taxonomy (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get CNAE Code Info",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/cnae/:code",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return the CNAE 2009 sector descriptor for a given code (v1.1)."
+        },
+        {
+          "info": {
+            "name": "List Companies In A Sector",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sector/:code/companies",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "List companies in a CNAE sector (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get Sector Financial Ratios",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sector/:code/ratios",
+            "params": [
+              {
+                "name": "code",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Return aggregated financial ratios for a CNAE sector (BdE data) (v1.1)."
+        },
+        {
+          "info": {
+            "name": "Get Sector Aggregate Statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats"
+          },
+          "docs": "Return aggregate company counts and growth statistics across CNAE sectors."
+        },
+        {
+          "info": {
+            "name": "Export Sector Aggregate Statistics As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats.csv"
+          },
+          "docs": "CSV download of aggregate sector statistics."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

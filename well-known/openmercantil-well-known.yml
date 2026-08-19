@@ -1,0 +1,85 @@
+generated: '2026-08-14'
+method: probed
+source: live HTTPS probes of https://openmercantil.es/.well-known/*
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Well-known URI probe for the single OpenMercantil host. Every RFC 8615 path
+  probed returned HTTP 404 with the site's standard HTML 404 body — no
+  security.txt, no OpenID/OAuth discovery document, no api-catalog and no
+  ai-plugin manifest is served. This file records a verified ABSENCE: no
+  WellKnown or SecurityTxt pointer is emitted in apis.yml, because the
+  provider does not serve any of these documents.
+notes: >-
+  OpenMercantil does publish agent-facing discovery, just not under
+  /.well-known/ — it serves /llms.txt, /llms-full.txt, /apis.json,
+  /openapi.json, /catalog.rdf (DCAT-AP-ES) and /humans.txt from the site root,
+  all HTTP 200. A responsible-disclosure policy exists in prose at
+  https://openmercantil.es/seguridad but is not mirrored to
+  /.well-known/security.txt, which is the single cheapest fix available here.
+hosts:
+  - host: openmercantil.es
+    probes:
+      - path: /.well-known/security.txt
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+        note: HTML 404 page, not a document.
+      - path: /.well-known/openid-configuration
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/oauth-protected-resource
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+      - path: /.well-known/dnt-policy.txt
+        status: 404
+        content_type: text/html; charset=UTF-8
+        file: null
+root_discovery_served:
+  - path: /llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+  - path: /llms-full.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+  - path: /apis.json
+    status: 200
+    content_type: application/json
+  - path: /openapi.json
+    status: 200
+    content_type: application/json
+  - path: /catalog.rdf
+    status: 200
+    content_type: application/rdf+xml
+  - path: /humans.txt
+    status: 200
+    content_type: text/plain
+  - path: /robots.txt
+    status: 200
+    content_type: text/plain
+summary:
+  paths_probed: 9
+  paths_served: 0
+  pointer_emitted: false

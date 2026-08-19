@@ -1,0 +1,111 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing Export API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Export",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Export A Company Report",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/company/:slug/export",
+            "params": [
+              {
+                "name": "slug",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "format",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Export a company report in JSON or CSV format."
+        },
+        {
+          "info": {
+            "name": "Export Events",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/export/events",
+            "params": [
+              {
+                "name": "year",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "format",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "Export BORME events in bulk for a given year or year/range, in JSON or CSV."
+        },
+        {
+          "info": {
+            "name": "Export Sector Aggregate Statistics As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/sectores/stats.csv"
+          },
+          "docs": "CSV download of aggregate sector statistics."
+        },
+        {
+          "info": {
+            "name": "Top Companies By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-companies.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-companies-by-contracts ranking (v1.4)."
+        },
+        {
+          "info": {
+            "name": "Top Persons By Public Contracts As CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://openmercantil.es/api/v1/contracts/top-persons.csv",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "CSV download of the top-persons-by-contracts ranking (v1.4)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

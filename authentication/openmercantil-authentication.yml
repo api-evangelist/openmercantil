@@ -1,16 +1,140 @@
-generated: '2026-07-11'
-method: derived
-source: openapi/openmercantil-openapi.yml
+generated: '2026-08-14'
+method: searched
+source: https://openmercantil.es/api/documentacion and openapi/_original/openmercantil-openapi-1.9.3.json
+docs: https://openmercantil.es/api/documentacion
+description: 'Authentication profile for the OpenMercantil v1 REST API. The public read plane is ANONYMOUS
+  BY DEFAULT — the documentation states plainly "REST + JSON. Sin autenticacion. CORS abierto." and every
+  quickstart example is an unauthenticated curl. A credential is therefore optional on public reads and
+  serves to select the account quota rather than to grant access. Three schemes are declared: an optional
+  opaque omk_* API credential presented as X-API-Key or as Authorization: Bearer, and a browser session
+  cookie for the account plane. There is no OAuth 2.0, no OIDC and no JWT anywhere in the contract.'
+model: optional-api-key-plus-session-cookie
+anonymous_access: true
+oauth2: false
+oidc: false
+jwt: false
+mutual_tls: false
 summary:
   types:
   - apiKey
+  - http
   api_key_in:
   - cookie
+  - header
 schemes:
-- name: sessionCookie
+- name: cookieAuth
   type: apiKey
   in: cookie
-  parameter: session
-  description: Session cookie issued after web sign-in, required only for billing endpoints.
+  parameter: ob_sess
+  description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token
+    header (obtain via GET /api/v1/user/me).
   sources:
-  - openapi/openmercantil-openapi.yml
+  - openapi/openmercantil-api-credentials-api-openapi.yml
+  - openapi/openmercantil-billing-api-openapi.yml
+  - openapi/openmercantil-companies-api-openapi.yml
+  - openapi/openmercantil-legal-api-openapi.yml
+  - openapi/openmercantil-support-api-openapi.yml
+  - openapi/openmercantil-user-api-openapi.yml
+  - openapi/openmercantil-webhooks-api-openapi.yml
+- name: apiKey
+  type: apiKey
+  in: header
+  parameter: X-API-Key
+  description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a
+    credential with the operation's x-api-credential-scope (or public:read) selects its account quota.
+    Never place credentials in query strings.
+  sources:
+  - openapi/openmercantil-borme-api-openapi.yml
+  - openapi/openmercantil-companies-api-openapi.yml
+  - openapi/openmercantil-datasets-api-openapi.yml
+  - openapi/openmercantil-graph-api-openapi.yml
+  - openapi/openmercantil-integrations-api-openapi.yml
+  - openapi/openmercantil-legal-api-openapi.yml
+  - openapi/openmercantil-persons-api-openapi.yml
+  - openapi/openmercantil-public-procurement-api-openapi.yml
+  - openapi/openmercantil-search-api-openapi.yml
+  - openapi/openmercantil-sectors-api-openapi.yml
+  - openapi/openmercantil-sources-api-openapi.yml
+  - openapi/openmercantil-system-api-openapi.yml
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: opaque omk_* credential
+  description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted
+    by X-API-Key. It is not a JWT or OAuth access token.'
+  sources:
+  - openapi/openmercantil-borme-api-openapi.yml
+  - openapi/openmercantil-companies-api-openapi.yml
+  - openapi/openmercantil-datasets-api-openapi.yml
+  - openapi/openmercantil-graph-api-openapi.yml
+  - openapi/openmercantil-integrations-api-openapi.yml
+  - openapi/openmercantil-legal-api-openapi.yml
+  - openapi/openmercantil-persons-api-openapi.yml
+  - openapi/openmercantil-public-procurement-api-openapi.yml
+  - openapi/openmercantil-search-api-openapi.yml
+  - openapi/openmercantil-sectors-api-openapi.yml
+  - openapi/openmercantil-sources-api-openapi.yml
+  - openapi/openmercantil-system-api-openapi.yml
+planes:
+- name: public read plane
+  auth: none required; optional omk_* credential for account quota
+  schemes:
+  - apiKey
+  - bearerAuth
+  operations: 43
+  note: 43 operations declare an x-api-credential-scope; the rest of the public plane accepts the public:read
+    umbrella scope.
+- name: account plane
+  auth: ob_sess session cookie + X-CSRF-Token on mutations
+  schemes:
+  - cookieAuth
+  operations: 65
+  note: API credentials are NOT accepted here. Missing or stale CSRF is the dominant 403 in the contract.
+- name: provider callback
+  auth: Stripe signature over raw request bytes
+  schemes: []
+  operations: 1
+  operation: receiveStripeWebhook
+credential:
+  prefix: omk_
+  opaque: true
+  jwt: false
+  transports:
+  - X-API-Key header
+  - 'Authorization: Bearer header'
+  query_string_permitted: false
+  issued_at: https://openmercantil.es/mi-cuenta
+  management_operations:
+  - listUserApiCredentials
+  - createUserApiCredential
+  - rotateUserApiCredential
+  - revokeUserApiCredential
+  secret_visibility: returned once; recoverable only via an identical Idempotency-Key replay inside 24
+    hours
+  scopes: scopes/openmercantil-scopes.yml
+csrf:
+  required_on: all account-plane mutations
+  header: X-CSRF-Token
+  obtain_via: GET /api/v1/user/me
+human_login:
+  methods:
+  - email + password
+  - Google Sign-In
+  url: https://openmercantil.es/mi-cuenta/login
+  password_hashing: bcrypt cost 12
+  breach_check: HaveIBeenPwned on password change
+  note: Web login only. Google Sign-In is not an API authorization surface — there is no OIDC discovery
+    document.
+discovery_probes:
+- url: https://openmercantil.es/.well-known/openid-configuration
+  status: 404
+- url: https://openmercantil.es/.well-known/oauth-authorization-server
+  status: 404
+- url: https://openmercantil.es/.well-known/oauth-protected-resource
+  status: 404
+- url: https://openmercantil.es/api/v1/user/me
+  status: 401
+  note: correctly 401s when unauthenticated
+see_also:
+  scopes: scopes/openmercantil-scopes.yml
+  conventions: conventions/openmercantil-conventions.yml

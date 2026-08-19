@@ -1,0 +1,135 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  openapi/_original/openmercantil-openapi-1.9.3.json
+  (components.x-api-credential-scopes and per-operation
+  x-api-credential-scope) and https://openmercantil.es/api/documentacion
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+model: api-credential-scopes
+oauth2: false
+description: >-
+  OpenMercantil publishes a real, named authorization scope registry — but it
+  is NOT OAuth 2.0. Scopes attach to opaque `omk_*` API credentials issued from
+  the account panel and presented as `X-API-Key` (or `Authorization: Bearer`).
+  The registry is declared machine-readably in the OpenAPI document under
+  `components.x-api-credential-scopes`, and 43 of the 139 operations carry an
+  `x-api-credential-scope` naming the scope that selects the caller's account
+  quota for that route. There is no authorization server, no consent screen and
+  no token exchange — a scope selects quota and read plane, it does not grant
+  access a caller lacked, because the public read plane is anonymous by
+  default.
+important_semantics: >-
+  A scope on this API is a QUOTA and PLANE selector, not an access grant.
+  Anonymous access to the public read plane remains valid without any
+  credential; presenting a credential whose scope matches the operation (or the
+  umbrella `public:read`) moves the request from the per-IP anonymous quota to
+  the credential's account quota. Account-plane operations are NOT reachable
+  with an API credential at all — they require the `ob_sess` session cookie
+  plus an `X-CSRF-Token` header.
+scope_count: 6
+scopes:
+  - name: public:read
+    description: Umbrella scope accepted by every public read route except bulk exports.
+    umbrella: true
+    operation_count: null
+    note: >-
+      Accepted in place of any specific read scope. Bulk export routes are
+      deliberately outside it.
+  - name: companies:read
+    description: Companies, BORME, CNAE sectors and public aggregates.
+    operation_count: 28
+    operations:
+      - compareCompanies
+      - getCcaaStatsJson
+      - getCnaeByCode
+      - getCnaeTree
+      - getCompanyBySlug
+      - getCompanyBySlugActivity
+      - getCompanyBySlugBde
+      - getCompanyBySlugCnmv
+      - getCompanyBySlugContracts
+      - getCompanyBySlugEvents
+      - getCompanyBySlugGrants
+      - getCompanyBySlugOfficers
+      - getCompanyBySlugRelationships
+      - getCompanyBySlugSimilar
+      - getCompanyBySlugSources
+      - getCompanyBySlugTed
+      - getCompanyBySlugTimeline
+      - getCompanyBySlugWikidata
+      - getDailyByDate
+      - getEmpresaBySlugFacts
+      - getGrafoBySlug
+      - getHealth
+      - getSearch
+      - getSectorByCnaeCompanies
+      - getSectorByCnaeRatios
+      - getSectoresStatsJson
+      - getStats
+      - listPublicCompanyDownloads
+  - name: people:read
+    description: Documentary mentions of natural persons.
+    operation_count: 3
+    operations:
+      - getGrafoPersonaBySlug
+      - getPersonSearch
+      - getPersonaBySlug
+    note: >-
+      The narrowest and most sensitive plane. Responses are doubly redacted —
+      no DNI/NIE, no personal contact data — and natural persons appear only as
+      documentary mentions of published BORME acts, never as profiles.
+  - name: tenders:read
+    description: Sanitized public procurement projections.
+    operation_count: 4
+    operations:
+      - getTender
+      - getTenderStats
+      - listTenderSuppliers
+      - searchTenders
+  - name: legal:read
+    description: BOE mercantile-law corpus.
+    operation_count: 5
+    operations:
+      - getLegalActMap
+      - getLegalActMapByActo
+      - getLegalArticleByNormByN
+      - getLegalNormBySlug
+      - getLegalNorms
+  - name: integrations:read
+    description: Public integration capability catalog.
+    operation_count: 3
+    operations:
+      - getIntegration
+      - getSourcesFreshness
+      - listIntegrations
+credential_lifecycle:
+  issuer: account panel (/mi-cuenta)
+  prefix: omk_
+  opaque: true
+  jwt: false
+  management_operations:
+    - listUserApiCredentials
+    - createUserApiCredential
+    - rotateUserApiCredential
+    - revokeUserApiCredential
+  secret_visibility: >-
+    The credential secret is returned once, in the original mutation response,
+    and is replayable only through an identical `Idempotency-Key` request
+    inside a 24-hour window. It is never returned by list or get.
+  rotation_supported: true
+  revocation_supported: true
+  transport_rules:
+    - 'Header only: X-API-Key, or Authorization: Bearer.'
+    - Never permitted in a query string (stated explicitly in the scheme description).
+unscoped_operations:
+  count: 96
+  note: >-
+    The remaining operations carry no x-api-credential-scope because they are
+    either account-plane (session cookie + CSRF, 65 User operations plus
+    billing, support and webhooks) or provider-callback routes. Absence of a
+    scope on those is correct, not a gap.
+see_also:
+  authentication: authentication/openmercantil-authentication.yml
+  conventions: conventions/openmercantil-conventions.yml

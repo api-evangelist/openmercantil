@@ -1,0 +1,117 @@
+generated: '2026-08-14'
+method: generated
+source: >-
+  openapi/*.yml (all operationIds verified against
+  openapi/_original/openmercantil-openapi-1.9.3.json),
+  conventions/openmercantil-conventions.yml,
+  errors/openmercantil-problem-types.yml
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Packaged Agent Skills for the OpenMercantil public API. Each skill covers one
+  marquee flow, is grounded in operationIds verified present in the live
+  OpenAPI 3.1 contract (v1.9.3), and carries the runtime rules an agent needs
+  to avoid the two failure modes this API makes easy — reading a neutral 404 as
+  "does not exist", and reading a fail-closed 503 as "no records".
+provider_published_skills: false
+provider_published_skills_note: >-
+  No AGENTS.md, /skills endpoint or provider-published skill pack found.
+  OpenMercantil does publish /llms.txt and /llms-full.txt for agent context,
+  which these skills complement rather than duplicate.
+skills:
+  - name: openmercantil-company-lookup
+    file: openmercantil-company-lookup.md
+    api: OpenMercantil Companies API
+    summary: >-
+      Resolve a Spanish company from a name or CIF and read its BORME registry
+      report, acts and officer mentions.
+    auth: anonymous
+    operations:
+      - getSearch
+      - getCompanyBySlug
+      - getCompanyBySlugEvents
+      - getCompanyBySlugOfficers
+      - getCompanyBySlugTimeline
+      - compareCompanies
+  - name: openmercantil-procurement-watch
+    file: openmercantil-procurement-watch.md
+    api: OpenMercantil Public Procurement API
+    summary: >-
+      Search PLACSP tenders by buyer, supplier, CPV, province, amount or
+      deadline and tie awards back to the winning company.
+    auth: anonymous
+    operations:
+      - searchTenders
+      - getTender
+      - getTenderStats
+      - listTenderSuppliers
+      - getCompanyBySlugContracts
+      - getCompanyBySlugGrants
+  - name: openmercantil-risk-screening
+    file: openmercantil-risk-screening.md
+    api: OpenMercantil Risk Signals API
+    summary: >-
+      Pull documentary risk signals — sanctions, AEAT defaulters, embargoes,
+      insolvency, regulator actions, CNMV — with explicit handling of
+      unknown-vs-clean.
+    auth: anonymous
+    operations:
+      - getCompanyBySlugRiskSignals
+      - getCompanyBySlugSanctions
+      - getCompanyBySlugAeatMoroso
+      - getCompanyBySlugEmbargoes
+      - getCompanyBySlugCnmv
+      - getCompanyBySlugSources
+  - name: openmercantil-legal-citation
+    file: openmercantil-legal-citation.md
+    api: OpenMercantil Legal API
+    summary: >-
+      Retrieve consolidated BOE article text and bridge a BORME act type to the
+      norm that governs it, with the provider's required citation form.
+    auth: anonymous
+    operations:
+      - getLegalNorms
+      - getLegalNormBySlug
+      - getLegalArticleByNormByN
+      - getLegalActMap
+      - getLegalActMapByActo
+  - name: openmercantil-webhook-setup
+    file: openmercantil-webhook-setup.md
+    api: OpenMercantil Webhooks API
+    summary: >-
+      Register, update, rotate and delete HMAC-signed outbound webhooks, with
+      the one-shot secret and Idempotency-Key recovery rules.
+    auth: session cookie + CSRF
+    operations:
+      - getUserMe
+      - listUserWebhooks
+      - createUserWebhook
+      - updateUserWebhook
+      - rotateUserWebhookSecret
+      - deleteUserWebhook
+skill_count: 5
+shared_rules:
+  - >-
+    A 404 on a company or person slug is NEUTRAL — it covers absent,
+    natural-person, ambiguous and quarantined identities alike. Never report it
+    as proof of non-existence.
+  - >-
+    A 503 projection error means UNKNOWN, never empty. Do not cache it, do not
+    assert absence, do not report an unchecked source as clean.
+  - >-
+    Never construct a company slug. Resolve it through getSearch by exact CIF or
+    canonical name.
+  - >-
+    Free tier is 60 req/min and 200 req/day per IP. Honour Retry-After on 429
+    and prefer the CC BY 4.0 bulk datasets at /descargas over looping.
+  - >-
+    Send If-None-Match with a prior ETag; 304 responses are common and free.
+  - >-
+    Attribute per X-Data-Sources and X-Attribution-Required. Own derived data is
+    CC BY 4.0; upstream source terms prevail.
+  - >-
+    Natural persons are documentary mentions only. No DNI/NIE, addresses, phones
+    or emails are exposed, and a mention implies neither control nor wrongdoing.
+  - >-
+    OpenMercantil is not an official source and performs no credit scoring. For
+    legal effect, direct users to the BOE or the competent Registro Mercantil.

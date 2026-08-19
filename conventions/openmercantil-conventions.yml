@@ -1,0 +1,227 @@
+generated: '2026-08-14'
+method: searched
+source: >-
+  https://openmercantil.es/api/documentacion and
+  openapi/_original/openmercantil-openapi-1.9.3.json
+docs: https://openmercantil.es/api/documentacion
+provider: OpenMercantil
+providerId: openmercantil
+description: >-
+  Cross-cutting runtime semantics for the OpenMercantil v1 REST API: how
+  requests authenticate, how idempotency is enforced on secret-revealing
+  mutations, how collections paginate, how conditional requests and caching
+  work, how errors are shaped, and how rate limiting is signalled. Derived from
+  the live OpenAPI 3.1 contract (v1.9.3) and confirmed against the published
+  API reference and observed response headers.
+auth:
+  style: anonymous-by-default
+  summary: >-
+    Public GET endpoints require no credential at all. An optional opaque
+    `omk_*` API credential (header `X-API-Key`, or `Authorization: Bearer` as
+    an alternative transport) selects the caller's account quota instead of the
+    anonymous per-IP quota. Account-plane endpoints use a browser session
+    cookie plus a CSRF token; there is no OAuth 2.0 and no JWT anywhere in the
+    contract.
+  schemes:
+    - name: apiKey
+      transport: 'header: X-API-Key'
+      applies_to: public read plane (optional)
+    - name: bearerAuth
+      transport: 'header: Authorization: Bearer'
+      note: Same opaque omk_* credential; explicitly NOT a JWT or OAuth access token.
+      applies_to: public read plane (optional)
+    - name: cookieAuth
+      transport: 'cookie: ob_sess'
+      note: >-
+        Mutations additionally require an `X-CSRF-Token` header, obtained from
+        GET /api/v1/user/me.
+      applies_to: account plane
+  never_in_query_string: true
+  see: authentication/openmercantil-authentication.yml
+idempotency:
+  supported: true
+  header: Idempotency-Key
+  required_on:
+    - createUserApiCredential
+    - rotateUserApiCredential
+    - createUserWebhook
+    - rotateUserWebhookSecret
+  optional_on:
+    - postDonationCheckout
+    - postCreditsCheckout
+    - postSubscriptionCheckout
+  key_format: '^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$ (8–128 chars) on account mutations'
+  retention: 24 hours
+  replay_semantics: >-
+    An identical payload replayed with the same key inside the window returns
+    the original encrypted response, including the one-time secret, and sets
+    `idempotency_replayed: true` and `idempotency_expires_at`. This is the only
+    way to recover a webhook or credential secret after the original response
+    is lost.
+  conflict_status: 409
+  conflict_condition: Changed payload for a reused key, or an expired replay window.
+  server_side_keys:
+    - operation: createCompanyLegalReport
+      key: 'legal_report:{user_id}:{company_slug}:{UTC-date}'
+      note: Server-derived key — one paid legal report per company per user per UTC day.
+    - operation: receiveStripeWebhook
+      key: Stripe event.id
+      note: Provider-callback deduplication on the inbound Stripe event id.
+  note: >-
+    Idempotency is scoped to exactly the mutations that reveal a secret or
+    spend money. Read endpoints are naturally idempotent and take no key.
+pagination:
+  styles:
+    - name: offset
+      applies_to: search endpoints (/api/v1/search, /api/v1/person/search)
+      params:
+        limit: 'items per page, default 20, max 100'
+        offset: 'zero-based row offset'
+      response_fields:
+        - count
+        - items
+    - name: page-number
+      applies_to: company event collections (/api/v1/company/{slug}/events)
+      params:
+        page: 'one-based page number, default 1'
+        page_size: 'default 50'
+      response_fields:
+        - page
+        - page_size
+        - total
+        - pages
+        - items
+  note: >-
+    Two schemes coexist by endpoint family; the response always carries either
+    `total` or `count` so a client can compute page count. Item arrays are
+    capped in-schema (maxItems: 100).
+  no_cursor_pagination: true
+conditional_requests:
+  supported: true
+  request_headers:
+    - If-None-Match
+  response_headers:
+    - ETag
+    - Content-Location
+  not_modified_status: 304
+  operations_with_304: 27
+  note: >-
+    ETags are weak (`W/"…-gzip"`) and generation-bound: they change when the
+    underlying immutable projection generation changes, so a 304 is a real
+    "the projection has not moved" signal, not just a body hash. Alias slugs
+    are canonicalised server-side and the canonical URL is returned in
+    `Content-Location`.
+caching:
+  response_header: Cache-Control
+  public_read_example: 'public, max-age=21600, stale-while-revalidate=259200'
+  fail_closed_paths: 'Cache-Control: no-store on 503 projection-unavailable responses'
+  provider_cache_header: X-OpenMercantil-Cache (HIT/MISS)
+error_envelope:
+  format: custom-json
+  rfc9457: false
+  content_type: application/json
+  required_fields:
+    - error
+  common_fields:
+    - error
+    - message
+    - detail
+    - code
+    - status
+    - reason
+    - projection
+  example: '{"error": "not_found", "message": "Company slug not found", "status": 404}'
+  note: >-
+    A closed compatibility envelope (`ErrorResponse`), NOT RFC 9457
+    application/problem+json. Route-specific schemas narrow it further
+    (ProjectionUnavailableError, RequestBodyTooLargeError,
+    LegalReportPaymentRequiredError, SupportErrorResponse).
+  see: errors/openmercantil-problem-types.yml
+rate_limit_signalling:
+  headers:
+    - X-RateLimit-Limit
+    - X-RateLimit-Remaining
+    - X-RateLimit-Reset
+    - X-OpenMercantil-Plan
+    - Retry-After
+  exhausted_status: 429
+  note: >-
+    `X-OpenMercantil-Plan` echoes the resolved plan label (Free / Profesional /
+    MAX / Enterprise), which lets a client confirm which quota its credential
+    actually selected. Headers are CORS-exposed via
+    Access-Control-Expose-Headers.
+  see: rate-limits/openmercantil-rate-limits.yml
+versioning:
+  style: uri-path
+  current: v1
+  path_prefix: /api/v1
+  contract_version: 1.9.3
+  breaking_change_policy: >-
+    Legacy paths are kept live and marked `deprecated: true` in the contract
+    with an `x-replaced-by` pointer to the successor path rather than removed.
+  see: lifecycle/openmercantil-lifecycle.yml
+request_limits:
+  max_body_bytes:
+    - operations:
+        - createSupportTicket
+        - replySupportTicket
+        - createCompanyLegalReport
+      bytes: 32768
+    - operations:
+        - receiveStripeWebhook
+      bytes: 524288
+  oversize_status: 413
+  oversize_error: request_body_too_large
+cors:
+  enabled: true
+  allow_origin: '*'
+  allow_headers:
+    - Content-Type
+    - Authorization
+    - X-API-Key
+    - X-CSRF-Token
+    - Idempotency-Key
+    - If-None-Match
+  expose_headers:
+    - X-RateLimit-Limit
+    - X-RateLimit-Remaining
+    - X-RateLimit-Reset
+    - X-OpenMercantil-Plan
+    - Retry-After
+    - X-Data-Sources
+    - X-Attribution-Required
+    - X-Source-Catalog-Version
+    - X-OpenMercantil-Stats-Generation
+    - Content-Location
+    - ETag
+  max_age: 86400
+attribution_and_licensing_headers:
+  headers:
+    - name: X-Data-Sources
+      meaning: Which upstream public sources contributed to this response body.
+    - name: X-Attribution-Required
+      meaning: Which of those sources require attribution when the data is re-published.
+    - name: X-Source-Catalog-Version
+      meaning: The versioned public-source catalog in force for this response.
+  note: >-
+    Unusual and worth calling out — per-response provenance and licence
+    signalling. OpenMercantil does not relicense upstream content under a
+    blanket licence, so the response itself tells the caller which terms apply.
+fail_closed_semantics:
+  status: 503
+  errors:
+    - projection_unavailable
+    - offline_projection_required
+    - legal_layer_unavailable
+    - async_export_required
+  rule: >-
+    A 503 from a projection route means "unknown", never "empty". The contract
+    states explicitly that clients must not reinterpret it as a negative or
+    zero result, and such responses carry Cache-Control: no-store.
+cross_links:
+  authentication: authentication/openmercantil-authentication.yml
+  scopes: scopes/openmercantil-scopes.yml
+  errors: errors/openmercantil-problem-types.yml
+  rate_limits: rate-limits/openmercantil-rate-limits.yml
+  lifecycle: lifecycle/openmercantil-lifecycle.yml
+  webhooks: asyncapi/openmercantil-webhooks.yml

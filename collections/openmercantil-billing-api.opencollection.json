@@ -1,0 +1,50 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "OpenMercantil Public Billing API",
+    "version": "1.4.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Billing",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create Stripe Checkout Session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://openmercantil.es/api/v1/checkout",
+            "auth": {
+              "type": "apikey",
+              "key": "session",
+              "value": "{{session}}",
+              "placement": "query"
+            }
+          },
+          "docs": "Create a Stripe Checkout session for a Pro / Business / Agency subscription. Authentication required."
+        },
+        {
+          "info": {
+            "name": "Create Stripe One-Time Donation Session",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://openmercantil.es/api/v1/donation",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a Stripe one-time payment session for a donation. Anonymous donations are allowed."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
