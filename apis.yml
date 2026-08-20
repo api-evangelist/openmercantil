@@ -67,6 +67,42 @@ tags:
 - Spanish Open Data
 - Tenders
 - Trust Score
+- Webhook
+tags_raw:
+- BDNS
+- BORME
+- Business Registry
+- CIF
+- CNAE
+- CNMV
+- CSV
+- Company Data
+- Company Search
+- Corporate Registry
+- DCAT-AP
+- Daily Summary
+- Geocoding
+- JSON
+- Legal Data
+- Mercantile Law
+- OEPM
+- Open Data
+- Open Government Data
+- OpenAPI
+- OpenSanctions
+- PLACSP
+- Public Procurement
+- Public Records
+- Public-Interest Data
+- REST API
+- Registry Timeline
+- Risk Signals
+- Sanctions
+- Spain
+- Spanish Companies
+- Spanish Open Data
+- Tenders
+- Trust Score
 - Webhooks
 apis:
 - aid: openmercantil:openmercantil-api-credentials-api
@@ -187,6 +223,8 @@ apis:
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
+  - Integration
+  tags_raw:
   - Integrations
   properties:
   - type: OpenAPI
@@ -393,6 +431,8 @@ apis:
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
+  - Webhook
+  tags_raw:
   - Webhooks
   properties:
   - type: OpenAPI
