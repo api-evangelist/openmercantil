@@ -107,8 +107,9 @@ tags_raw:
 apis:
 - aid: openmercantil:openmercantil-api-credentials-api
   name: OpenMercantil API Credentials API
-  description: 'Account API credential management: list, create, rotate and revoke opaque omk_* API keys. Secrets
-    are returned once and recoverable only via an identical Idempotency-Key replay inside 24 hours.'
+  description: >-
+    Account API credential management: list, create, rotate and revoke opaque omk_* API keys. Secrets
+    are returned once and recoverable only via an identical Idempotency-Key replay inside 24 hours.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -126,7 +127,8 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-billing-api
   name: OpenMercantil Billing API
-  description: Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded, idempotent
+  description: >-
+    Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded, idempotent
     and never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
@@ -199,7 +201,8 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-graph-api
   name: OpenMercantil Graph API
-  description: Corporate and person-to-company relationship graphs. Every emitted record retains the source-specific
+  description: >-
+    Corporate and person-to-company relationship graphs. Every emitted record retains the source-specific
     terms authorized by the active public source catalog; no blanket relicensing applies.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
@@ -218,7 +221,8 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-integrations-api
   name: OpenMercantil Integrations API
-  description: Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets or operator
+  description: >-
+    Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets or operator
     actions.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
@@ -239,11 +243,12 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-legal-api
   name: OpenMercantil Legal API
-  description: 'Spanish mercantile-law layer (derecho mercantil): legislation corpus + article texts + act→norm
-    bridge. Distributes the consolidated BOE legal corpus structured by OpenMercantil so LLMs and agents can cite
-    it as a source. License: consolidated text from the BOE, reused under Ley 37/2007 (re-use of public sector information);
-    the official version is always boe.es. Informational only — NOT legal advice. Court judgments are NOT exposed
-    here (CENDOJ is kept as a citation-index only, per CGPJ…'
+  description: >-
+    Spanish mercantile-law layer (derecho mercantil): legislation corpus + article texts + act→norm bridge.
+    Distributes the consolidated BOE legal corpus structured by OpenMercantil so LLMs and agents can cite
+    it as a source. License: consolidated text from the BOE, reused under Ley 37/2007 (re-use of public
+    sector information); the official version is always boe.es. Informational only — NOT legal advice.
+    Court judgments are NOT exposed here (CENDOJ is kept as a citation-index only, per CGPJ…
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -261,8 +266,9 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-persons-api
   name: OpenMercantil Persons API
-  description: Documentary mentions of natural persons in BORME (officer roles). Persons treated as documentary
-    mentions only — no DNI, no contact data, no scoring.
+  description: >-
+    Documentary mentions of natural persons in BORME (officer roles). Persons treated as documentary mentions
+    only — no DNI, no contact data, no scoring.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -290,24 +296,6 @@ apis:
     url: openapi/openmercantil-public-procurement-api-openapi.yml
   - type: Overlay
     url: overlays/openmercantil-public-procurement-overlay.yaml
-  - type: Documentation
-    url: https://openmercantil.es/api/documentacion
-  - type: APIReference
-    url: https://openmercantil.es/docs
-  - type: APIsJSON
-    url: https://openmercantil.es/apis.json
-- aid: openmercantil:openmercantil-risk-signals-api
-  name: OpenMercantil Risk Signals API
-  description: Documentary risk signals from public sources (AEPD, CNMC, concursos, AEAT moroso, CENDOJ)
-  humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
-  tags:
-  - Risk Signals
-  properties:
-  - type: OpenAPI
-    url: openapi/openmercantil-risk-signals-api-openapi.yml
-  - type: Overlay
-    url: overlays/openmercantil-risk-signals-overlay.yaml
   - type: Documentation
     url: https://openmercantil.es/api/documentacion
   - type: APIReference
@@ -370,7 +358,8 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-support-api
   name: OpenMercantil Support API
-  description: Customer-support writes. Anonymous creation requires explicit privacy consent; replies require an
+  description: >-
+    Customer-support writes. Anonymous creation requires explicit privacy consent; replies require an
     authenticated owner session and CSRF. Ticket data is never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
@@ -407,7 +396,8 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-user-api
   name: OpenMercantil User API
-  description: Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires session
+  description: >-
+    Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires session
     cookie (browser) and X-CSRF-Token header for mutations.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
@@ -426,8 +416,9 @@ apis:
     url: https://openmercantil.es/apis.json
 - aid: openmercantil:openmercantil-webhooks-api
   name: OpenMercantil Webhooks API
-  description: 'Account outbound webhooks: register, update, rotate the HMAC signing secret and delete event subscriptions.
-    Three subscribable event types; deliveries are signed and fail closed on unknown events.'
+  description: >-
+    Account outbound webhooks: register, update, rotate the HMAC signing secret and delete event subscriptions.
+    Three subscribable event types; deliveries are signed and fail closed on unknown events.
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
@@ -453,6 +444,8 @@ maintainers:
 - FN: Pablo Cirre
   url: https://github.com/PabloCirre
 common:
+- type: Overlay
+  url: overlays/openmercantil-risk-signals-overlay.yaml
 - type: AgenticAccess
   url: agentic-access/openmercantil-agentic-access.yml
 - type: DomainSecurity
