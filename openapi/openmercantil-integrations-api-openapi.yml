@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil Integrations API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,38 +64,28 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: Integrations
-  description: Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets
-    or operator actions.
+  description: Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets or operator actions.
 paths:
   /api/v1/stripe-webhook:
     post:
       operationId: receiveStripeWebhook
       tags:
-      - Billing
       - Integrations
       summary: Receive a signed Stripe event
-      description: Provider callback, not an end-user API. The exact raw JSON body is capped at 512 KiB
-        and verified against `Stripe-Signature` before durable inbox claim or side effects. Provider `event.id`
-        supplies idempotency; terminal duplicates return 200, active leases return 503 for retry, and
-        failures return 500 so Stripe retries. No webhook secret, signature, raw payload or internal exception
-        is returned. This route is excluded from every public MCP surface.
+      description: Provider callback, not an end-user API. The exact raw JSON body is capped at 512 KiB and verified against `Stripe-Signature` before durable inbox claim or side effects. Provider `event.id` supplies idempotency; terminal duplicates return 200, active leases return 503 for retry, and failures return 500 so Stripe retries. No webhook secret, signature, raw payload or internal exception is returned. This route is excluded from every public MCP surface.
       x-plane: integration-provider-callback
       x-provider: stripe
       x-max-body-bytes: 524288
@@ -119,8 +97,7 @@ paths:
       - name: Stripe-Signature
         in: header
         required: true
-        description: Stripe-generated signature verified over the exact raw body. It is sensitive request
-          metadata and must never be logged or echoed.
+        description: Stripe-generated signature verified over the exact raw body. It is sensitive request metadata and must never be logged or echoed.
         schema:
           type: string
           minLength: 1
@@ -132,8 +109,7 @@ paths:
               $ref: '#/components/schemas/StripeWebhookEventRequest'
       responses:
         '200':
-          description: Event accepted, deliberately ignored, or already terminal. All response bodies
-            are non-secret acknowledgements.
+          description: Event accepted, deliberately ignored, or already terminal. All response bodies are non-secret acknowledgements.
           content:
             text/plain:
               schema:
@@ -182,8 +158,7 @@ paths:
                 - webhook inbox unavailable
                 - error
         '503':
-          description: Another worker owns an active lease or a signed OpenMercantil checkout cannot yet
-            be resolved to its authoritative account owner; Stripe must retry
+          description: Another worker owns an active lease or a signed OpenMercantil checkout cannot yet be resolved to its authoritative account owner; Stripe must retry
           headers:
             Retry-After:
               description: Retry delay in seconds
@@ -209,14 +184,7 @@ paths:
       tags:
       - Integrations
       summary: List public integration capabilities
-      description: 'Versioned fail-closed catalog that reports legal egress permission separately from
-        technical transport availability. public_read is false when permission exists but no safe projection
-        is active; separate_authority delegates validation to the endpoint''s own fail-closed contract.
-        Sources in review, restricted or unknown are omitted. The query contract is closed: capability
-        is optional, but when present it must match the documented lowercase pattern byte-for-byte; empty,
-        padded or upper-case values and unknown parameters return 400. Provenance contains exactly the
-        sources represented by the returned items. This is not an operator health probe and never includes
-        credentials, OAuth tokens, webhook secrets, billing or internal errors.'
+      description: 'Versioned fail-closed catalog that reports legal egress permission separately from technical transport availability. public_read is false when permission exists but no safe projection is active; separate_authority delegates validation to the endpoint''s own fail-closed contract. Sources in review, restricted or unknown are omitted. The query contract is closed: capability is optional, but when present it must match the documented lowercase pattern byte-for-byte; empty, padded or upper-case values and unknown parameters return 400. Provenance contains exactly the sources represented by the returned items. This is not an operator health probe and never includes credentials, OAuth tokens, webhook secrets, billing or internal errors.'
       parameters:
       - name: capability
         in: query
@@ -272,9 +240,7 @@ paths:
       tags:
       - Integrations
       summary: Get one public integration contract
-      description: Return the legal-egress decision and the independent technical transport status for
-        one catalogued integration. This detail route accepts no query parameters; unknown parameters
-        return 400.
+      description: Return the legal-egress decision and the independent technical transport status for one catalogued integration. This detail route accepts no query parameters; unknown parameters return 400.
       parameters:
       - name: slug
         in: path
@@ -323,72 +289,9 @@ paths:
         '503':
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
-  headers:
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    PrivateRevalidationCacheControl:
-      description: Caller-specific rate-limit and plan headers make this representation private. A private
-        cache may retain the body but must revalidate every request; shared caches must not store or reuse
-        it.
-      schema:
-        type: string
-        const: private, no-cache, must-revalidate
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
-        lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
-        unsupported or not authorized for this public surface.'
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -398,18 +301,8 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
-              activa.
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -421,11 +314,183 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    PrivateRevalidationCacheControl:
+      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
+      schema:
+        type: string
+        const: private, no-cache, must-revalidate
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
   schemas:
+    PublicIntegrationTransport:
+      type: object
+      description: Technical read-plane status. unavailable has no endpoint; separate_authority delegates fail-closed validation to the listed endpoint contract and is not a health probe.
+      required:
+      - status
+      - projection
+      - generation
+      - endpoints
+      properties:
+        status:
+          type: string
+          enum:
+          - available
+          - unavailable
+          - separate_authority
+        projection:
+          type:
+          - string
+          - 'null'
+        generation:
+          type:
+          - string
+          - 'null'
+        endpoints:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            pattern: ^/api/v1/
+      oneOf:
+      - properties:
+          status:
+            const: available
+          projection:
+            type: string
+            minLength: 1
+          generation:
+            type: string
+            pattern: ^(?:cipv1|sr1)-[a-f0-9]{64}$
+          endpoints:
+            minItems: 1
+      - properties:
+          status:
+            const: unavailable
+          generation:
+            type: 'null'
+          endpoints:
+            maxItems: 0
+      - properties:
+          status:
+            const: separate_authority
+          projection:
+            type: string
+            minLength: 1
+          generation:
+            type: 'null'
+          endpoints:
+            minItems: 1
+      additionalProperties: false
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    PublicIntegrationCoverage:
+      type: object
+      properties:
+        multi_lot:
+          type:
+          - string
+          - 'null'
+        multiple_cpv:
+          type:
+          - string
+          - 'null'
+        geography:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PublicIntegrationContract:
+      type: object
+      required:
+      - surface
+      - secrets_exposed
+      - writes_exposed
+      properties:
+        surface:
+          type: string
+          const: public-read-only
+        secrets_exposed:
+          type: boolean
+          const: false
+        writes_exposed:
+          type: boolean
+          const: false
+        health_semantics:
+          type:
+          - string
+          - 'null'
+        excluded:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -527,35 +592,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    IntegrationDetailResponse:
-      type: object
-      required:
-      - schema_version
-      - source_catalog_version
-      - integration
-      - contract
-      - _source_catalog
-      - _data_sources_used
-      properties:
-        schema_version:
-          type: string
-        source_catalog_version:
-          type: string
-        integration:
-          $ref: '#/components/schemas/PublicIntegration'
-        contract:
-          $ref: '#/components/schemas/PublicIntegrationContract'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
     IntegrationListResponse:
       type: object
       required:
@@ -590,303 +626,9 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    PublicIntegration:
-      type: object
-      required:
-      - slug
-      - source_slug
-      - name
-      - kind
-      - capabilities
-      - public_read
-      - egress_policy
-      - transport
-      - official_url
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        source_slug:
-          type: string
-          description: Canonical source slug from the active public-source catalog.
-        name:
-          type: string
-        kind:
-          type: string
-        capabilities:
-          type: array
-          items:
-            type: string
-        public_read:
-          type: boolean
-          description: True only when transport.status is available or separate_authority; never derived
-            from legal permission alone.
-        egress_policy:
-          $ref: '#/components/schemas/PublicIntegrationEgressPolicy'
-        transport:
-          $ref: '#/components/schemas/PublicIntegrationTransport'
-        official_url:
-          type: string
-          format: uri
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion aplicables a esta integracion publica.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        catalog_version:
-          type: string
-        coverage:
-          $ref: '#/components/schemas/PublicIntegrationCoverage'
-      additionalProperties: false
-    PublicIntegrationContract:
-      type: object
-      required:
-      - surface
-      - secrets_exposed
-      - writes_exposed
-      properties:
-        surface:
-          type: string
-          const: public-read-only
-        secrets_exposed:
-          type: boolean
-          const: false
-        writes_exposed:
-          type: boolean
-          const: false
-        health_semantics:
-          type:
-          - string
-          - 'null'
-        excluded:
-          type: array
-          items:
-            type: string
-      additionalProperties: false
-    PublicIntegrationCoverage:
-      type: object
-      properties:
-        multi_lot:
-          type:
-          - string
-          - 'null'
-        multiple_cpv:
-          type:
-          - string
-          - 'null'
-        geography:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    PublicIntegrationEgressPolicy:
-      type: object
-      description: Legal permission from the active source catalog. It does not claim that a technical
-        projection is deployed.
-      required:
-      - status
-      - catalog_version
-      - policy_effective_date
-      - reviewed_at
-      properties:
-        status:
-          type: string
-          const: allowed
-        catalog_version:
-          type: string
-          minLength: 1
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-      additionalProperties: false
-    PublicIntegrationTransport:
-      type: object
-      description: Technical read-plane status. unavailable has no endpoint; separate_authority delegates
-        fail-closed validation to the listed endpoint contract and is not a health probe.
-      required:
-      - status
-      - projection
-      - generation
-      - endpoints
-      properties:
-        status:
-          type: string
-          enum:
-          - available
-          - unavailable
-          - separate_authority
-        projection:
-          type:
-          - string
-          - 'null'
-        generation:
-          type:
-          - string
-          - 'null'
-        endpoints:
-          type: array
-          maxItems: 8
-          items:
-            type: string
-            pattern: ^/api/v1/
-      oneOf:
-      - properties:
-          status:
-            const: available
-          projection:
-            type: string
-            minLength: 1
-          generation:
-            type: string
-            pattern: ^(?:cipv1|sr1)-[a-f0-9]{64}$
-          endpoints:
-            minItems: 1
-      - properties:
-          status:
-            const: unavailable
-          generation:
-            type: 'null'
-          endpoints:
-            maxItems: 0
-      - properties:
-          status:
-            const: separate_authority
-          projection:
-            type: string
-            minLength: 1
-          generation:
-            type: 'null'
-          endpoints:
-            minItems: 1
-      additionalProperties: false
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar
-            el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
     StripeWebhookEventRequest:
       type: object
-      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used
-        for verification. Provider extension fields remain typed JSON and are not reflected to callers.
+      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
       required:
       - id
       - type
@@ -928,17 +670,231 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    PublicIntegrationEgressPolicy:
+      type: object
+      description: Legal permission from the active source catalog. It does not claim that a technical projection is deployed.
+      required:
+      - status
+      - catalog_version
+      - policy_effective_date
+      - reviewed_at
+      properties:
+        status:
+          type: string
+          const: allowed
+        catalog_version:
+          type: string
+          minLength: 1
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+      additionalProperties: false
+    PublicIntegration:
+      type: object
+      required:
+      - slug
+      - source_slug
+      - name
+      - kind
+      - capabilities
+      - public_read
+      - egress_policy
+      - transport
+      - official_url
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        source_slug:
+          type: string
+          description: Canonical source slug from the active public-source catalog.
+        name:
+          type: string
+        kind:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        public_read:
+          type: boolean
+          description: True only when transport.status is available or separate_authority; never derived from legal permission alone.
+        egress_policy:
+          $ref: '#/components/schemas/PublicIntegrationEgressPolicy'
+        transport:
+          $ref: '#/components/schemas/PublicIntegrationTransport'
+        official_url:
+          type: string
+          format: uri
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion aplicables a esta integracion publica.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        catalog_version:
+          type: string
+        coverage:
+          $ref: '#/components/schemas/PublicIntegrationCoverage'
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    IntegrationDetailResponse:
+      type: object
+      required:
+      - schema_version
+      - source_catalog_version
+      - integration
+      - contract
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+        source_catalog_version:
+          type: string
+        integration:
+          $ref: '#/components/schemas/PublicIntegration'
+        contract:
+          $ref: '#/components/schemas/PublicIntegrationContract'
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ob_sess
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
     apiKey:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

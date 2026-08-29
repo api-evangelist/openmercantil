@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil Public Procurement API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,17 +64,13 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
@@ -111,13 +95,9 @@ paths:
         lexical: 400 invalid_parameter
         range: 422 validation_failed
       tags:
-      - Companies
       - Public Procurement
       summary: Get PLACSP procurement notices linked to a legal entity
-      description: Requires the legal-first PLACSP v3 projection, including typed budget, estimate and
-        award fields plus corporate supplier edges. It never falls back to the legacy untyped table and
-        never sums mixed monetary concepts. A CIF link is documentary and does not prove payment or executed
-        spend.
+      description: Requires the legal-first PLACSP v3 projection, including typed budget, estimate and award fields plus corporate supplier edges. It never falls back to the legacy untyped table and never sums mixed monetary concepts. A CIF link is documentary and does not prove payment or executed spend.
       x-rate-limit: plan policy (see info.x-rate-limit)
       parameters:
       - name: slug
@@ -169,11 +149,9 @@ paths:
         non_scalar: 400 invalid_parameter
         lexical: 400 invalid_parameter
       tags:
-      - Companies
       - Public Procurement
       summary: Alias of /contracts
-      description: Documentary alias for /contracts endpoint. Same payload and projection requirements;
-        `_alias_of` contains the canonical route.
+      description: Documentary alias for /contracts endpoint. Same payload and projection requirements; `_alias_of` contains the canonical route.
       x-rate-limit: plan policy (see info.x-rate-limit)
       parameters:
       - name: slug
@@ -214,13 +192,9 @@ paths:
         lexical: 400 invalid_parameter
         range: 422 validation_failed
       tags:
-      - Companies
       - Public Procurement
       summary: Get BDNS public grants
-      description: Read only company_integrations_public_v1 after company_public_v2 admission. Returns
-        up to 200 attested BDNS rows and never queries the canonical grants table. Monetary values are
-        awarded amounts in integer cents, never payments; ambiguous raw zero is null. Empty is complete
-        bounded-projection coverage, not proof of absence upstream.
+      description: Read only company_integrations_public_v1 after company_public_v2 admission. Returns up to 200 attested BDNS rows and never queries the canonical grants table. Monetary values are awarded amounts in integer cents, never payments; ambiguous raw zero is null. Empty is complete bounded-projection coverage, not proof of absence upstream.
       parameters:
       - $ref: '#/components/parameters/CompanySlugPath'
       - name: limit
@@ -281,11 +255,9 @@ paths:
     get:
       operationId: getPersonaBySlugContracts
       tags:
-      - Persons
       - Public Procurement
       summary: Person-to-procurement derivation (unavailable)
-      description: Fail-closed derived route. It always returns 503 before reading data because `person_contracts_v1`
-        is not authorized. A future implementation requires a new reviewed projection and contract version.
+      description: Fail-closed derived route. It always returns 503 before reading data because `person_contracts_v1` is not authorized. A future implementation requires a new reviewed projection and contract version.
       deprecated: true
       x-rate-limit: plan policy (see info.x-rate-limit)
       parameters:
@@ -315,13 +287,9 @@ paths:
         lexical: 400 invalid_parameter
         range: 422 validation_failed
       tags:
-      - Companies
       - Public Procurement
       summary: Get TED notice records linked to this corporate NIF
-      description: 'Read only company_integrations_public_v1 after company_public_v2 admission. Returns
-        up to 100 minimized TED notice links: publication number/date, buyer and official notice URL.
-        Tenderer, currency and free-form connector fields are excluded. Rows do not prove payment, executed
-        spend or current contractual status.'
+      description: 'Read only company_integrations_public_v1 after company_public_v2 admission. Returns up to 100 minimized TED notice links: publication number/date, buyer and official notice URL. Tenderer, currency and free-form connector fields are excluded. Rows do not prove payment, executed spend or current contractual status.'
       x-rate-limit: free 60/min · 200/day
       parameters:
       - $ref: '#/components/parameters/CompanySlugPath'
@@ -391,12 +359,8 @@ paths:
         range: 422 validation_failed
       tags:
       - Public Procurement
-      - Datasets
       summary: Corporate suppliers ranked by PLACSP award procedures
-      description: Compatibility alias of `/api/v1/tenders/suppliers`. Reads only `placsp_public_company_summary`,
-        ranks corporate suppliers by award-procedure count and never publishes a monetary ranking or rollup.
-        Natural persons are excluded. `province` and `cnae` are rejected until dedicated offline projections
-        exist.
+      description: Compatibility alias of `/api/v1/tenders/suppliers`. Reads only `placsp_public_company_summary`, ranks corporate suppliers by award-procedure count and never publishes a monetary ranking or rollup. Natural persons are excluded. `province` and `cnae` are rejected until dedicated offline projections exist.
       parameters:
       - name: limit
         in: query
@@ -429,10 +393,8 @@ paths:
       operationId: getContractsTopPersons
       tags:
       - Public Procurement
-      - Datasets
       summary: Top persons by PLACSP-signatory companies
-      description: Fail-closed derived route. It always returns 503 before reading data because `person_contracts_v1`
-        is not authorized. A future implementation requires a new reviewed projection and contract version.
+      description: Fail-closed derived route. It always returns 503 before reading data because `person_contracts_v1` is not authorized. A future implementation requires a new reviewed projection and contract version.
       deprecated: true
       x-rate-limit: plan policy (see info.x-rate-limit)
       responses:
@@ -452,10 +414,8 @@ paths:
         range: 422 validation_failed
       tags:
       - Public Procurement
-      - Datasets
       summary: Corporate suppliers by award procedures (CSV)
-      description: Bounded CSV (maximum 100 rows) generated from `placsp_public_company_summary`. Columns
-        distinguish notice count from award-procedure count and contain no monetary aggregate.
+      description: Bounded CSV (maximum 100 rows) generated from `placsp_public_company_summary`. Columns distinguish notice count from award-procedure count and contain no monetary aggregate.
       parameters:
       - name: limit
         in: query
@@ -493,10 +453,8 @@ paths:
         lexical: 400 invalid_parameter
       tags:
       - Public Procurement
-      - Datasets
       summary: Top persons by PLACSP-signatory companies (CSV)
-      description: Fail-closed CSV equivalent of `/api/v1/contracts/top-persons`; it always returns 503
-        before reading data.
+      description: Fail-closed CSV equivalent of `/api/v1/contracts/top-persons`; it always returns 503 before reading data.
       deprecated: true
       x-rate-limit: plan policy (see info.x-rate-limit)
       responses:
@@ -517,24 +475,9 @@ paths:
       tags:
       - Public Procurement
       summary: Search public procurement notices
-      description: 'Cursor-paginated PLACSP notice search over the materialized legal-first projection.
-        The query contract is closed-world and scalar: unknown names, arrays and lexical type mismatches
-        return 400; validly typed values outside documented ranges return 422. Full-text query indexes
-        notice object and buyer only; it never indexes supplier names. Full-text plus structured filters
-        returns 422 until a compound offline projection exists. CPV accepts an indexed 2-8 digit prefix,
-        may combine only with published_from/published_to, and returns 503 rather than falling back when
-        its CPV-date projection or exact index is unavailable. supplier_cif is resolved by the generation-bound
-        offline 0062 projection and matches either the notice''s top-level corporate adjudicatario or
-        any materialized corporate coadjudicator. It may combine with phase, buyer_nif, province and publication
-        dates; open_only and every monetary filter require a future compound projection and return 422.
-        Because one notice can have several adjudicators, a search summary may display a different admitted
-        top-level supplier; tender detail retains the complete materialized result set. Natural-person
-        supplier names and identifiers are withheld together. Budget, estimated value and award are separate
-        source-reported fields and none proves paid or executed spend. open_only freezes one UTC date
-        for SQL filtering, row is_open semantics and cursor binding.'
+      description: 'Cursor-paginated PLACSP notice search over the materialized legal-first projection. The query contract is closed-world and scalar: unknown names, arrays and lexical type mismatches return 400; validly typed values outside documented ranges return 422. Full-text query indexes notice object and buyer only; it never indexes supplier names. Full-text plus structured filters returns 422 until a compound offline projection exists. CPV accepts an indexed 2-8 digit prefix, may combine only with published_from/published_to, and returns 503 rather than falling back when its CPV-date projection or exact index is unavailable. supplier_cif is resolved by the generation-bound offline 0062 projection and matches either the notice''s top-level corporate adjudicatario or any materialized corporate coadjudicator. It may combine with phase, buyer_nif, province and publication dates; open_only and every monetary filter require a future compound projection and return 422. Because one notice can have several adjudicators, a search summary may display a different admitted top-level supplier; tender detail retains the complete materialized result set. Natural-person supplier names and identifiers are withheld together. Budget, estimated value and award are separate source-reported fields and none proves paid or executed spend. open_only freezes one UTC date for SQL filtering, row is_open semantics and cursor binding.'
       x-data-source: PLACSP
-      x-privacy: Natural-person and uncertain buyer/supplier identity is withheld. buyer_nif and supplier_cif
-        accept entity identifiers only.
+      x-privacy: Natural-person and uncertain buyer/supplier identity is withheld. buyer_nif and supplier_cif accept entity identifiers only.
       x-performance-budget-ms: 200
       x-query-contract:
         allowed:
@@ -555,9 +498,7 @@ paths:
         unknown: 400 invalid_parameter
         non_scalar: 400 invalid_parameter
         range: 422 validation_failed
-        combinations: supplier_cif supports phase, buyer_nif, province and publication dates; supplier_cif
-          plus open_only or amount_kind/min_amount_eur/max_amount_eur returns 422 until a compound projection
-          exists
+        combinations: supplier_cif supports phase, buyer_nif, province and publication dates; supplier_cif plus open_only or amount_kind/min_amount_eur/max_amount_eur returns 422 until a compound projection exists
       parameters:
       - name: q
         in: query
@@ -571,9 +512,7 @@ paths:
         schema:
           type: string
           pattern: ^[0-9]{2,8}$
-        description: Indexed PLACSP v1.1 CPV prefix matching primary or lot codes. It may combine only
-          with published_from/published_to; q or another structured filter returns 422. Missing table
-          or exact CPV-date index fails closed with 503; no request-path fallback is executed.
+        description: Indexed PLACSP v1.1 CPV prefix matching primary or lot codes. It may combine only with published_from/published_to; q or another structured filter returns 422. Missing table or exact CPV-date index fails closed with 503; no request-path fallback is executed.
       - name: phase
         in: query
         schema:
@@ -602,16 +541,13 @@ paths:
         schema:
           type: string
           pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
-        description: Corporate CIF only; DNI/NIE is rejected. Matches the top-level adjudicatario or any
-          materialized coadjudicator through the generation-bound offline 0062 projection. A summary item
-          may display another supplier; detail retains all materialized results.
+        description: Corporate CIF only; DNI/NIE is rejected. Matches the top-level adjudicatario or any materialized coadjudicator through the generation-bound offline 0062 projection. A summary item may display another supplier; detail retains all materialized results.
       - name: open_only
         in: query
         schema:
           type: boolean
           default: false
-        description: Strict boolean. Canonical true/false and compatibility query lexemes 1/0 are accepted;
-          every other value is rejected.
+        description: Strict boolean. Canonical true/false and compatibility query lexemes 1/0 are accepted; every other value is rejected.
       - name: amount_kind
         in: query
         schema:
@@ -620,8 +556,7 @@ paths:
           - budget
           - estimated
           - award
-        description: Required whenever min_amount_eur or max_amount_eur is used; prevents mixing monetary
-          semantics.
+        description: Required whenever min_amount_eur or max_amount_eur is used; prevents mixing monetary semantics.
       - name: min_amount_eur
         in: query
         schema:
@@ -660,9 +595,7 @@ paths:
         schema:
           type: string
           pattern: ^[A-Za-z0-9_-]{8,256}$
-        description: Opaque cursor bound to the immutable PLACSP projection generation, current ordering
-          mode and complete normalized filter set; a projection swap or filter change invalidates it.
-          It is not an authentication credential and clients must never synthesize it.
+        description: Opaque cursor bound to the immutable PLACSP projection generation, current ordering mode and complete normalized filter set; a projection swap or filter change invalidates it. It is not an authentication credential and clients must never synthesize it.
       responses:
         '200':
           headers:
@@ -680,10 +613,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
         '422':
-          description: A validly typed value is outside its documented range, a lower bound exceeds its
-            upper bound, full-text is combined with a structured filter, CPV plus a non-date structured
-            filter requires an offline compound projection, or supplier_cif is combined with open_only
-            or any monetary filter before its compound offline projection exists
+          description: A validly typed value is outside its documented range, a lower bound exceeds its upper bound, full-text is combined with a structured filter, CPV plus a non-date structured filter requires an offline compound projection, or supplier_cif is combined with open_only or any monetary filter before its compound offline projection exists
           content:
             application/json:
               schema:
@@ -709,9 +639,7 @@ paths:
       tags:
       - Public Procurement
       summary: Get a sanitized procurement notice
-      description: Returns an explicit public projection by stable url_key, including materialized CODICE
-        v3 lots, CPV codes and results when available. Raw XML, local paths, document binaries and uncertain
-        supplier identities are never returned.
+      description: Returns an explicit public projection by stable url_key, including materialized CODICE v3 lots, CPV codes and results when available. Raw XML, local paths, document binaries and uncertain supplier identities are never returned.
       x-data-source: PLACSP
       x-query-contract:
         allowed: []
@@ -806,8 +734,7 @@ paths:
       tags:
       - Public Procurement
       summary: Get non-personal procurement coverage metrics
-      description: Publishes O(1) materialized record, freshness, document, geography and CODICE-v3 coverage.
-        Monetary rollups are deliberately omitted even though amount semantics are separated.
+      description: Publishes O(1) materialized record, freshness, document, geography and CODICE-v3 coverage. Monetary rollups are deliberately omitted even though amount semantics are separated.
       x-data-source: PLACSP
       x-query-contract:
         allowed: []
@@ -846,8 +773,7 @@ paths:
       tags:
       - Public Procurement
       summary: List corporate suppliers by award count
-      description: Only rows joined to an OpenMercantil company with a matching corporate CIF are eligible.
-        Natural persons are omitted. Ranking is by documented award count; monetary totals are not published.
+      description: Only rows joined to an OpenMercantil company with a matching corporate CIF are eligible. Natural persons are omitted. Ranking is by documented award count; monetary totals are not published.
       x-data-source: PLACSP+BORME
       x-query-contract:
         allowed:
@@ -892,86 +818,7 @@ paths:
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
 components:
-  headers:
-    CompanyContentLocation:
-      description: Present when a safe historical company alias was accepted and processed as its canonical
-        company slug.
-      schema:
-        type: string
-        pattern: ^/api/v1/(?:company|empresa|grafo)/[a-z0-9]+(?:-[a-z0-9]+)*(?:/.*)?$
-      example: /api/v1/company/mercadona-sa
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    PrivateRevalidationCacheControl:
-      description: Caller-specific rate-limit and plan headers make this representation private. A private
-        cache may retain the body but must revalidate every request; shared caches must not store or reuse
-        it.
-      schema:
-        type: string
-        const: private, no-cache, must-revalidate
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    CompanySlugPath:
-      name: slug
-      in: path
-      required: true
-      description: Exact corporate slug admitted by company_public_v2; no empty segments, leading/trailing
-        hyphen or repeated separator.
-      schema:
-        type: string
-        pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        minLength: 1
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
-        lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     InternalServerError:
       description: The bounded operation failed without exposing internal exception details.
       headers:
@@ -982,8 +829,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
-        unsupported or not authorized for this public surface.'
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -993,9 +839,37 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
-              activa.
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Resource not found
       headers:
@@ -1006,9 +880,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification,
-        bounded projection, database helper or required artifact is unavailable. Clients must not infer
-        an empty result.
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
         Cache-Control:
           description: Unavailable public reads are never cacheable.
@@ -1038,336 +910,294 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses
-        an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    PrivateRevalidationCacheControl:
+      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
+      schema:
+        type: string
+        const: private, no-cache, must-revalidate
+    CompanyContentLocation:
+      description: Present when a safe historical company alias was accepted and processed as its canonical company slug.
+      schema:
+        type: string
+        pattern: ^/api/v1/(?:company|empresa|grafo)/[a-z0-9]+(?:-[a-z0-9]+)*(?:/.*)?$
+      example: /api/v1/company/mercadona-sa
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
   schemas:
-    CompanyGrantsResponse:
+    ProjectionUnavailableError:
       type: object
-      description: Generation-bound BDNS view. count is the total projected row count; returned_count
-        is the bounded slice length. No monetary rollup is emitted.
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
       required:
-      - projection_status
+      - error
+      - detail
       - projection
-      - slug
-      - cif
-      - complete_bounded_projection
-      - coverage_status
-      - source_metadata
-      - coverage_notice
-      - count
-      - returned_count
-      - items
-      - amount_notice
-      - _source_catalog
-      - _data_sources_used
       properties:
-        projection_status:
+        error:
           type: string
-          const: available
+          const: projection_unavailable
+        detail:
+          type: string
         projection:
-          $ref: '#/components/schemas/CompanyIntegrationProjection'
-        slug:
           type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        cif:
-          type: string
-          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
-        complete_bounded_projection:
-          type: boolean
-          const: true
-        coverage_status:
-          type: string
-          enum:
-          - available
-          - empty
-        source_metadata:
-          $ref: '#/components/schemas/CompanyIntegrationSourceMetadata'
-        coverage_notice:
-          type: string
-        count:
-          type: integer
-          minimum: 0
-          maximum: 200
-        returned_count:
-          type: integer
-          minimum: 0
-          maximum: 200
-        items:
-          type: array
-          maxItems: 200
-          items:
-            $ref: '#/components/schemas/GrantRecord'
-        amount_notice:
-          type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
       additionalProperties: false
-    CompanyIntegrationAcquisitionCoverage:
+    TenderCoverage:
       type: object
-      description: Attested acquisition boundary for one governed source package. Completeness applies
-        only to this exact bounded scope; complete_history_claimed and source_snapshot_claimed are always
-        false, so this metadata never asserts complete historical or upstream snapshot coverage.
-      required:
-      - scope
-      - declared_scope_complete
-      - complete_history_claimed
-      - source_snapshot_claimed
-      - window_start
-      - window_end
-      - relative_window_days
-      - source_as_of
-      - identity_seed_subject_count
-      - request_count
-      - partition_count
-      - source_package_schema
-      - source_package_manifest_sha256
-      - source_fragment_schema
-      - source_fragment_sha256
-      - source_authority_binding_sha256
-      - coverage_sha256
       properties:
-        scope:
-          type: string
-          enum:
-          - bounded_newest_first_page_prefix
-          - directory_snapshot_plus_relative_event_window
-          - publication_date_window_page_walk
-          - exact_identity_seed_lookup_snapshot
-        declared_scope_complete:
-          type: boolean
-          const: true
-          description: All partitions declared by this bounded acquisition scope were captured; this is
-            not a complete-history claim.
-        complete_history_claimed:
-          type: boolean
-          const: false
-        source_snapshot_claimed:
-          type: boolean
-          const: false
-        window_start:
+        projection:
           type:
           - string
           - 'null'
-          format: date
-        window_end:
+        lots:
           type:
           - string
           - 'null'
-          format: date
-        relative_window_days:
-          type:
-          - integer
-          - 'null'
-          minimum: 1
-        source_as_of:
+        multiple_cpv:
           type:
           - string
           - 'null'
-          format: date
-        identity_seed_subject_count:
-          type: integer
-          minimum: 1
-        request_count:
-          type: integer
-          minimum: 1
-        partition_count:
-          type: integer
-          minimum: 1
-        source_package_schema:
+        supplier_edges:
+          type:
+          - string
+          - 'null'
+        documents:
+          type:
+          - string
+          - 'null'
+        cpv_prefix_filter:
+          type:
+          - string
+          - 'null'
+          description: Indexed offline 2-8 digit prefix coverage; undated projection rows are excluded.
+        projection_generation:
           type: string
-          enum:
-          - openmercantil-bdns-reingest-package/v2
-          - openmercantil-cnmv-reingest-package/v2
-          - openmercantil-ted-reingest-package/v2
-          - openmercantil-wikidata-reingest-package/v2
-        source_package_manifest_sha256:
+          pattern: ^placsp12-[a-f0-9]{64}$
+          description: Immutable PLACSP projection generation used for this response.
+        company_public_generation:
           type: string
-          pattern: ^[a-f0-9]{64}$
-        source_fragment_schema:
-          type: string
-          enum:
-          - openmercantil-bdns-reingest-source-fragment/v2
-          - openmercantil-cnmv-reingest-source-fragment/v2
-          - openmercantil-ted-reingest-source-fragment/v2
-          - openmercantil-wikidata-reingest-source-fragment/v2
-        source_fragment_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_authority_binding_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        coverage_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Digest of the producer-declared bounded coverage object; it is integrity evidence,
-            not proof of complete history.
+          pattern: ^cpv2-[a-f0-9]{64}$
+          description: Immutable company_public_v2 generation that revalidated the requested company identity.
       additionalProperties: false
-    CompanyIntegrationProjection:
+    TenderNotice:
       type: object
-      required:
-      - name
-      - schema_version
-      - builder_version
-      - generation
-      properties:
-        name:
-          type: string
-          const: company_integrations_public_v1
-        schema_version:
-          type: string
-          const: '1.3'
-        builder_version:
-          type: string
-          const: 1.4.0
-        generation:
-          type: string
-          pattern: ^cipv1-[a-f0-9]{64}$
       additionalProperties: false
-    CompanyIntegrationSourceMetadata:
-      type: object
-      description: Projection-bound legal metadata plus the exact governed acquisition boundary for a
-        company integration source.
       required:
-      - slug
-      - name
-      - license
-      - license_url
-      - attribution_required
-      - attribution_text
+      - key
+      - folder_id
+      - object
+      - buyer
+      - supplier
+      - supplier_withheld
+      - cpv
+      - cpv_codes
+      - contract_type
+      - procedure
+      - amounts
+      - reported_amount_eur
+      - reported_tax_exclusive_amount_eur
+      - amount_quality
+      - amount_semantics
+      - phase
+      - phase_description
+      - published_at
+      - awarded_at
+      - formalised_at
+      - submission_deadline
+      - is_open
+      - province
+      - province_slug
+      - document_count
+      - lot_count
+      - result_count
+      - supplier_count
       - official_url
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - data_updated_at
-      - catalog_version
-      - acquisition_coverage
+      - parser_version
+      - source
       properties:
-        slug:
+        key:
           type: string
-          enum:
-          - bdns
-          - cnmv
-          - ted_eu
-          - wikidata
-        name:
-          type: string
-          minLength: 1
-        license:
-          type: string
-          minLength: 1
-        license_url:
+          pattern: ^[a-z0-9]{6,48}$
+        folder_id:
           type:
           - string
           - 'null'
-          format: uri
-        attribution_required:
+        object:
+          type: string
+        buyer:
+          $ref: '#/components/schemas/TenderParty'
+        supplier:
+          oneOf:
+          - $ref: '#/components/schemas/TenderParty'
+          - type: 'null'
+        supplier_withheld:
           type: boolean
-        attribution_text:
+        cpv:
           type:
           - string
           - 'null'
-        official_url:
-          type: string
-          format: uri
-        reuse_conditions:
-          type: string
-          minLength: 1
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-          minLength: 1
-        acquisition_coverage:
-          $ref: '#/components/schemas/CompanyIntegrationAcquisitionCoverage'
-      additionalProperties: false
-    CompanyProcurementResponse:
-      type: object
-      required:
-      - schema_version
-      - slug
-      - count
-      - items
-      - page
-      - monetary_rollup
-      - rollup_policy
-      properties:
-        schema_version:
-          type: string
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
+        cpv_codes:
           type: array
           items:
-            $ref: '#/components/schemas/TenderNotice'
-          maxItems: 100
-        page:
+            type: string
+            pattern: ^[0-9]{2,8}$
+          uniqueItems: true
+        contract_type:
+          type:
+          - string
+          - 'null'
+          description: Raw CODICE code when no verified codelist label is available.
+        procedure:
+          type:
+          - string
+          - 'null'
+          description: Raw CODICE code when no verified codelist label is available.
+        amounts:
           type: object
-          required:
-          - limit
-          - has_more
-          properties:
-            limit:
-              type: integer
-            has_more:
-              type: boolean
           additionalProperties: false
-        monetary_rollup:
-          type: 'null'
-        rollup_policy:
+          required:
+          - budget_total
+          - budget_tax_exclusive
+          - estimated_total
+          - award_payable_total
+          properties:
+            budget_total:
+              $ref: '#/components/schemas/TenderMoney'
+            budget_tax_exclusive:
+              $ref: '#/components/schemas/TenderMoney'
+            estimated_total:
+              $ref: '#/components/schemas/TenderMoney'
+            award_payable_total:
+              $ref: '#/components/schemas/TenderMoney'
+        reported_amount_eur:
+          type:
+          - number
+          - 'null'
+          deprecated: true
+          description: 'Compatibility field: award_payable_total only when its currency is EUR. Not proof of payment/executed spend.'
+        reported_tax_exclusive_amount_eur:
+          type:
+          - number
+          - 'null'
+          deprecated: true
+        amount_quality:
           type: string
-        coverage:
-          $ref: '#/components/schemas/TenderCoverage'
-        attribution:
+          description: Projection quality marker such as complete, separated_reported, missing, legacy_withheld or outlier_withheld.
+        amount_semantics:
           type: string
-        disclaimer:
+        phase:
+          type:
+          - string
+          - 'null'
+          enum:
+          - PUB
+          - PRE
+          - EV
+          - ADJ
+          - RES
+          - ANUL
+          - null
+        phase_description:
+          type:
+          - string
+          - 'null'
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date
+        awarded_at:
+          type:
+          - string
+          - 'null'
+          format: date
+        formalised_at:
+          type:
+          - string
+          - 'null'
+          format: date
+        submission_deadline:
+          type:
+          - string
+          - 'null'
+          format: date
+        is_open:
+          type: boolean
+        province:
+          type:
+          - string
+          - 'null'
+        province_slug:
+          type:
+          - string
+          - 'null'
+        document_count:
+          type: integer
+          minimum: 0
+        lot_count:
+          type: integer
+          minimum: 0
+        result_count:
+          type: integer
+          minimum: 0
+        supplier_count:
+          type: integer
+          minimum: 0
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        parser_version:
+          type:
+          - string
+          - 'null'
+        source:
           type: string
-        _alias_of:
-          type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
+          const: PLACSP
+    TenderResultSupplier:
+      type: object
       additionalProperties: false
+      required:
+      - supplier
+      - supplier_withheld
+      properties:
+        supplier:
+          oneOf:
+          - $ref: '#/components/schemas/TenderParty'
+          - type: 'null'
+        supplier_withheld:
+          type: boolean
     CompanyTedResponse:
       type: object
-      description: Generation-bound minimized TED view. count is the total projected row count; returned_count
-        is the bounded slice length.
+      description: Generation-bound minimized TED view. count is the total projected row count; returned_count is the bounded slice length.
       required:
       - projection_status
       - projection
@@ -1433,10 +1263,200 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
+    TenderResult:
+      type: object
+      additionalProperties: false
+      required:
+      - lot_id
+      - result_index
+      - result_code
+      - description
+      - award_date
+      - formalized_date
+      - amounts
+      - amount_quality
+      - received_tender_quantity
+      - sme_awarded
+      - suppliers
+      properties:
+        lot_id:
+          type: string
+        result_index:
+          type: integer
+          minimum: 0
+        result_code:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        award_date:
+          type:
+          - string
+          - 'null'
+          format: date
+        formalized_date:
+          type:
+          - string
+          - 'null'
+          format: date
+        amounts:
+          type: object
+          additionalProperties: false
+          required:
+          - award_tax_exclusive
+          - award_payable
+          - lower_tender
+          - higher_tender
+          properties:
+            award_tax_exclusive:
+              $ref: '#/components/schemas/TenderMoney'
+            award_payable:
+              $ref: '#/components/schemas/TenderMoney'
+            lower_tender:
+              $ref: '#/components/schemas/TenderMoney'
+            higher_tender:
+              $ref: '#/components/schemas/TenderMoney'
+        amount_quality:
+          type: string
+        received_tender_quantity:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        sme_awarded:
+          type:
+          - boolean
+          - 'null'
+        suppliers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenderResultSupplier'
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    TenderGeography:
+      type: object
+      required:
+      - matched_records
+      - coverage_percent
+      - warning
+      properties:
+        matched_records:
+          type: integer
+        coverage_percent:
+          type: number
+        warning:
+          type: string
+      additionalProperties: false
+    TenderMoney:
+      type: object
+      additionalProperties: false
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+          maximum: 10000000000
+        currency:
+          type:
+          - string
+          - 'null'
+          pattern: ^[A-Z]{3}$
+    TenderDataQuality:
+      type: object
+      required:
+      - v3_records
+      - multi_lot_records
+      - multi_cpv_records
+      - multi_supplier_records
+      - withheld_supplier_records
+      - amount_semantics
+      properties:
+        v3_records:
+          type: integer
+        multi_lot_records:
+          type: integer
+        multi_cpv_records:
+          type: integer
+        multi_supplier_records:
+          type: integer
+        withheld_supplier_records:
+          type: integer
+        amount_semantics:
+          type: string
+      additionalProperties: false
+    TenderCollectionMetadata:
+      type: object
+      description: Hard response bounds and per-collection truncation flags. Truncation never triggers an unbounded fallback.
+      required:
+      - limits
+      - truncated
+      properties:
+        limits:
+          type: object
+          required:
+          - lots
+          - cpv_codes
+          - suppliers
+          - results
+          properties:
+            lots:
+              type: integer
+              const: 100
+            cpv_codes:
+              type: integer
+              const: 500
+            suppliers:
+              type: integer
+              const: 250
+            results:
+              type: integer
+              const: 100
+          additionalProperties: false
+        truncated:
+          type: object
+          required:
+          - lots
+          - cpv_codes
+          - suppliers
+          - results
+          properties:
+            lots:
+              type: boolean
+            cpv_codes:
+              type: boolean
+            suppliers:
+              type: boolean
+            results:
+              type: boolean
+          additionalProperties: false
+      additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -1538,10 +1558,153 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    CompanyIntegrationAcquisitionCoverage:
+      type: object
+      description: Attested acquisition boundary for one governed source package. Completeness applies only to this exact bounded scope; complete_history_claimed and source_snapshot_claimed are always false, so this metadata never asserts complete historical or upstream snapshot coverage.
+      required:
+      - scope
+      - declared_scope_complete
+      - complete_history_claimed
+      - source_snapshot_claimed
+      - window_start
+      - window_end
+      - relative_window_days
+      - source_as_of
+      - identity_seed_subject_count
+      - request_count
+      - partition_count
+      - source_package_schema
+      - source_package_manifest_sha256
+      - source_fragment_schema
+      - source_fragment_sha256
+      - source_authority_binding_sha256
+      - coverage_sha256
+      properties:
+        scope:
+          type: string
+          enum:
+          - bounded_newest_first_page_prefix
+          - directory_snapshot_plus_relative_event_window
+          - publication_date_window_page_walk
+          - exact_identity_seed_lookup_snapshot
+        declared_scope_complete:
+          type: boolean
+          const: true
+          description: All partitions declared by this bounded acquisition scope were captured; this is not a complete-history claim.
+        complete_history_claimed:
+          type: boolean
+          const: false
+        source_snapshot_claimed:
+          type: boolean
+          const: false
+        window_start:
+          type:
+          - string
+          - 'null'
+          format: date
+        window_end:
+          type:
+          - string
+          - 'null'
+          format: date
+        relative_window_days:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        source_as_of:
+          type:
+          - string
+          - 'null'
+          format: date
+        identity_seed_subject_count:
+          type: integer
+          minimum: 1
+        request_count:
+          type: integer
+          minimum: 1
+        partition_count:
+          type: integer
+          minimum: 1
+        source_package_schema:
+          type: string
+          enum:
+          - openmercantil-bdns-reingest-package/v2
+          - openmercantil-cnmv-reingest-package/v2
+          - openmercantil-ted-reingest-package/v2
+          - openmercantil-wikidata-reingest-package/v2
+        source_package_manifest_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_fragment_schema:
+          type: string
+          enum:
+          - openmercantil-bdns-reingest-source-fragment/v2
+          - openmercantil-cnmv-reingest-source-fragment/v2
+          - openmercantil-ted-reingest-source-fragment/v2
+          - openmercantil-wikidata-reingest-source-fragment/v2
+        source_fragment_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_authority_binding_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        coverage_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+          description: Digest of the producer-declared bounded coverage object; it is integrity evidence, not proof of complete history.
+      additionalProperties: false
+    CompanyProcurementResponse:
+      type: object
+      required:
+      - schema_version
+      - slug
+      - count
+      - items
+      - page
+      - monetary_rollup
+      - rollup_policy
+      properties:
+        schema_version:
+          type: string
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenderNotice'
+          maxItems: 100
+        page:
+          type: object
+          required:
+          - limit
+          - has_more
+          properties:
+            limit:
+              type: integer
+            has_more:
+              type: boolean
+          additionalProperties: false
+        monetary_rollup:
+          type: 'null'
+        rollup_policy:
+          type: string
+        coverage:
+          $ref: '#/components/schemas/TenderCoverage'
+        attribution:
+          type: string
+        disclaimer:
+          type: string
+        _alias_of:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+      additionalProperties: false
     GrantRecord:
       type: object
-      description: Minimized, attested BDNS row. award_amount_cents is an awarded amount, never proof
-        of payment.
+      description: Minimized, attested BDNS row. award_amount_cents is an awarded amount, never proof of payment.
       required:
       - bdns_code
       - granting_body
@@ -1590,595 +1753,6 @@ components:
           type: string
           const: awarded_not_payment
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
-        or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar
-            el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    TedContractRecord:
-      type: object
-      description: Minimized, attested TED notice. Tenderer, currency and connector free text are excluded.
-      required:
-      - publication_number
-      - publication_date
-      - buyer_name
-      - notice_url
-      properties:
-        publication_number:
-          type: string
-          minLength: 1
-          maxLength: 100
-        publication_date:
-          type: string
-          format: date
-        buyer_name:
-          type: string
-          minLength: 1
-          maxLength: 300
-        notice_url:
-          type: string
-          format: uri
-          pattern: ^https://(?:[^/]+\.)?ted\.europa\.eu/
-      additionalProperties: false
-    TenderCollectionMetadata:
-      type: object
-      description: Hard response bounds and per-collection truncation flags. Truncation never triggers
-        an unbounded fallback.
-      required:
-      - limits
-      - truncated
-      properties:
-        limits:
-          type: object
-          required:
-          - lots
-          - cpv_codes
-          - suppliers
-          - results
-          properties:
-            lots:
-              type: integer
-              const: 100
-            cpv_codes:
-              type: integer
-              const: 500
-            suppliers:
-              type: integer
-              const: 250
-            results:
-              type: integer
-              const: 100
-          additionalProperties: false
-        truncated:
-          type: object
-          required:
-          - lots
-          - cpv_codes
-          - suppliers
-          - results
-          properties:
-            lots:
-              type: boolean
-            cpv_codes:
-              type: boolean
-            suppliers:
-              type: boolean
-            results:
-              type: boolean
-          additionalProperties: false
-      additionalProperties: false
-    TenderCoverage:
-      type: object
-      properties:
-        projection:
-          type:
-          - string
-          - 'null'
-        lots:
-          type:
-          - string
-          - 'null'
-        multiple_cpv:
-          type:
-          - string
-          - 'null'
-        supplier_edges:
-          type:
-          - string
-          - 'null'
-        documents:
-          type:
-          - string
-          - 'null'
-        cpv_prefix_filter:
-          type:
-          - string
-          - 'null'
-          description: Indexed offline 2-8 digit prefix coverage; undated projection rows are excluded.
-        projection_generation:
-          type: string
-          pattern: ^placsp12-[a-f0-9]{64}$
-          description: Immutable PLACSP projection generation used for this response.
-        company_public_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-          description: Immutable company_public_v2 generation that revalidated the requested company identity.
-      additionalProperties: false
-    TenderDataQuality:
-      type: object
-      required:
-      - v3_records
-      - multi_lot_records
-      - multi_cpv_records
-      - multi_supplier_records
-      - withheld_supplier_records
-      - amount_semantics
-      properties:
-        v3_records:
-          type: integer
-        multi_lot_records:
-          type: integer
-        multi_cpv_records:
-          type: integer
-        multi_supplier_records:
-          type: integer
-        withheld_supplier_records:
-          type: integer
-        amount_semantics:
-          type: string
-      additionalProperties: false
-    TenderGeography:
-      type: object
-      required:
-      - matched_records
-      - coverage_percent
-      - warning
-      properties:
-        matched_records:
-          type: integer
-        coverage_percent:
-          type: number
-        warning:
-          type: string
-      additionalProperties: false
-    TenderLot:
-      type: object
-      additionalProperties: false
-      required:
-      - lot_id
-      - object
-      - budget_total
-      - budget_tax_exclusive
-      - estimated_total
-      - nuts_code
-      - cpv_codes
-      properties:
-        lot_id:
-          type: string
-        object:
-          type:
-          - string
-          - 'null'
-        budget_total:
-          $ref: '#/components/schemas/TenderMoney'
-        budget_tax_exclusive:
-          $ref: '#/components/schemas/TenderMoney'
-        estimated_total:
-          $ref: '#/components/schemas/TenderMoney'
-        nuts_code:
-          type:
-          - string
-          - 'null'
-        cpv_codes:
-          type: array
-          items:
-            type: string
-            pattern: ^[0-9]{2,8}$
-    TenderMoney:
-      type: object
-      additionalProperties: false
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          type:
-          - number
-          - 'null'
-          minimum: 0
-          maximum: 10000000000
-        currency:
-          type:
-          - string
-          - 'null'
-          pattern: ^[A-Z]{3}$
-    TenderNotice:
-      type: object
-      additionalProperties: false
-      required:
-      - key
-      - folder_id
-      - object
-      - buyer
-      - supplier
-      - supplier_withheld
-      - cpv
-      - cpv_codes
-      - contract_type
-      - procedure
-      - amounts
-      - reported_amount_eur
-      - reported_tax_exclusive_amount_eur
-      - amount_quality
-      - amount_semantics
-      - phase
-      - phase_description
-      - published_at
-      - awarded_at
-      - formalised_at
-      - submission_deadline
-      - is_open
-      - province
-      - province_slug
-      - document_count
-      - lot_count
-      - result_count
-      - supplier_count
-      - official_url
-      - parser_version
-      - source
-      properties:
-        key:
-          type: string
-          pattern: ^[a-z0-9]{6,48}$
-        folder_id:
-          type:
-          - string
-          - 'null'
-        object:
-          type: string
-        buyer:
-          $ref: '#/components/schemas/TenderParty'
-        supplier:
-          oneOf:
-          - $ref: '#/components/schemas/TenderParty'
-          - type: 'null'
-        supplier_withheld:
-          type: boolean
-        cpv:
-          type:
-          - string
-          - 'null'
-        cpv_codes:
-          type: array
-          items:
-            type: string
-            pattern: ^[0-9]{2,8}$
-          uniqueItems: true
-        contract_type:
-          type:
-          - string
-          - 'null'
-          description: Raw CODICE code when no verified codelist label is available.
-        procedure:
-          type:
-          - string
-          - 'null'
-          description: Raw CODICE code when no verified codelist label is available.
-        amounts:
-          type: object
-          additionalProperties: false
-          required:
-          - budget_total
-          - budget_tax_exclusive
-          - estimated_total
-          - award_payable_total
-          properties:
-            budget_total:
-              $ref: '#/components/schemas/TenderMoney'
-            budget_tax_exclusive:
-              $ref: '#/components/schemas/TenderMoney'
-            estimated_total:
-              $ref: '#/components/schemas/TenderMoney'
-            award_payable_total:
-              $ref: '#/components/schemas/TenderMoney'
-        reported_amount_eur:
-          type:
-          - number
-          - 'null'
-          deprecated: true
-          description: 'Compatibility field: award_payable_total only when its currency is EUR. Not proof
-            of payment/executed spend.'
-        reported_tax_exclusive_amount_eur:
-          type:
-          - number
-          - 'null'
-          deprecated: true
-        amount_quality:
-          type: string
-          description: Projection quality marker such as complete, separated_reported, missing, legacy_withheld
-            or outlier_withheld.
-        amount_semantics:
-          type: string
-        phase:
-          type:
-          - string
-          - 'null'
-          enum:
-          - PUB
-          - PRE
-          - EV
-          - ADJ
-          - RES
-          - ANUL
-          - null
-        phase_description:
-          type:
-          - string
-          - 'null'
-        published_at:
-          type:
-          - string
-          - 'null'
-          format: date
-        awarded_at:
-          type:
-          - string
-          - 'null'
-          format: date
-        formalised_at:
-          type:
-          - string
-          - 'null'
-          format: date
-        submission_deadline:
-          type:
-          - string
-          - 'null'
-          format: date
-        is_open:
-          type: boolean
-        province:
-          type:
-          - string
-          - 'null'
-        province_slug:
-          type:
-          - string
-          - 'null'
-        document_count:
-          type: integer
-          minimum: 0
-        lot_count:
-          type: integer
-          minimum: 0
-        result_count:
-          type: integer
-          minimum: 0
-        supplier_count:
-          type: integer
-          minimum: 0
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        parser_version:
-          type:
-          - string
-          - 'null'
-        source:
-          type: string
-          const: PLACSP
-    TenderParty:
-      type: object
-      additionalProperties: false
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        cif:
-          type:
-          - string
-          - 'null'
-          description: Corporate CIF only.
-        nif:
-          type:
-          - string
-          - 'null'
-          description: Public-body NIF; never a supplier DNI/NIE.
-        dir3:
-          type:
-          - string
-          - 'null'
-        company_slug:
-          type:
-          - string
-          - 'null'
-        withheld:
-          type: boolean
-    TenderResult:
-      type: object
-      additionalProperties: false
-      required:
-      - lot_id
-      - result_index
-      - result_code
-      - description
-      - award_date
-      - formalized_date
-      - amounts
-      - amount_quality
-      - received_tender_quantity
-      - sme_awarded
-      - suppliers
-      properties:
-        lot_id:
-          type: string
-        result_index:
-          type: integer
-          minimum: 0
-        result_code:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        award_date:
-          type:
-          - string
-          - 'null'
-          format: date
-        formalized_date:
-          type:
-          - string
-          - 'null'
-          format: date
-        amounts:
-          type: object
-          additionalProperties: false
-          required:
-          - award_tax_exclusive
-          - award_payable
-          - lower_tender
-          - higher_tender
-          properties:
-            award_tax_exclusive:
-              $ref: '#/components/schemas/TenderMoney'
-            award_payable:
-              $ref: '#/components/schemas/TenderMoney'
-            lower_tender:
-              $ref: '#/components/schemas/TenderMoney'
-            higher_tender:
-              $ref: '#/components/schemas/TenderMoney'
-        amount_quality:
-          type: string
-        received_tender_quantity:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        sme_awarded:
-          type:
-          - boolean
-          - 'null'
-        suppliers:
-          type: array
-          items:
-            $ref: '#/components/schemas/TenderResultSupplier'
-    TenderResultSupplier:
-      type: object
-      additionalProperties: false
-      required:
-      - supplier
-      - supplier_withheld
-      properties:
-        supplier:
-          oneOf:
-          - $ref: '#/components/schemas/TenderParty'
-          - type: 'null'
-        supplier_withheld:
-          type: boolean
     TenderSearchFilters:
       type: object
       required:
@@ -2242,6 +1816,120 @@ components:
           - 'null'
         open_only:
           type: boolean
+      additionalProperties: false
+    CompanyIntegrationProjection:
+      type: object
+      required:
+      - name
+      - schema_version
+      - builder_version
+      - generation
+      properties:
+        name:
+          type: string
+          const: company_integrations_public_v1
+        schema_version:
+          type: string
+          const: '1.3'
+        builder_version:
+          type: string
+          const: 1.4.0
+        generation:
+          type: string
+          pattern: ^cipv1-[a-f0-9]{64}$
+      additionalProperties: false
+    TenderParty:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        cif:
+          type:
+          - string
+          - 'null'
+          description: Corporate CIF only.
+        nif:
+          type:
+          - string
+          - 'null'
+          description: Public-body NIF; never a supplier DNI/NIE.
+        dir3:
+          type:
+          - string
+          - 'null'
+        company_slug:
+          type:
+          - string
+          - 'null'
+        withheld:
+          type: boolean
+    CompanyIntegrationSourceMetadata:
+      type: object
+      description: Projection-bound legal metadata plus the exact governed acquisition boundary for a company integration source.
+      required:
+      - slug
+      - name
+      - license
+      - license_url
+      - attribution_required
+      - attribution_text
+      - official_url
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - data_updated_at
+      - catalog_version
+      - acquisition_coverage
+      properties:
+        slug:
+          type: string
+          enum:
+          - bdns
+          - cnmv
+          - ted_eu
+          - wikidata
+        name:
+          type: string
+          minLength: 1
+        license:
+          type: string
+          minLength: 1
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type: string
+          format: uri
+        reuse_conditions:
+          type: string
+          minLength: 1
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+          minLength: 1
+        acquisition_coverage:
+          $ref: '#/components/schemas/CompanyIntegrationAcquisitionCoverage'
       additionalProperties: false
     TenderSearchResponse:
       type: object
@@ -2312,69 +2000,74 @@ components:
           type: object
           additionalProperties:
             type: string
-    TenderStats:
+    CompanyGrantsResponse:
       type: object
-      additionalProperties: false
+      description: Generation-bound BDNS view. count is the total projected row count; returned_count is the bounded slice length. No monetary rollup is emitted.
       required:
-      - schema_version
-      - total_records
-      - open_records
-      - records_with_documents
-      - latest_publication_date
-      - geography
-      - data_quality
+      - projection_status
       - projection
-      - attribution
+      - slug
+      - cif
+      - complete_bounded_projection
+      - coverage_status
+      - source_metadata
+      - coverage_notice
+      - count
+      - returned_count
+      - items
+      - amount_notice
       - _source_catalog
       - _data_sources_used
       properties:
-        schema_version:
+        projection_status:
           type: string
-        total_records:
-          type: integer
-        open_records:
-          type: integer
-        records_with_documents:
-          type: integer
-        latest_publication_date:
-          type:
-          - string
-          - 'null'
-          format: date
-        geography:
-          $ref: '#/components/schemas/TenderGeography'
-        data_quality:
-          $ref: '#/components/schemas/TenderDataQuality'
+          const: available
         projection:
-          type: object
-          additionalProperties: false
-          required:
-          - schema_version
-          - generation
-          - projected_at
-          properties:
-            schema_version:
-              type: string
-              const: '1.2'
-            generation:
-              type: string
-              pattern: ^placsp12-[a-f0-9]{64}$
-            projected_at:
-              type: string
-              format: date-time
-        attribution:
+          $ref: '#/components/schemas/CompanyIntegrationProjection'
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        cif:
+          type: string
+          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
+        complete_bounded_projection:
+          type: boolean
+          const: true
+        coverage_status:
+          type: string
+          enum:
+          - available
+          - empty
+        source_metadata:
+          $ref: '#/components/schemas/CompanyIntegrationSourceMetadata'
+        coverage_notice:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+          maximum: 200
+        returned_count:
+          type: integer
+          minimum: 0
+          maximum: 200
+        items:
+          type: array
+          maxItems: 200
+          items:
+            $ref: '#/components/schemas/GrantRecord'
+        amount_notice:
           type: string
         _source_catalog:
           $ref: '#/components/schemas/SourceCatalogEnvelope'
         _data_sources_used:
           type: array
-          minItems: 1
           items:
             $ref: '#/components/schemas/PublicSourcePolicyMetadata'
         _attributions:
           type: object
           additionalProperties:
             type: string
+      additionalProperties: false
     TenderSupplierResponse:
       type: object
       additionalProperties: false
@@ -2473,17 +2166,227 @@ components:
           type: object
           additionalProperties:
             type: string
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    TenderStats:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - total_records
+      - open_records
+      - records_with_documents
+      - latest_publication_date
+      - geography
+      - data_quality
+      - projection
+      - attribution
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+        total_records:
+          type: integer
+        open_records:
+          type: integer
+        records_with_documents:
+          type: integer
+        latest_publication_date:
+          type:
+          - string
+          - 'null'
+          format: date
+        geography:
+          $ref: '#/components/schemas/TenderGeography'
+        data_quality:
+          $ref: '#/components/schemas/TenderDataQuality'
+        projection:
+          type: object
+          additionalProperties: false
+          required:
+          - schema_version
+          - generation
+          - projected_at
+          properties:
+            schema_version:
+              type: string
+              const: '1.2'
+            generation:
+              type: string
+              pattern: ^placsp12-[a-f0-9]{64}$
+            projected_at:
+              type: string
+              format: date-time
+        attribution:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+    TenderLot:
+      type: object
+      additionalProperties: false
+      required:
+      - lot_id
+      - object
+      - budget_total
+      - budget_tax_exclusive
+      - estimated_total
+      - nuts_code
+      - cpv_codes
+      properties:
+        lot_id:
+          type: string
+        object:
+          type:
+          - string
+          - 'null'
+        budget_total:
+          $ref: '#/components/schemas/TenderMoney'
+        budget_tax_exclusive:
+          $ref: '#/components/schemas/TenderMoney'
+        estimated_total:
+          $ref: '#/components/schemas/TenderMoney'
+        nuts_code:
+          type:
+          - string
+          - 'null'
+        cpv_codes:
+          type: array
+          items:
+            type: string
+            pattern: ^[0-9]{2,8}$
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    TedContractRecord:
+      type: object
+      description: Minimized, attested TED notice. Tenderer, currency and connector free text are excluded.
+      required:
+      - publication_number
+      - publication_date
+      - buyer_name
+      - notice_url
+      properties:
+        publication_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        publication_date:
+          type: string
+          format: date
+        buyer_name:
+          type: string
+          minLength: 1
+          maxLength: 300
+        notice_url:
+          type: string
+          format: uri
+          pattern: ^https://(?:[^/]+\.)?ted\.europa\.eu/
+      additionalProperties: false
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
+    CompanySlugPath:
+      name: slug
+      in: path
+      required: true
+      description: Exact corporate slug admitted by company_public_v2; no empty segments, leading/trailing hyphen or repeated separator.
+      schema:
+        type: string
+        pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        minLength: 1
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ob_sess
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
     apiKey:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

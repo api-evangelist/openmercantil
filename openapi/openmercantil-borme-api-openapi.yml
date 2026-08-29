@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil BORME API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,17 +64,13 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
@@ -104,14 +88,9 @@ paths:
       x-api-credential-scope: companies:read
       operationId: getCompanyBySlugEvents
       tags:
-      - Companies
       - BORME
       summary: Get paginated company events
-      description: Return BORME events for a known company slug, optionally filtered by calendar year.
-        The closed scalar query contract rejects unknown names, arrays and malformed integer values with
-        400; valid integers outside their bounds return 422. If year is omitted, the server freezes the
-        current UTC year for the request. Historical coverage starts at 1900 and year must be less than
-        or equal to the current UTC year; there is no fixed calendar ceiling.
+      description: Return BORME events for a known company slug, optionally filtered by calendar year. The closed scalar query contract rejects unknown names, arrays and malformed integer values with 400; valid integers outside their bounds return 422. If year is omitted, the server freezes the current UTC year for the request. Historical coverage starts at 1900 and year must be less than or equal to the current UTC year; there is no fixed calendar ceiling.
       x-query-contract:
         allowed:
         - year
@@ -131,8 +110,7 @@ paths:
       - name: year
         in: query
         required: false
-        description: Calendar year from 1900 through the current UTC year (year <= current UTC year).
-          Defaults dynamically to the current UTC year.
+        description: Calendar year from 1900 through the current UTC year (year <= current UTC year). Defaults dynamically to the current UTC year.
         schema:
           type: integer
           minimum: 1900
@@ -196,14 +174,9 @@ paths:
       x-api-credential-scope: companies:read
       operationId: getCompanyBySlugTimeline
       tags:
-      - Companies
       - BORME
       summary: Get unified multi-source company timeline
-      description: Fail-closed derived route. Return chronological events from the exact hash-attested
-        BORME company report and the generation/company-bound PLACSP projection. BDNS coverage is explicitly
-        unavailable_generation_bound_projection_missing and no BDNS row, empty-list claim or fallback
-        is emitted. If either available authority cannot be verified, the route returns 503 without reading
-        or caching raw source data.
+      description: Fail-closed derived route. Return chronological events from the exact hash-attested BORME company report and the generation/company-bound PLACSP projection. BDNS coverage is explicitly unavailable_generation_bound_projection_missing and no BDNS row, empty-list claim or fallback is emitted. If either available authority cannot be verified, the route returns 503 without reading or caching raw source data.
       parameters:
       - name: slug
         in: path
@@ -321,8 +294,7 @@ paths:
       tags:
       - BORME
       summary: Get BORME daily summary
-      description: 'Return the BORME publication summary for a given date with all acts grouped by province
-        and type. Source: official BORME publication. Cached 24h.'
+      description: 'Return the BORME publication summary for a given date with all acts grouped by province and type. Source: official BORME publication. Cached 24h.'
       parameters:
       - name: date
         in: path
@@ -357,8 +329,7 @@ paths:
       tags:
       - BORME
       summary: Get a BORME daily summary through the legacy alias
-      description: Deprecated alias of `GET /api/v1/daily/{date}`. It returns the same attributed BORME
-        daily projection; new clients must use the canonical route.
+      description: Deprecated alias of `GET /api/v1/daily/{date}`. It returns the same attributed BORME daily projection; new clients must use the canonical route.
       deprecated: true
       x-replaced-by: /api/v1/daily/{date}
       parameters:
@@ -396,11 +367,9 @@ paths:
         lexical: 400 invalid_parameter
         range: 422 validation_failed
       tags:
-      - Companies
       - BORME
       summary: Get extracted BORME facts for a company
-      description: Return structured facts extracted from BORME publications grouped by type (appointments,
-        removals, capital changes, etc.). Spanish-friendly alias of /company.
+      description: Return structured facts extracted from BORME publications grouped by type (appointments, removals, capital changes, etc.). Spanish-friendly alias of /company.
       parameters:
       - name: slug
         in: path
@@ -455,11 +424,9 @@ paths:
         lexical: 400 invalid_parameter
         range: 422 validation_failed
       tags:
-      - Companies
       - BORME
       summary: Get extracted BORME facts through the legacy English alias
-      description: Deprecated alias of `GET /api/v1/empresa/{slug}/facts`. It preserves the same legal-entity
-        subject guard and BORME source policy.
+      description: Deprecated alias of `GET /api/v1/empresa/{slug}/facts`. It preserves the same legal-entity subject guard and BORME source policy.
       deprecated: true
       x-replaced-by: /api/v1/empresa/{slug}/facts
       parameters:
@@ -499,59 +466,9 @@ paths:
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
 components:
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
-        lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    InternalServerError:
-      description: The bounded operation failed without exposing internal exception details.
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -560,8 +477,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
-        unsupported or not authorized for this public surface.'
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -571,9 +487,37 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
-              activa.
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
+    InternalServerError:
+      description: The bounded operation failed without exposing internal exception details.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Resource not found
       headers:
@@ -584,9 +528,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification,
-        bounded projection, database helper or required artifact is unavailable. Clients must not infer
-        an empty result.
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
         Cache-Control:
           description: Unavailable public reads are never cacheable.
@@ -616,27 +558,6 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses
-        an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     BormeEvent:
       type: object
@@ -685,6 +606,76 @@ components:
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    CompanyEventsResponse:
+      type: object
+      required:
+      - slug
+      - year
+      - page
+      - page_size
+      - total
+      - pages
+      - items
+      properties:
+        slug:
+          type: string
+        year:
+          type: string
+          pattern: ^\d{4}$
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+          maxItems: 100
+      additionalProperties: false
+    DailySummary:
+      type: object
+      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with the artifact version.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        count:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+        provinces:
+          type: object
+          additionalProperties:
+            type: integer
+        types:
+          type: object
+          additionalProperties:
+            type: integer
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     BormeFact:
       type: object
       description: Sanitized structured BORME fact; DNI/NIE is redacted before caching.
@@ -718,125 +709,9 @@ components:
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    CompanyEventsResponse:
-      type: object
-      required:
-      - slug
-      - year
-      - page
-      - page_size
-      - total
-      - pages
-      - items
-      properties:
-        slug:
-          type: string
-        year:
-          type: string
-          pattern: ^\d{4}$
-        page:
-          type: integer
-        page_size:
-          type: integer
-        total:
-          type: integer
-        pages:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-          maxItems: 100
-      additionalProperties: false
-    CompanyFactsResponse:
-      type: object
-      required:
-      - slug
-      - count
-      - has_more
-      - facts
-      - summary
-      - source
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        has_more:
-          type: boolean
-        facts:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeFact'
-          maxItems: 200
-        summary:
-          type: object
-          description: Closed summary derived from the same hash-attested company report as the returned
-            facts.
-          required:
-          - total_facts
-          - first_seen
-          - last_seen
-          - types
-          properties:
-            total_facts:
-              type: integer
-              minimum: 0
-            first_seen:
-              type:
-              - string
-              - 'null'
-              format: date
-            last_seen:
-              type:
-              - string
-              - 'null'
-              format: date
-            types:
-              type: object
-              description: Counts keyed by the documented BORME fact_type.
-              additionalProperties:
-                type: integer
-                minimum: 0
-          additionalProperties: false
-        attribution:
-          type: string
-        source:
-          type: string
-          const: borme
-        sync_date:
-          type: string
-          format: date-time
-      additionalProperties: false
-    DailySummary:
-      type: object
-      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with
-        the artifact version.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        count:
-          type: integer
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-        provinces:
-          type: object
-          additionalProperties:
-            type: integer
-        types:
-          type: object
-          additionalProperties:
-            type: integer
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -938,6 +813,65 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    CompanyFactsResponse:
+      type: object
+      required:
+      - slug
+      - count
+      - has_more
+      - facts
+      - summary
+      - source
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        has_more:
+          type: boolean
+        facts:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeFact'
+          maxItems: 200
+        summary:
+          type: object
+          description: Closed summary derived from the same hash-attested company report as the returned facts.
+          required:
+          - total_facts
+          - first_seen
+          - last_seen
+          - types
+          properties:
+            total_facts:
+              type: integer
+              minimum: 0
+            first_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            last_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            types:
+              type: object
+              description: Counts keyed by the documented BORME fact_type.
+              additionalProperties:
+                type: integer
+                minimum: 0
+          additionalProperties: false
+        attribution:
+          type: string
+        source:
+          type: string
+          const: borme
+        sync_date:
+          type: string
+          format: date-time
+      additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -952,34 +886,58 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
-        or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
+  headers:
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ob_sess
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
     apiKey:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

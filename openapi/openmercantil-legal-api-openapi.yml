@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil Legal API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,54 +64,35 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: Legal
-  description: 'Spanish mercantile-law layer (derecho mercantil): legislation corpus + article texts +
-    act→norm bridge. Distributes the consolidated BOE legal corpus structured by OpenMercantil so LLMs
-    and agents can cite it as a source. License: consolidated text from the BOE, reused under Ley 37/2007
-    (re-use of public sector information); the official version is always boe.es. Informational only —
-    NOT legal advice. Court judgments are NOT exposed here (CENDOJ is kept as a citation-index only, per
-    CGPJ Reglamento 3/2010); this layer distributes legislation + the act↔norm index.'
+  description: 'Spanish mercantile-law layer (derecho mercantil): legislation corpus + article texts + act→norm bridge. Distributes the consolidated BOE legal corpus structured by OpenMercantil so LLMs and agents can cite it as a source. License: consolidated text from the BOE, reused under Ley 37/2007 (re-use of public sector information); the official version is always boe.es. Informational only — NOT legal advice. Court judgments are NOT exposed here (CENDOJ is kept as a citation-index only, per CGPJ Reglamento 3/2010); this layer distributes legislation + the act↔norm index.'
 paths:
   /api/v1/empresa/{slug}/informe-legal:
     post:
       operationId: createCompanyLegalReport
       tags:
       - Legal
-      - Companies
-      - User
       summary: Create the authenticated user's redacted corporate legal report
-      description: Account and credit-entitlement surface for a legal entity only. The server owns beta/pricing
-        policy and a daily idempotency key scoped to user, company and UTC date; clients cannot choose
-        price or entitlement. Every report is recursively PII-redacted before egress. Documentary events
-        and citations do not prove wrongdoing, solvency, current status, identity of a natural person
-        or completeness, and this informational report is not legal advice or an official certificate.
-        Unknown or unauthorized source policy, natural-person subjects and missing helpers fail closed.
-        The JSON body is capped at 32 KiB and accepts only the CSRF fallback.
+      description: Account and credit-entitlement surface for a legal entity only. The server owns beta/pricing policy and a daily idempotency key scoped to user, company and UTC date; clients cannot choose price or entitlement. Every report is recursively PII-redacted before egress. Documentary events and citations do not prove wrongdoing, solvency, current status, identity of a natural person or completeness, and this informational report is not legal advice or an official certificate. Unknown or unauthorized source policy, natural-person subjects and missing helpers fail closed. The JSON body is capped at 32 KiB and accepts only the CSRF fallback.
       x-plane: account-paid-egress
       x-entitlement: legal_report (server-owned credits/beta policy)
-      x-source-policy: legal_report_v1; fail closed until a versioned public decision authorizes every
-        included source
+      x-source-policy: legal_report_v1; fail closed until a versioned public decision authorizes every included source
       x-activation-status: policy-closed
       x-idempotency-key: 'server: legal_report:{user_id}:{company_slug}:{UTC-date}'
       x-max-body-bytes: 32768
-      x-rate-limit: API plan policy plus a per-user action budget of 10 attempts per 15 minutes and 50
-        per day
+      x-rate-limit: API plan policy plus a per-user action budget of 10 attempts per 15 minutes and 50 per day
       x-privacy: Corporate subjects only; recursive PII redaction before serialization
       x-mcp-excluded: true
       security:
@@ -185,8 +154,7 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '503':
-          description: Action-budget storage, legal source policy, report helper, account schema or credit
-            ledger unavailable; generation fails closed
+          description: Action-budget storage, legal source policy, report helper, account schema or credit ledger unavailable; generation fails closed
           content:
             application/json:
               schema:
@@ -202,11 +170,7 @@ paths:
       tags:
       - Legal
       summary: Index of core Spanish mercantile-law norms
-      description: 'Return the catalog of core Spanish mercantile-law norms (codes, laws, royal-decree-legislatives,
-        regulations) structured by OpenMercantil. Each item links to its HTML page (`/ley/{slug}`) and
-        its norm-detail API (`/api/v1/legal/norm/{slug}`). LICENSE: consolidated text from the BOE, re-used
-        under Ley 37/2007; the official, authentic version is always boe.es. Informational only — NOT
-        legal advice. Cached 24h. Returns 503 if the legal catalog is not deployed yet.'
+      description: 'Return the catalog of core Spanish mercantile-law norms (codes, laws, royal-decree-legislatives, regulations) structured by OpenMercantil. Each item links to its HTML page (`/ley/{slug}`) and its norm-detail API (`/api/v1/legal/norm/{slug}`). LICENSE: consolidated text from the BOE, re-used under Ley 37/2007; the official, authentic version is always boe.es. Informational only — NOT legal advice. Cached 24h. Returns 503 if the legal catalog is not deployed yet.'
       x-rate-limit: free 60/min · 200/day
       x-license: BOE — Ley 37/2007 (re-use of public sector information)
       responses:
@@ -237,10 +201,8 @@ paths:
                   api_url: https://openmercantil.es/api/v1/legal/norm/ley-de-sociedades-de-capital
                 license: BOE — Ley 37/2007 (reutilización de la información del sector público)
                 license_url: https://www.boe.es/informacion/aviso_legal/index.php
-                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por
-                  OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-                  al texto oficial consolidado del BOE.
+                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
                 docs: https://openmercantil.es/leyes
                 generated_at: '2026-06-04T00:00:00+00:00'
         '429':
@@ -253,8 +215,7 @@ paths:
       tags:
       - Legal
       summary: Index mercantile-law norms through the singular legacy alias
-      description: Deprecated alias of `GET /api/v1/legal/norms`. It returns the same BOE-attributed informational
-        catalog and is not the norm-detail route; norm detail requires `/api/v1/legal/norm/{slug}`.
+      description: Deprecated alias of `GET /api/v1/legal/norms`. It returns the same BOE-attributed informational catalog and is not the norm-detail route; norm detail requires `/api/v1/legal/norm/{slug}`.
       deprecated: true
       x-replaced-by: /api/v1/legal/norms
       x-rate-limit: free 60/min · 200/day
@@ -281,11 +242,7 @@ paths:
       tags:
       - Legal
       summary: Detail of a single mercantile-law norm (with act↔norm bridge)
-      description: 'Return one norm''s BOE/ELI identification, its key articles (each with canonical URL
-        + a flag for seeded consolidated text), the BORME act types it governs (the law→data bridge) and
-        a single AI-citable atomic fact (`citable_fact`). LICENSE: consolidated text from the BOE, re-used
-        under Ley 37/2007; the official version is boe.es. Informational only — NOT legal advice. Cached
-        24h.'
+      description: 'Return one norm''s BOE/ELI identification, its key articles (each with canonical URL + a flag for seeded consolidated text), the BORME act types it governs (the law→data bridge) and a single AI-citable atomic fact (`citable_fact`). LICENSE: consolidated text from the BOE, re-used under Ley 37/2007; the official version is boe.es. Informational only — NOT legal advice. Cached 24h.'
       x-rate-limit: free 60/min · 200/day
       x-license: BOE — Ley 37/2007 (re-use of public sector information)
       parameters:
@@ -323,16 +280,14 @@ paths:
                   official_url: https://www.boe.es/buscar/act.php?id=BOE-A-2010-10544
                   in_force: true
                   repealed_by: null
-                  summary: 'Norma central del derecho societario español: regula la sociedad anónima (SA),
-                    la limitada (SL/SLU) y la comanditaria por acciones.'
+                  summary: 'Norma central del derecho societario español: regula la sociedad anónima (SA), la limitada (SL/SLU) y la comanditaria por acciones.'
                   date_published: '2010-07-02'
                   date_modified: '2026-06-04'
                   url: https://openmercantil.es/ley/ley-de-sociedades-de-capital
                 key_articles:
                 - article_num: '318'
                   label: El acuerdo de reducción del capital social
-                  rule: la reducción del capital social habrá de acordarse por la junta general con los
-                    requisitos de la modificación de estatutos
+                  rule: la reducción del capital social habrá de acordarse por la junta general con los requisitos de la modificación de estatutos
                   has_text: true
                   url: https://openmercantil.es/ley/ley-de-sociedades-de-capital/articulo/318
                   api_url: https://openmercantil.es/api/v1/legal/article/ley-de-sociedades-de-capital/318
@@ -343,18 +298,15 @@ paths:
                   microtext: El aumento de capital social está regulado en los arts. 295-316 LSC.
                   url: https://openmercantil.es/ley/ley-de-sociedades-de-capital/empresas
                 citable_fact:
-                  statement: La reducción del capital social de una SA o SL debe acordarse por la junta
-                    general con los requisitos de la modificación de estatutos (art. 318 LSC).
+                  statement: La reducción del capital social de una SA o SL debe acordarse por la junta general con los requisitos de la modificación de estatutos (art. 318 LSC).
                   source: BOE — texto consolidado (Ley 37/2007)
                   source_url: https://www.boe.es/buscar/act.php?id=BOE-A-2010-10544
                   date: '2010-07-02'
                   verify_url: https://openmercantil.es/ley/ley-de-sociedades-de-capital/articulo/318
                 license: BOE — Ley 37/2007 (reutilización de la información del sector público)
                 license_url: https://www.boe.es/informacion/aviso_legal/index.php
-                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por
-                  OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-                  al texto oficial consolidado del BOE.
+                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
                 generated_at: '2026-06-04T00:00:00+00:00'
         '404':
           $ref: '#/components/responses/NotFound'
@@ -373,11 +325,7 @@ paths:
       tags:
       - Legal
       summary: Consolidated text of a single article
-      description: Return the consolidated text (`body_html`) of one article of a norm, plus its ELI anchor,
-        version date and the minimal context of the parent norm. The text comes from the consolidated
-        BOE and is re-used under Ley 37/2007 — the official version is boe.es. Informational only — NOT
-        legal advice. Cached 24h. The article number `{n}` accepts digits plus a bis/ter suffix joined
-        by a hyphen (e.g. `160-bis`).
+      description: Return the consolidated text (`body_html`) of one article of a norm, plus its ELI anchor, version date and the minimal context of the parent norm. The text comes from the consolidated BOE and is re-used under Ley 37/2007 — the official version is boe.es. Informational only — NOT legal advice. Cached 24h. The article number `{n}` accepts digits plus a bis/ter suffix joined by a hyphen (e.g. `160-bis`).
       x-rate-limit: free 60/min · 200/day
       x-license: BOE — Ley 37/2007 (re-use of public sector information)
       parameters:
@@ -419,17 +367,14 @@ paths:
                   official_url: https://www.boe.es/buscar/act.php?id=BOE-A-2010-10544
                 article_num: '318'
                 title: Artículo 318. El acuerdo de reducción del capital social.
-                body_html: <p>1. La reducción del capital social habrá de acordarse por la junta general
-                  con los requisitos de la modificación de estatutos.</p>
+                body_html: <p>1. La reducción del capital social habrá de acordarse por la junta general con los requisitos de la modificación de estatutos.</p>
                 eli_anchor: https://www.boe.es/eli/es/rdlg/2010/07/02/1/con#a318
                 version_date: '2021-01-01'
                 url: https://openmercantil.es/ley/ley-de-sociedades-de-capital/articulo/318
                 license: BOE — Ley 37/2007 (reutilización de la información del sector público)
                 license_url: https://www.boe.es/informacion/aviso_legal/index.php
-                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por
-                  OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-                  al texto oficial consolidado del BOE.
+                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
                 generated_at: '2026-06-04T00:00:00+00:00'
         '404':
           $ref: '#/components/responses/NotFound'
@@ -448,11 +393,7 @@ paths:
       tags:
       - Legal
       summary: BORME act type → governing norm bridge (full or single)
-      description: 'Return the bridge mapping each BORME act type (constitución, nombramiento, ampliación
-        de capital, disolución, concurso, …) to the norm and articles that govern it — the law↔data connection
-        that lets an LLM answer ''which law governs this registry act''. Without `{acto}` returns the
-        full map; with `/act-map/{acto}` returns a single mapping. License: BOE / Ley 37/2007. Informational
-        only — NOT legal advice. Cached 24h.'
+      description: 'Return the bridge mapping each BORME act type (constitución, nombramiento, ampliación de capital, disolución, concurso, …) to the norm and articles that govern it — the law↔data connection that lets an LLM answer ''which law governs this registry act''. Without `{acto}` returns the full map; with `/act-map/{acto}` returns a single mapping. License: BOE / Ley 37/2007. Informational only — NOT legal advice. Cached 24h.'
       x-rate-limit: free 60/min · 200/day
       x-license: BOE — Ley 37/2007 (re-use of public sector information)
       responses:
@@ -481,10 +422,8 @@ paths:
                   concept_slug: null
                 license: BOE — Ley 37/2007 (reutilización de la información del sector público)
                 license_url: https://www.boe.es/informacion/aviso_legal/index.php
-                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por
-                  OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-                  al texto oficial consolidado del BOE.
+                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
                 generated_at: '2026-06-04T00:00:00+00:00'
         '429':
           $ref: '#/components/responses/TooManyRequests'
@@ -501,8 +440,7 @@ paths:
       tags:
       - Legal
       summary: Governing norm for a single BORME act type
-      description: 'Return the norm + articles that govern a single BORME act type. License: BOE / Ley
-        37/2007. Informational only — NOT legal advice.'
+      description: 'Return the norm + articles that govern a single BORME act type. License: BOE / Ley 37/2007. Informational only — NOT legal advice.'
       x-rate-limit: free 60/min · 200/day
       x-license: BOE — Ley 37/2007 (re-use of public sector information)
       parameters:
@@ -537,10 +475,8 @@ paths:
                 concept_slug: null
                 license: BOE — Ley 37/2007 (reutilización de la información del sector público)
                 license_url: https://www.boe.es/informacion/aviso_legal/index.php
-                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por
-                  OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-                  al texto oficial consolidado del BOE.
+                attribution: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+                disclaimer: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
                 generated_at: '2026-06-04T00:00:00+00:00'
         '404':
           $ref: '#/components/responses/NotFound'
@@ -549,59 +485,9 @@ paths:
         '503':
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
-        unsupported or not authorized for this public surface.'
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -611,18 +497,8 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
-              activa.
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -640,11 +516,173 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    LegalKeyArticle:
+      type: object
+      properties:
+        article_num:
+          type: string
+          example: '318'
+        label:
+          type: string
+        rule:
+          type: string
+          description: Plain-language rule extracted from the article.
+        has_text:
+          type: boolean
+          description: Whether the consolidated BOE text is seeded for this article.
+        url:
+          type: string
+          format: uri
+        api_url:
+          type: string
+          format: uri
+    LegalLicenseFields:
+      type: object
+      description: License/attribution/disclaimer envelope present in every legal-layer response. The legal corpus is consolidated BOE text re-used under Ley 37/2007 (NOT CC BY 4.0).
+      properties:
+        license:
+          type: string
+          example: BOE — Ley 37/2007 (reutilización de la información del sector público)
+        license_url:
+          type: string
+          format: uri
+          example: https://www.boe.es/informacion/aviso_legal/index.php
+        attribution:
+          type: string
+          example: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+        disclaimer:
+          type: string
+          example: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
+        generated_at:
+          type: string
+          format: date-time
+    LegalNormSummary:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: ley-de-sociedades-de-capital
+        title:
+          type: string
+        short_name:
+          type:
+          - string
+          - 'null'
+          example: LSC
+        norm_type:
+          type: string
+          example: real_decreto_legislativo
+        norm_type_label:
+          type: string
+          example: Real Decreto Legislativo
+        in_force:
+          type: boolean
+        url:
+          type: string
+          format: uri
+        api_url:
+          type: string
+          format: uri
+    LegalActMapResponse:
+      allOf:
+      - type: object
+        required:
+        - layer
+        - count
+        - act_map
+        properties:
+          layer:
+            type: string
+            example: puente-acto-norma
+          count:
+            type: integer
+            example: 22
+          act_map:
+            type: array
+            items:
+              type: object
+              properties:
+                act_type:
+                  type: string
+                norm_slug:
+                  type: string
+                norm_api_url:
+                  type:
+                  - string
+                  - 'null'
+                  format: uri
+                articles:
+                  type: string
+                microtext:
+                  type: string
+                concept_slug:
+                  type:
+                  - string
+                  - 'null'
+      - $ref: '#/components/schemas/LegalLicenseFields'
+    LegalNormsIndexResponse:
+      allOf:
+      - type: object
+        required:
+        - layer
+        - count
+        - norms
+        properties:
+          layer:
+            type: string
+            example: derecho-mercantil
+          count:
+            type: integer
+            example: 48
+          norms:
+            type: array
+            items:
+              $ref: '#/components/schemas/LegalNormSummary'
+          docs:
+            type: string
+            format: uri
+            example: https://openmercantil.es/leyes
+      - $ref: '#/components/schemas/LegalLicenseFields'
+    LegalRegulatedAct:
+      type: object
+      description: BORME act type governed by this norm (law→data bridge).
+      properties:
+        act_type:
+          type: string
+          example: ampliacion-capital
+        label:
+          type: string
+        articles:
+          type: string
+          example: LSC arts. 295-316
+        microtext:
+          type: string
+        url:
+          type: string
+          format: uri
+          description: Bridge page listing real companies with this act (/ley/{slug}/empresas).
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -746,20 +784,62 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
+    LegalReportDocument:
+      type: object
+      required:
+      - state
+      - axes
+      - totals
+      properties:
+        state:
+          anyOf:
+          - type: object
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        axes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalReportAxis'
+        totals:
+          type: object
+          required:
+          - axes_present
+          - events_total
+          - norms_cited
+          properties:
+            axes_present:
+              type: integer
+              minimum: 0
+            events_total:
+              type: integer
+              minimum: 0
+            norms_cited:
+              type: array
+              items:
+                type: string
+              uniqueItems: true
+          additionalProperties: false
+      additionalProperties: false
+    LegalNormResponse:
+      allOf:
       - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
+        required:
+        - norm
+        properties:
+          norm:
+            $ref: '#/components/schemas/LegalNormFull'
+          key_articles:
+            type: array
+            items:
+              $ref: '#/components/schemas/LegalKeyArticle'
+          regulated_acts:
+            type: array
+            items:
+              $ref: '#/components/schemas/LegalRegulatedAct'
+          citable_fact:
+            $ref: '#/components/schemas/LegalCitableFact'
+      - $ref: '#/components/schemas/LegalLicenseFields'
     LegalActMapEntry:
       allOf:
       - type: object
@@ -783,43 +863,116 @@ components:
             - string
             - 'null'
       - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalActMapResponse:
-      allOf:
+    LegalCitableFact:
+      type:
+      - object
+      - 'null'
+      description: Single atomic, verbatim-citable fact for AI answers (GEO envelope).
+      properties:
+        statement:
+          type: string
+        source:
+          type: string
+          example: BOE — texto consolidado (Ley 37/2007)
+        source_url:
+          type: string
+          format: uri
+        date:
+          type: string
+          format: date
+        verify_url:
+          type: string
+          format: uri
+    LegalReportRequest:
+      type: object
+      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
+      properties:
+        csrf:
+          type: string
+          minLength: 32
+          maxLength: 256
+          description: Body fallback; prefer X-CSRF-Token.
+      additionalProperties: false
+    LegalReportResponse:
+      type: object
+      required:
+      - ok
+      - company
+      - charged
+      - beta_free
+      - already_paid
+      - balance_after
+      - report
+      properties:
+        ok:
+          type: boolean
+          const: true
+        company:
+          type: object
+          required:
+          - slug
+          - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          additionalProperties: false
+        charged:
+          type: integer
+          minimum: 0
+        beta_free:
+          type: boolean
+        already_paid:
+          type: boolean
+        balance_after:
+          type:
+          - integer
+          - 'null'
+        report:
+          $ref: '#/components/schemas/LegalReportDocument'
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    LegalReportPaymentRequiredError:
+      oneOf:
       - type: object
         required:
-        - layer
-        - count
-        - act_map
+        - error
+        - cost
+        - balance
+        - buy_url
         properties:
-          layer:
+          error:
             type: string
-            example: puente-acto-norma
-          count:
+            const: insufficient_credits
+          cost:
             type: integer
-            example: 22
-          act_map:
-            type: array
-            items:
-              type: object
-              properties:
-                act_type:
-                  type: string
-                norm_slug:
-                  type: string
-                norm_api_url:
-                  type:
-                  - string
-                  - 'null'
-                  format: uri
-                articles:
-                  type: string
-                microtext:
-                  type: string
-                concept_slug:
-                  type:
-                  - string
-                  - 'null'
-      - $ref: '#/components/schemas/LegalLicenseFields'
+            minimum: 0
+          balance:
+            type: integer
+          buy_url:
+            type: string
+        additionalProperties: false
+      - type: object
+        required:
+        - error
+        properties:
+          error:
+            type: string
+            const: charge_failed
+        additionalProperties: false
     LegalArticleResponse:
       allOf:
       - type: object
@@ -864,209 +1017,9 @@ components:
             type: string
             format: uri
       - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalCitableFact:
-      type:
-      - object
-      - 'null'
-      description: Single atomic, verbatim-citable fact for AI answers (GEO envelope).
-      properties:
-        statement:
-          type: string
-        source:
-          type: string
-          example: BOE — texto consolidado (Ley 37/2007)
-        source_url:
-          type: string
-          format: uri
-        date:
-          type: string
-          format: date
-        verify_url:
-          type: string
-          format: uri
-    LegalKeyArticle:
-      type: object
-      properties:
-        article_num:
-          type: string
-          example: '318'
-        label:
-          type: string
-        rule:
-          type: string
-          description: Plain-language rule extracted from the article.
-        has_text:
-          type: boolean
-          description: Whether the consolidated BOE text is seeded for this article.
-        url:
-          type: string
-          format: uri
-        api_url:
-          type: string
-          format: uri
-    LegalLicenseFields:
-      type: object
-      description: License/attribution/disclaimer envelope present in every legal-layer response. The
-        legal corpus is consolidated BOE text re-used under Ley 37/2007 (NOT CC BY 4.0).
-      properties:
-        license:
-          type: string
-          example: BOE — Ley 37/2007 (reutilización de la información del sector público)
-        license_url:
-          type: string
-          format: uri
-          example: https://www.boe.es/informacion/aviso_legal/index.php
-        attribution:
-          type: string
-          example: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil.
-            La versión oficial y auténtica es la publicada en boe.es.
-        disclaimer:
-          type: string
-          example: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye
-            al texto oficial consolidado del BOE.
-        generated_at:
-          type: string
-          format: date-time
-    LegalNormFull:
-      type: object
-      properties:
-        slug:
-          type: string
-        title:
-          type: string
-        short_name:
-          type:
-          - string
-          - 'null'
-        norm_type:
-          type: string
-        norm_type_label:
-          type: string
-        boe_id:
-          type:
-          - string
-          - 'null'
-          example: BOE-A-2010-10544
-        eli:
-          type:
-          - string
-          - 'null'
-          example: https://www.boe.es/eli/es/rdlg/2010/07/02/1
-        official_url:
-          type: string
-          format: uri
-          description: Canonical, authentic source at boe.es.
-        in_force:
-          type: boolean
-        repealed_by:
-          type:
-          - string
-          - 'null'
-        summary:
-          type: string
-        date_published:
-          type:
-          - string
-          - 'null'
-          format: date
-        date_modified:
-          type: string
-          format: date
-        url:
-          type: string
-          format: uri
-    LegalNormResponse:
-      allOf:
-      - type: object
-        required:
-        - norm
-        properties:
-          norm:
-            $ref: '#/components/schemas/LegalNormFull'
-          key_articles:
-            type: array
-            items:
-              $ref: '#/components/schemas/LegalKeyArticle'
-          regulated_acts:
-            type: array
-            items:
-              $ref: '#/components/schemas/LegalRegulatedAct'
-          citable_fact:
-            $ref: '#/components/schemas/LegalCitableFact'
-      - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalNormSummary:
-      type: object
-      properties:
-        slug:
-          type: string
-          example: ley-de-sociedades-de-capital
-        title:
-          type: string
-        short_name:
-          type:
-          - string
-          - 'null'
-          example: LSC
-        norm_type:
-          type: string
-          example: real_decreto_legislativo
-        norm_type_label:
-          type: string
-          example: Real Decreto Legislativo
-        in_force:
-          type: boolean
-        url:
-          type: string
-          format: uri
-        api_url:
-          type: string
-          format: uri
-    LegalNormsIndexResponse:
-      allOf:
-      - type: object
-        required:
-        - layer
-        - count
-        - norms
-        properties:
-          layer:
-            type: string
-            example: derecho-mercantil
-          count:
-            type: integer
-            example: 48
-          norms:
-            type: array
-            items:
-              $ref: '#/components/schemas/LegalNormSummary'
-          docs:
-            type: string
-            format: uri
-            example: https://openmercantil.es/leyes
-      - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalRegulatedAct:
-      type: object
-      description: BORME act type governed by this norm (law→data bridge).
-      properties:
-        act_type:
-          type: string
-          example: ampliacion-capital
-        label:
-          type: string
-        articles:
-          type: string
-          example: LSC arts. 295-316
-        microtext:
-          type: string
-        url:
-          type: string
-          format: uri
-          description: Bridge page listing real companies with this act (/ley/{slug}/empresas).
     LegalReportAxis:
       type: object
-      description: One documentary axis in the redacted corporate legal-history projection. Presence records
-        sourced events; it does not assert wrongdoing, solvency, current status or identity beyond the
-        corporate subject guard.
+      description: One documentary axis in the redacted corporate legal-history projection. Presence records sourced events; it does not assert wrongdoing, solvency, current status or identity beyond the corporate subject guard.
       required:
       - axis_id
       - label
@@ -1129,151 +1082,120 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    LegalReportDocument:
-      type: object
-      required:
-      - state
-      - axes
-      - totals
-      properties:
-        state:
-          anyOf:
-          - type: object
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        axes:
-          type: array
-          items:
-            $ref: '#/components/schemas/LegalReportAxis'
-        totals:
-          type: object
-          required:
-          - axes_present
-          - events_total
-          - norms_cited
-          properties:
-            axes_present:
-              type: integer
-              minimum: 0
-            events_total:
-              type: integer
-              minimum: 0
-            norms_cited:
-              type: array
-              items:
-                type: string
-              uniqueItems: true
-          additionalProperties: false
-      additionalProperties: false
-    LegalReportPaymentRequiredError:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
       - type: object
-        required:
-        - error
-        - cost
-        - balance
-        - buy_url
-        properties:
-          error:
-            type: string
-            const: insufficient_credits
-          cost:
-            type: integer
-            minimum: 0
-          balance:
-            type: integer
-          buy_url:
-            type: string
-        additionalProperties: false
-      - type: object
-        required:
-        - error
-        properties:
-          error:
-            type: string
-            const: charge_failed
-        additionalProperties: false
-    LegalReportRequest:
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    LegalNormFull:
       type: object
-      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the
-        daily idempotency key are server-owned.
       properties:
-        csrf:
+        slug:
           type: string
-          minLength: 32
-          maxLength: 256
-          description: Body fallback; prefer X-CSRF-Token.
-      additionalProperties: false
-    LegalReportResponse:
-      type: object
-      required:
-      - ok
-      - company
-      - charged
-      - beta_free
-      - already_paid
-      - balance_after
-      - report
-      properties:
-        ok:
-          type: boolean
-          const: true
-        company:
-          type: object
-          required:
-          - slug
-          - name
-          properties:
-            slug:
-              type: string
-            name:
-              type: string
-          additionalProperties: false
-        charged:
-          type: integer
-          minimum: 0
-        beta_free:
-          type: boolean
-        already_paid:
-          type: boolean
-        balance_after:
+        title:
+          type: string
+        short_name:
           type:
-          - integer
+          - string
           - 'null'
-        report:
-          $ref: '#/components/schemas/LegalReportDocument'
-      additionalProperties: false
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
+        norm_type:
           type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-  securitySchemes:
-    apiKey:
-      type: apiKey
+        norm_type_label:
+          type: string
+        boe_id:
+          type:
+          - string
+          - 'null'
+          example: BOE-A-2010-10544
+        eli:
+          type:
+          - string
+          - 'null'
+          example: https://www.boe.es/eli/es/rdlg/2010/07/02/1
+        official_url:
+          type: string
+          format: uri
+          description: Canonical, authentic source at boe.es.
+        in_force:
+          type: boolean
+        repealed_by:
+          type:
+          - string
+          - 'null'
+        summary:
+          type: string
+        date_published:
+          type:
+          - string
+          - 'null'
+          format: date
+        date_modified:
+          type: string
+          format: date
+        url:
+          type: string
+          format: uri
+  headers:
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
       in: header
-      name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
+  securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require
-        X-CSRF-Token header (obtain via GET /api/v1/user/me).
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil Webhooks API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,17 +64,13 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
@@ -98,12 +82,9 @@ paths:
     get:
       operationId: listUserWebhooks
       tags:
-      - User
       - Webhooks
       summary: List outbound webhook metadata
-      description: Account-plane metadata, the exact payload-contract 1.0 event allowlist and worker health.
-        Full signing secrets are never listed; signing secrets are encrypted at rest with a versioned
-        keyring. Unknown event types and schema versions fail closed.
+      description: Account-plane metadata, the exact payload-contract 1.0 event allowlist and worker health. Full signing secrets are never listed; signing secrets are encrypted at rest with a versioned keyring. Unknown event types and schema versions fail closed.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -136,13 +117,9 @@ paths:
     post:
       operationId: createUserWebhook
       tags:
-      - User
       - Webhooks
       summary: Create an outbound webhook
-      description: Validates HTTPS destination against SSRF, accepts only the explicit payload-contract
-        1.0 event allowlist, and atomically stores both the encrypted signing secret and an encrypted
-        24-hour idempotency replay. An identical Idempotency-Key retry returns the same secret without
-        creating a second webhook. Wildcards and unknown events fail closed with 400.
+      description: Validates HTTPS destination against SSRF, accepts only the explicit payload-contract 1.0 event allowlist, and atomically stores both the encrypted signing secret and an encrypted 24-hour idempotency replay. An identical Idempotency-Key retry returns the same secret without creating a second webhook. Wildcards and unknown events fail closed with 400.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -184,11 +161,9 @@ paths:
     patch:
       operationId: updateUserWebhook
       tags:
-      - User
       - Webhooks
       summary: Update an outbound webhook
-      description: Revalidates URL/DNS/SSRF on every destination change and accepts only payload-contract
-        1.0 event types. Wildcards and unknown events fail closed with 400. The secret is not returned.
+      description: Revalidates URL/DNS/SSRF on every destination change and accepts only payload-contract 1.0 event types. Wildcards and unknown events fail closed with 400. The secret is not returned.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -233,7 +208,6 @@ paths:
     delete:
       operationId: deleteUserWebhook
       tags:
-      - User
       - Webhooks
       summary: Delete an outbound webhook
       x-plane: account
@@ -272,12 +246,9 @@ paths:
     post:
       operationId: rotateUserWebhookSecret
       tags:
-      - User
       - Webhooks
       summary: Rotate an outbound webhook signing secret
-      description: Cancels pending deliveries signed with the old key and atomically stores the encrypted
-        replacement response. An identical Idempotency-Key retry within 24 hours returns the same secret
-        without rotating again.
+      description: Cancels pending deliveries signed with the old key and atomically stores the encrypted replacement response. An identical Idempotency-Key retry within 24 hours returns the same secret without rotating again.
       x-plane: account
       security:
       - cookieAuth: []
@@ -317,46 +288,24 @@ paths:
         '503':
           description: Account security, encryption keyring or webhook schema unavailable
 components:
-  headers:
-    IdempotencyKeyExpires:
-      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key
-        is required.
-      schema:
-        type: integer
-        minimum: 1
-    IdempotencyReplayed:
-      description: True when this response was recovered from the durable encrypted replay record for
-        the same key and payload.
-      schema:
-        type: boolean
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    AccountIdempotencyKeyHeader:
-      name: Idempotency-Key
-      in: header
-      required: true
-      description: Required for account mutations that reveal a secret. Reuse the same key only for an
-        identical payload. The encrypted response can be replayed for 24 hours; a changed payload or an
-        expired key returns 409.
-      schema:
-        type: string
-        minLength: 8
-        maxLength: 128
-        pattern: ^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     BadRequest:
       description: Invalid request
       headers:
@@ -375,39 +324,31 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    DeletedResponse:
+    OutboundWebhookEventSubscriptionsV1:
+      type: array
+      description: Events with a currently wired durable producer. Contracted-but-unwired event types are not subscribable. An empty input is normalized to alert.triggered; wildcard, inactive and unknown values are rejected.
+      items:
+        $ref: '#/components/schemas/OutboundWebhookEventTypeV1'
+      maxItems: 3
+      uniqueItems: true
+      x-webhook-event-contract-version: '1.0'
+    OutboundWebhookUpdateRequest:
       type: object
-      required:
-      - ok
-      - deleted
+      minProperties: 1
       properties:
-        ok:
-          type: boolean
-        deleted:
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+        active:
           type: boolean
       additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -509,20 +450,28 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
+    OutboundWebhookContractedEventCatalogV1:
+      type: array
+      description: All event payload contracts known by this API version, including contracted-but-unwired events that cannot yet be subscribed.
+      items:
+        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
+      minItems: 8
+      maxItems: 8
+      uniqueItems: true
+      x-webhook-event-contract-version: '1.0'
+    OutboundWebhookCreateRequest:
+      type: object
+      required:
+      - url
+      - events
+      properties:
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+      additionalProperties: false
     OutboundWebhook:
       type: object
       required:
@@ -567,20 +516,28 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    OutboundWebhookContractedEventCatalogV1:
-      type: array
-      description: All event payload contracts known by this API version, including contracted-but-unwired
-        events that cannot yet be subscribed.
-      items:
-        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
-      minItems: 8
-      maxItems: 8
-      uniqueItems: true
+    OutboundWebhookEventCatalogV1:
+      description: Exact account-visible list of events with a currently wired durable producer.
+      allOf:
+      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+      - type: array
+        minItems: 3
+        maxItems: 3
       x-webhook-event-contract-version: '1.0'
+    DeletedResponse:
+      type: object
+      required:
+      - ok
+      - deleted
+      properties:
+        ok:
+          type: boolean
+        deleted:
+          type: boolean
+      additionalProperties: false
     OutboundWebhookContractedEventTypeV1:
       type: string
-      description: Versioned event names with a defined payload contract. Only names also present in OutboundWebhookEventTypeV1
-        are currently subscribable.
+      description: Versioned event names with a defined payload contract. Only names also present in OutboundWebhookEventTypeV1 are currently subscribable.
       enum:
       - alert.triggered
       - borme.daily
@@ -591,43 +548,23 @@ components:
       - tender.deadline
       - webhook.test
       x-webhook-event-contract-version: '1.0'
-    OutboundWebhookCreateRequest:
-      type: object
-      required:
-      - url
-      - events
-      properties:
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-      additionalProperties: false
-    OutboundWebhookEventCatalogV1:
-      description: Exact account-visible list of events with a currently wired durable producer.
-      allOf:
-      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
       - type: array
-        minItems: 3
-        maxItems: 3
-      x-webhook-event-contract-version: '1.0'
-    OutboundWebhookEventSubscriptionsV1:
-      type: array
-      description: Events with a currently wired durable producer. Contracted-but-unwired event types
-        are not subscribable. An empty input is normalized to alert.triggered; wildcard, inactive and
-        unknown values are rejected.
-      items:
-        $ref: '#/components/schemas/OutboundWebhookEventTypeV1'
-      maxItems: 3
-      uniqueItems: true
-      x-webhook-event-contract-version: '1.0'
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     OutboundWebhookEventTypeV1:
       type: string
-      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types,
-        wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an
-        explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future
-        events implicitly.
+      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types, wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future events implicitly.
       enum:
       - alert.triggered
       - tender.matched
@@ -662,8 +599,7 @@ components:
               readOnly: true
               x-sensitive: true
               x-visible-once: true
-              description: Visible only in the original mutation response and identical Idempotency-Key
-                replays during the 24-hour recovery window; never returned by list/get.
+              description: Visible only in the original mutation response and identical Idempotency-Key replays during the 24-hour recovery window; never returned by list/get.
             key_id:
               type: string
             events:
@@ -680,19 +616,6 @@ components:
           minimum: 1
           readOnly: true
           description: Unix timestamp for the encrypted replay window.
-      additionalProperties: false
-    OutboundWebhookUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-        active:
-          type: boolean
       additionalProperties: false
     WebhookUpdatedResponse:
       type: object
@@ -723,10 +646,57 @@ components:
         reason:
           type: string
       additionalProperties: false
+  headers:
+    IdempotencyKeyExpires:
+      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key is required.
+      schema:
+        type: integer
+        minimum: 1
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    IdempotencyReplayed:
+      description: True when this response was recovered from the durable encrypted replay record for the same key and payload.
+      schema:
+        type: boolean
+  parameters:
+    AccountIdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Required for account mutations that reveal a secret. Reuse the same key only for an identical payload. The encrypted response can be replayed for 24 hours; a changed payload or an expired key returns 409.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require
-        X-CSRF-Token header (obtain via GET /api/v1/user/me).
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

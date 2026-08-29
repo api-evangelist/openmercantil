@@ -1,93 +1,26 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OpenMercantil System API
-  version: 1.9.3
-  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
-  termsOfService: https://openmercantil.es/terminos-de-uso
+  title: Openmercantil System API
   contact:
     name: OpenMercantil
     url: https://openmercantil.es/soporte
     email: social@openmercantil.es
-  license:
-    name: Source-specific upstream terms; see response catalog metadata
-    url: https://openmercantil.es/terminos-de-uso
-  x-publisher:
-    name: OpenMercantil
-    url: https://openmercantil.es/
-    email: social@openmercantil.es
-  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
-  x-temporal: 2009-01-01/..
-  x-language: es
-  x-dcat-catalog: https://openmercantil.es/catalog.rdf
-  x-rate-limit:
-    free:
-      per_min: 60
-      per_day: 200
-      kind: anonymous-ip
-    profesional:
-      per_min: 120
-      per_day: 5000
-      kind: api-key
-    max:
-      per_min: 600
-      per_day: 50000
-      kind: api-key
-    enterprise:
-      per_min: 1200
-      per_day: 500000
-      kind: contract
-  x-methodology: https://openmercantil.es/metodologia
-  x-sources: https://openmercantil.es/fuentes
-  x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
-  x-account-segment-contract:
-    projection: company_public_v2 immutable corporate sidecar
-    synchronous_row_cap: 500
-    bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
-    related_web_dataset_surface:
-      preview_path: /mi-cuenta/datasets/preview
-      export_path: /mi-cuenta/datasets/export.csv
-      synchronous_export_max_rows: 500
-      overflow_status: 503
-      overflow_error: async_export_required
-  x-company-identity-contract:
-    version: '1.0'
-    projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
-    resolution:
-      published: canonical corporate slug admitted
-      safe_alias: internally canonicalized and Content-Location emitted
-      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
-      unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
-    public_company_count: company_public_projection_state.row_count
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  x-refined-note:
+  - x-account-segment-contract differs across the merged source definitions and was not carried
+  - x-company-identity-contract differs across the merged source definitions and was not carried
+  - x-contract-status differs across the merged source definitions and was not carried
+  - x-corrections differs across the merged source definitions and was not carried
+  - x-dcat-catalog differs across the merged source definitions and was not carried
+  - x-language differs across the merged source definitions and was not carried
+  - x-methodology differs across the merged source definitions and was not carried
+  - x-publisher differs across the merged source definitions and was not carried
+  - x-rate-limit differs across the merged source definitions and was not carried
+  - x-sources differs across the merged source definitions and was not carried
+  - x-spatial differs across the merged source definitions and was not carried
+  - x-temporal differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged System across 2 of this provider''s published API definitions: openmercantil-openapi-1.9.3.json, openmercantil-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://openmercantil.es
   description: Production
@@ -108,11 +41,7 @@ paths:
       tags:
       - System
       summary: Service health
-      description: Return service status and BORME freshness from exactly one bounded global_counters_v1
-        offline projection. Its ETag is also bound to the shared asv1 generation used by CCAA, sector
-        and sources, with 60-second must-revalidate caching. A cold request never opens SQLite, validates
-        person/company sidecars, scans artifact directories, probes CSV files or rebuilds counters. Missing,
-        legacy, malformed or future-dated projection bytes return 503.
+      description: Return service status and BORME freshness from exactly one bounded global_counters_v1 offline projection. Its ETag is also bound to the shared asv1 generation used by CCAA, sector and sources, with 60-second must-revalidate caching. A cold request never opens SQLite, validates person/company sidecars, scans artifact directories, probes CSV files or rebuilds counters. Missing, legacy, malformed or future-dated projection bytes return 503.
       x-rate-limit: plan policy (see info.x-rate-limit)
       responses:
         '200':
@@ -151,6 +80,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/stats:
     get:
       security:
@@ -164,10 +96,7 @@ paths:
       tags:
       - System
       summary: Published public-dataset counters
-      description: Return the number of legal entities actually published in the active company_public_v2
-        sidecar, plus an optional offline person-mention approximation. It never exposes the raw 2.8M-row
-        companies population and never runs a request-path COUNT. Sidecar unavailability is 503, not a
-        zero/null company count.
+      description: Return the number of legal entities actually published in the active company_public_v2 sidecar, plus an optional offline person-mention approximation. It never exposes the raw 2.8M-row companies population and never runs a request-path COUNT. Sidecar unavailability is 503, not a zero/null company count.
       x-rate-limit: plan policy (see info.x-rate-limit)
       responses:
         '200':
@@ -234,6 +163,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
 components:
   headers:
     EntityTag:
@@ -241,96 +173,128 @@ components:
       schema:
         type: string
         pattern: ^"[a-f0-9]{64}"$
-    StatsGeneration:
-      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
-      schema:
-        type: string
-        pattern: ^asv1-[a-f0-9]{64}$
     XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
       schema:
         type: string
         minLength: 1
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
     XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
       schema:
         type: string
         minLength: 1
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
+    StatsGeneration:
+      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
       schema:
         type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
-        lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
-  responses:
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification,
-        bounded projection, database helper or required artifact is unavailable. Clients must not infer
-        an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+        pattern: ^asv1-[a-f0-9]{64}$
   schemas:
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    HealthResponse:
+      type: object
+      required:
+      - status
+      - service
+      - version
+      - projection
+      - projection_generation
+      - generated_at
+      - artifacts_age_hours
+      - latest_borme_processed
+      - companies_indexed_approx
+      - total_events_approx
+      - count_source
+      - features
+      - degraded
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+          - stale
+          - error
+        service:
+          type: string
+          const: openmercantil
+        version:
+          type: string
+        projection:
+          type: string
+          const: global_counters_v1
+        projection_generation:
+          type: string
+          pattern: ^gc1-[a-f0-9]{64}$
+        generated_at:
+          type: string
+          format: date-time
+        artifacts_age_hours:
+          type: number
+          minimum: 0
+        latest_borme_processed:
+          type: string
+          format: date
+        companies_indexed_approx:
+          type: integer
+          minimum: 0
+        total_events_approx:
+          type: integer
+          minimum: 0
+        count_source:
+          type: string
+          const: offline_projection
+        features:
+          type: object
+          description: Runtime feature health. Cheap signals only (env + offline counters); no live query in the request path.
+          required:
+          - google_signin
+          - sources_catalog
+          - data_fresh
+          properties:
+            google_signin:
+              type: string
+              enum:
+              - available
+              - disabled
+            sources_catalog:
+              type: string
+              enum:
+              - valid
+              - invalid
+            data_fresh:
+              type: boolean
+          additionalProperties: false
+        degraded:
+          type: boolean
+          description: True when any feature is disabled/invalid or the data is stale (artifacts_age_hours >= 26), even if status is still "ok".
+      additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -432,85 +396,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    HealthResponse:
-      type: object
-      required:
-      - status
-      - service
-      - version
-      - projection
-      - projection_generation
-      - generated_at
-      - artifacts_age_hours
-      - latest_borme_processed
-      - companies_indexed_approx
-      - total_events_approx
-      - count_source
-      - features
-      - degraded
-      properties:
-        status:
-          type: string
-          enum:
-          - ok
-          - stale
-          - error
-        service:
-          type: string
-          const: openmercantil
-        version:
-          type: string
-        projection:
-          type: string
-          const: global_counters_v1
-        projection_generation:
-          type: string
-          pattern: ^gc1-[a-f0-9]{64}$
-        generated_at:
-          type: string
-          format: date-time
-        artifacts_age_hours:
-          type: number
-          minimum: 0
-        latest_borme_processed:
-          type: string
-          format: date
-        companies_indexed_approx:
-          type: integer
-          minimum: 0
-        total_events_approx:
-          type: integer
-          minimum: 0
-        count_source:
-          type: string
-          const: offline_projection
-        features:
-          type: object
-          description: Runtime feature health. Cheap signals only (env + offline counters); no live query
-            in the request path.
-          required:
-          - google_signin
-          - sources_catalog
-          - data_fresh
-          properties:
-            google_signin:
-              type: string
-              enum:
-              - available
-              - disabled
-            sources_catalog:
-              type: string
-              enum:
-              - valid
-              - invalid
-            data_fresh:
-              type: boolean
-          additionalProperties: false
-        degraded:
-          type: boolean
-          description: True when any feature is disabled/invalid or the data is stale (artifacts_age_hours
-            >= 26), even if status is still "ok".
-      additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -525,34 +410,99 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
+    Health:
       type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
-        or negative result.
-      required:
-      - error
-      - detail
-      - projection
       properties:
-        error:
+        status:
           type: string
-          const: projection_unavailable
-        detail:
+        version:
           type: string
-        projection:
-          type: string
-      additionalProperties: false
+        companies_indexed:
+          type: integer
+        events_indexed:
+          type: integer
+        last_updated:
+          type:
+          - string
+          - 'null'
+      additionalProperties: true
+  responses:
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ob_sess
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
     apiKey:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion
+x-refined-from:
+- openmercantil-openapi-1.9.3.json
+- openmercantil-openapi.yml

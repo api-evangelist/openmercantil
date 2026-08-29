@@ -1,93 +1,26 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OpenMercantil Sectors API
-  version: 1.9.3
-  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
-  termsOfService: https://openmercantil.es/terminos-de-uso
+  title: Openmercantil Sectors API
   contact:
     name: OpenMercantil
     url: https://openmercantil.es/soporte
     email: social@openmercantil.es
-  license:
-    name: Source-specific upstream terms; see response catalog metadata
-    url: https://openmercantil.es/terminos-de-uso
-  x-publisher:
-    name: OpenMercantil
-    url: https://openmercantil.es/
-    email: social@openmercantil.es
-  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
-  x-temporal: 2009-01-01/..
-  x-language: es
-  x-dcat-catalog: https://openmercantil.es/catalog.rdf
-  x-rate-limit:
-    free:
-      per_min: 60
-      per_day: 200
-      kind: anonymous-ip
-    profesional:
-      per_min: 120
-      per_day: 5000
-      kind: api-key
-    max:
-      per_min: 600
-      per_day: 50000
-      kind: api-key
-    enterprise:
-      per_min: 1200
-      per_day: 500000
-      kind: contract
-  x-methodology: https://openmercantil.es/metodologia
-  x-sources: https://openmercantil.es/fuentes
-  x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
-  x-account-segment-contract:
-    projection: company_public_v2 immutable corporate sidecar
-    synchronous_row_cap: 500
-    bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
-    related_web_dataset_surface:
-      preview_path: /mi-cuenta/datasets/preview
-      export_path: /mi-cuenta/datasets/export.csv
-      synchronous_export_max_rows: 500
-      overflow_status: 503
-      overflow_error: async_export_required
-  x-company-identity-contract:
-    version: '1.0'
-    projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
-    resolution:
-      published: canonical corporate slug admitted
-      safe_alias: internally canonicalized and Content-Location emitted
-      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
-      unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
-    public_company_count: company_public_projection_state.row_count
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  x-refined-note:
+  - x-account-segment-contract differs across the merged source definitions and was not carried
+  - x-company-identity-contract differs across the merged source definitions and was not carried
+  - x-contract-status differs across the merged source definitions and was not carried
+  - x-corrections differs across the merged source definitions and was not carried
+  - x-dcat-catalog differs across the merged source definitions and was not carried
+  - x-language differs across the merged source definitions and was not carried
+  - x-methodology differs across the merged source definitions and was not carried
+  - x-publisher differs across the merged source definitions and was not carried
+  - x-rate-limit differs across the merged source definitions and was not carried
+  - x-sources differs across the merged source definitions and was not carried
+  - x-spatial differs across the merged source definitions and was not carried
+  - x-temporal differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged Sectors across 2 of this provider''s published API definitions: openmercantil-openapi-1.9.3.json, openmercantil-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://openmercantil.es
   description: Production
@@ -116,10 +49,8 @@ paths:
         combinations: province permits only sort=recent|oldest; other documented sort values return 422
       tags:
       - Sectors
-      - Companies
       summary: Get companies by CNAE sector code
-      description: Return companies belonging to a given CNAE (Clasificación Nacional de Actividades Económicas)
-        sector. CNAE codes 1-4 digits (eg. 62 = programación, 6201 = programación informática).
+      description: Return companies belonging to a given CNAE (Clasificación Nacional de Actividades Económicas) sector. CNAE codes 1-4 digits (eg. 62 = programación, 6201 = programación informática).
       parameters:
       - name: cnae
         in: path
@@ -188,6 +119,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/sector/{cnae}/ratios:
     get:
       security:
@@ -199,11 +133,7 @@ paths:
       tags:
       - Sectors
       summary: Get sector aggregated ratios
-      description: 'Return Banco de Espana Central de Balances aggregate metrics by two-digit CNAE division
-        and year from the immutable, hash-addressed sector_ratios_public_v1 bundle. Coverage is sector-aggregate
-        only: it contains neither individual-company data nor a company score. The endpoint fails closed
-        with 503, without a raw/request-path fallback, when activation, manifest, file hash or public-source
-        catalog authority cannot be verified.'
+      description: 'Return Banco de Espana Central de Balances aggregate metrics by two-digit CNAE division and year from the immutable, hash-addressed sector_ratios_public_v1 bundle. Coverage is sector-aggregate only: it contains neither individual-company data nor a company score. The endpoint fails closed with 503, without a raw/request-path fallback, when activation, manifest, file hash or public-source catalog authority cannot be verified.'
       parameters:
       - name: cnae
         in: path
@@ -236,8 +166,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SectorRatiosResponse'
         '304':
-          description: Not modified; the verified projection generation and legal source authority are
-            unchanged.
+          description: Not modified; the verified projection generation and legal source authority are unchanged.
           headers:
             X-Data-Sources:
               $ref: '#/components/headers/XDataSources'
@@ -257,6 +186,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/cnae/tree:
     get:
       security:
@@ -268,8 +200,7 @@ paths:
       tags:
       - Sectors
       summary: Hierarchical CNAE tree
-      description: Return the CNAE-2009 hierarchy with counts read only from the offline sector projection.
-        Cached 24h; no live aggregation is performed.
+      description: Return the CNAE-2009 hierarchy with counts read only from the offline sector projection. Cached 24h; no live aggregation is performed.
       x-rate-limit: plan policy (see info.x-rate-limit)
       responses:
         '200':
@@ -289,6 +220,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/cnae/{code}:
     get:
       security:
@@ -300,8 +234,7 @@ paths:
       tags:
       - Sectors
       summary: CNAE code metadata
-      description: Return CNAE-2009 metadata and an optional company count from the offline projection.
-        A missing projection is represented as null and never triggers a live COUNT.
+      description: Return CNAE-2009 metadata and an optional company count from the offline projection. A missing projection is represented as null and never triggers a live COUNT.
       x-rate-limit: plan policy (see info.x-rate-limit)
       parameters:
       - name: code
@@ -331,54 +264,136 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
+  /api/v1/sector/{code}/companies:
+    get:
+      tags:
+      - Sectors
+      summary: List Companies In A Sector
+      operationId: getSectorCompanies
+      description: List companies in a CNAE sector (v1.1).
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: '4711'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Sector companies
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound_2'
+        '429':
+          $ref: '#/components/responses/TooManyRequests_2'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
+  /api/v1/sector/{code}/ratios:
+    get:
+      tags:
+      - Sectors
+      summary: Get Sector Financial Ratios
+      operationId: getSectorRatios
+      description: Return aggregated financial ratios for a CNAE sector (BdE data) (v1.1).
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: '4711'
+      responses:
+        '200':
+          description: Sector ratios
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound_2'
+        '429':
+          $ref: '#/components/responses/TooManyRequests_2'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
+  /api/v1/sectores/stats:
+    get:
+      tags:
+      - Sectors
+      summary: Get Sector Aggregate Statistics
+      operationId: getSectorStats
+      description: Return aggregate company counts and growth statistics across CNAE sectors.
+      responses:
+        '200':
+          description: Sector stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '429':
+          $ref: '#/components/responses/TooManyRequests_2'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
+  /api/v1/sectores/stats.csv:
+    get:
+      tags:
+      - Sectors
+      summary: Export Sector Aggregate Statistics As CSV
+      operationId: getSectorStatsCsv
+      description: CSV download of aggregate sector statistics.
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests_2'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
 components:
-  headers:
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms
-        must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the
-        response. Omitted only when a valid exact filter returns an empty representation with zero contributing
-        sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog
-        used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator
-        lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   responses:
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     BadRequest:
       description: Invalid request
       headers:
@@ -398,9 +413,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification,
-        bounded projection, database helper or required artifact is unavailable. Clients must not infer
-        an empty result.
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
         Cache-Control:
           description: Unavailable public reads are never cacheable.
@@ -430,127 +443,71 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
+    TooManyRequests_2:
       description: Rate limit exceeded
       headers:
         Retry-After:
           description: Seconds to wait before retrying.
           schema:
             type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses
-        an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
+            $ref: '#/components/schemas/ErrorResponse_2'
+    NotFound_2:
+      description: Resource not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/ErrorResponse_2'
   schemas:
-    CnaeNode:
+    SectorRatiosResponse:
       type: object
-      description: CNAE node. Catalog loaders may add official explanatory fields.
+      required:
+      - code
+      - ratios
       properties:
         code:
           type: string
-        name:
-          type: string
-        level:
-          type:
-          - integer
-          - 'null'
-        parent:
-          type:
-          - string
-          - 'null'
-        companies_count:
-          type:
-          - integer
-          - 'null'
-        count_status:
-          type: string
-          enum:
-          - precomputed
-          - not_precomputed
-        children:
+          pattern: ^[0-9]{2}$
+          minLength: 2
+          maxLength: 2
+        ratios:
           type: array
           items:
-            $ref: '#/components/schemas/CnaeNode'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CnaeTreeResponse:
+            $ref: '#/components/schemas/SectorRatio'
+      additionalProperties: false
+    ProjectionUnavailableError:
       type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
       required:
-      - sections
+      - error
+      - detail
+      - projection
       properties:
-        sections:
-          type: array
-          items:
-            $ref: '#/components/schemas/CnaeNode'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanySearchItem:
-      type: object
-      required:
-      - slug
-      - name
-      - cif
-      - acts_count
-      properties:
-        slug:
+        error:
           type: string
-          example: mercadona-sa
-        name:
+          const: projection_unavailable
+        detail:
           type: string
-          example: MERCADONA SA
-        cif:
+        projection:
           type: string
-          example: A46103834
-        acts_count:
-          type: integer
-        last_seen:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        cnae_code:
-          type:
-          - string
-          - 'null'
-        cnae_section:
-          type:
-          - string
-          - 'null'
-        capital_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        first_seen:
-          type:
-          - string
-          - 'null'
-        matched_alias:
-          type: string
-          description: Present only when an exact safe alias was matched; slug is always canonical.
-        aliases:
-          type: array
-          items:
-            type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
+      additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -652,6 +609,74 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    CnaeNode:
+      type: object
+      description: CNAE node. Catalog loaders may add official explanatory fields.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        level:
+          type:
+          - integer
+          - 'null'
+        parent:
+          type:
+          - string
+          - 'null'
+        companies_count:
+          type:
+          - integer
+          - 'null'
+        count_status:
+          type: string
+          enum:
+          - precomputed
+          - not_precomputed
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CnaeNode'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    SectorRatio:
+      type: object
+      required:
+      - year
+      - metric
+      - value
+      - unit
+      - source
+      properties:
+        year:
+          type: integer
+        metric:
+          type: string
+          enum:
+          - margen_neto
+          - roa
+          - roe
+        value:
+          type: number
+        unit:
+          type: string
+          const: '%'
+        source:
+          type: string
+          const: BdE Central de Balances
+      additionalProperties: false
+    CnaeTreeResponse:
+      type: object
+      required:
+      - sections
+      properties:
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/CnaeNode'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -666,23 +691,6 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
-        or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
     SectorCompaniesResponse:
       type: object
       required:
@@ -717,59 +725,132 @@ components:
             $ref: '#/components/schemas/CompanySearchItem'
           maxItems: 100
       additionalProperties: false
-    SectorRatio:
+    CompanySearchItem:
       type: object
       required:
-      - year
-      - metric
-      - value
-      - unit
-      - source
+      - slug
+      - name
+      - cif
+      - acts_count
       properties:
-        year:
+        slug:
+          type: string
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
           type: integer
-        metric:
+        last_seen:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        cnae_code:
+          type:
+          - string
+          - 'null'
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        matched_alias:
           type: string
-          enum:
-          - margen_neto
-          - roa
-          - roe
-        value:
-          type: number
-        unit:
-          type: string
-          const: '%'
-        source:
-          type: string
-          const: BdE Central de Balances
-      additionalProperties: false
-    SectorRatiosResponse:
-      type: object
-      required:
-      - code
-      - ratios
-      properties:
-        code:
-          type: string
-          pattern: ^[0-9]{2}$
-          minLength: 2
-          maxLength: 2
-        ratios:
+          description: Present only when an exact safe alias was matched; slug is always canonical.
+        aliases:
           type: array
           items:
-            $ref: '#/components/schemas/SectorRatio'
-      additionalProperties: false
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ErrorResponse_2:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  headers:
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: ob_sess
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
     apiKey:
       type: apiKey
       in: header
       name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid;
-        a credential with the operation's x-api-credential-scope (or public:read) selects its account
-        quota. Never place credentials in query strings.
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential
-        accepted by X-API-Key. It is not a JWT or OAuth access token.'
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion
+x-refined-from:
+- openmercantil-openapi-1.9.3.json
+- openmercantil-openapi.yml

@@ -450,6 +450,87 @@ apis:
     url: https://openmercantil.es/apis.json
   - type: Webhooks
     url: asyncapi/openmercantil-webhooks.yml
+- aid: openmercantil:openmercantil-contracts-api
+  name: OpenMercantil Contracts API
+  description: Public procurement (PLACSP) rankings
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Contracts
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-contracts-api-openapi.yml
+- aid: openmercantil:openmercantil-daily-api
+  name: OpenMercantil Daily API
+  description: Daily BORME summary feeds
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Daily
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-daily-api-openapi.yml
+- aid: openmercantil:openmercantil-export-api
+  name: OpenMercantil Export API
+  description: Bulk and per-resource export endpoints
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Export
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-export-api-openapi.yml
+- aid: openmercantil:openmercantil-geocode-api
+  name: OpenMercantil Geocode API
+  description: Geolocation enrichment
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Geocode
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-geocode-api-openapi.yml
+- aid: openmercantil:openmercantil-network-api
+  name: OpenMercantil Network API
+  description: Company relationship network and embargoes
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Network
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-network-api-openapi.yml
+- aid: openmercantil:openmercantil-risk-signals-api
+  name: OpenMercantil Risk Signals API
+  description: >-
+    Documentary risk signals from public sources (AEPD, CNMC, concursos, AEAT moroso, CENDOJ)
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Risk Signals
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-risk-signals-api-openapi.yml
+- aid: openmercantil:openmercantil-score-api
+  name: OpenMercantil Score API
+  description: Company score, trust score and activity timeseries
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Score
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-score-api-openapi.yml
+- aid: openmercantil:openmercantil-stats-api
+  name: OpenMercantil Stats API
+  description: Aggregate statistics by region and sector
+  humanURL: https://openmercantil.es/api/documentacion
+  baseURL: https://openmercantil.es
+  tags:
+  - Stats
+  properties:
+  - type: OpenAPI
+    url: openapi/openmercantil-stats-api-openapi.yml
 maintainers:
 - FN: OpenMercantil
   email: social@openmercantil.es

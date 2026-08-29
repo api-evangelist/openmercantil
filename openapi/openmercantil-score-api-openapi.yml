@@ -1,0 +1,176 @@
+openapi: 3.2.0
+info:
+  title: OpenMercantil Public Score API
+  version: 1.4.0
+  description: 'Public JSON API for Spanish company information derived from BORME and other
+
+    public sources. OpenMercantil is independent and informational; it is not
+
+    the BOE, BORME or Registro Mercantil and does not replace official
+
+    certificates or registry extracts. The API is free and public, requires no
+
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+
+    available and documented at https://openmercantil.es/api/documentacion.
+
+    '
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Score
+  description: Company score, trust score and activity timeseries
+paths:
+  /api/v1/company/{slug}/score:
+    get:
+      tags:
+      - Score
+      summary: Get Company Score
+      operationId: getCompanyScore
+      description: Return the OpenMercantil composite company score (introduced in v1.1).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/activity:
+    get:
+      tags:
+      - Score
+      summary: Get Company Activity Timeseries
+      operationId: getCompanyActivity
+      description: Return a time series of registry activity events for the company (v1.1).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Activity timeseries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/trust-score:
+    get:
+      tags:
+      - Score
+      summary: Get Company Trust Score
+      operationId: getCompanyTrustScore
+      description: Return the OpenMercantil trust score combining BORME, CNMV, OEPM, PLACSP, BOE and sanctions signals (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Trust score response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrustScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  schemas:
+    CompanyScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        score:
+          type: number
+        components:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+    TrustScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        trust_score:
+          type: number
+        signals:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.

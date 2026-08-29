@@ -1,0 +1,130 @@
+openapi: 3.2.0
+info:
+  title: OpenMercantil Public Network API
+  version: 1.4.0
+  description: 'Public JSON API for Spanish company information derived from BORME and other
+
+    public sources. OpenMercantil is independent and informational; it is not
+
+    the BOE, BORME or Registro Mercantil and does not replace official
+
+    certificates or registry extracts. The API is free and public, requires no
+
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+
+    available and documented at https://openmercantil.es/api/documentacion.
+
+    '
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Network
+  description: Company relationship network and embargoes
+paths:
+  /api/v1/company/{slug}/network:
+    get:
+      tags:
+      - Network
+      summary: Get Company Relationship Network
+      operationId: getCompanyNetwork
+      description: Return the company's officer-and-shareholder relationship graph (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Network graph
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/company/{slug}/embargoes:
+    get:
+      tags:
+      - Network
+      summary: List Company Embargoes
+      operationId: getCompanyEmbargoes
+      description: List public embargoes (seizures) recorded against the company (v1.4).
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      responses:
+        '200':
+          description: Embargoes list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.

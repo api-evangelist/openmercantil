@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil Support API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,25 +64,20 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: Support
-  description: Customer-support writes. Anonymous creation requires explicit privacy consent; replies
-    require an authenticated owner session and CSRF. Ticket data is never exposed through the public MCP.
+  description: Customer-support writes. Anonymous creation requires explicit privacy consent; replies require an authenticated owner session and CSRF. Ticket data is never exposed through the public MCP.
 paths:
   /api/v1/support/ticket:
     post:
@@ -102,13 +85,7 @@ paths:
       tags:
       - Support
       summary: Create a customer-support ticket
-      description: Public write exception for customer support. Authentication is optional, but the boolean
-        `accept_privacy=true` is mandatory and is persisted as the purpose-bound audit event `privacy_accepted`
-        / `privacy_policy_v1`. The submitted contact details, message, client IP and a user-agent capped
-        by the runtime are stored in the account database solely to process, audit and protect the support
-        request; ticket contents are never public or available to the public MCP. Related context accepts
-        only a validated company slug and a local or canonical-origin OpenMercantil URL, which is stored
-        as text and never dereferenced. The JSON body is capped at 32 KiB.
+      description: Public write exception for customer support. Authentication is optional, but the boolean `accept_privacy=true` is mandatory and is persisted as the purpose-bound audit event `privacy_accepted` / `privacy_policy_v1`. The submitted contact details, message, client IP and a user-agent capped by the runtime are stored in the account database solely to process, audit and protect the support request; ticket contents are never public or available to the public MCP. Related context accepts only a validated company slug and a local or canonical-origin OpenMercantil URL, which is stored as text and never dereferenced. The JSON body is capped at 32 KiB.
       x-plane: account-support
       x-max-body-bytes: 32768
       x-rate-limit: API plan policy plus an anti-abuse ceiling of 5 creations per client IP per hour
@@ -124,8 +101,7 @@ paths:
               $ref: '#/components/schemas/SupportTicketCreateRequest'
       responses:
         '201':
-          description: Ticket created; only its internal numeric id and non-secret public reference are
-            returned
+          description: Ticket created; only its internal numeric id and non-secret public reference are returned
           content:
             application/json:
               schema:
@@ -146,8 +122,7 @@ paths:
                 error: request_body_too_large
                 max_bytes: 32768
         '429':
-          description: API plan quota exhausted or the per-IP ceiling of 5 ticket creations per hour was
-            reached
+          description: API plan quota exhausted or the per-IP ceiling of 5 ticket creations per hour was reached
           headers:
             Retry-After:
               description: Seconds before retrying
@@ -159,8 +134,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SupportRequestErrorResponse'
         '503':
-          description: The account database or migrated support schema is unavailable; creation fails
-            closed
+          description: The account database or migrated support schema is unavailable; creation fails closed
           content:
             application/json:
               schema:
@@ -173,15 +147,11 @@ paths:
       operationId: replySupportTicket
       tags:
       - Support
-      - User
       summary: Reply to a support ticket owned by the authenticated user
-      description: Requires a fresh account session, `X-CSRF-Token`, ownership of the numeric ticket id
-        and a non-closed ticket. The reply is persisted before best-effort notification. The JSON body
-        is capped at 32 KiB and ticket contents are never exposed through the public MCP.
+      description: Requires a fresh account session, `X-CSRF-Token`, ownership of the numeric ticket id and a non-closed ticket. The reply is persisted before best-effort notification. The JSON body is capped at 32 KiB and ticket contents are never exposed through the public MCP.
       x-plane: account-support
       x-max-body-bytes: 32768
-      x-rate-limit: API plan policy plus a per-user action budget of 20 replies per 15 minutes and 100
-        per day
+      x-rate-limit: API plan policy plus a per-user action budget of 20 replies per 15 minutes and 100 per day
       x-mcp-excluded: true
       security:
       - cookieAuth: []
@@ -235,8 +205,7 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '503':
-          description: The action-budget store, account database or migrated support schema is unavailable;
-            reply fails closed
+          description: The action-budget store, account database or migrated support schema is unavailable; reply fails closed
           content:
             application/json:
               schema:
@@ -245,39 +214,113 @@ paths:
                 ok: false
                 error: Servicio no disponible.
 components:
-  parameters:
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
-  responses:
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
+    OkResponse:
+      type: object
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean
+      additionalProperties: false
+    SupportTicketCreatedResponse:
+      type: object
+      required:
+      - ok
+      - ticket_id
+      - public_id
+      properties:
+        ok:
+          type: boolean
+          const: true
+        ticket_id:
+          type: integer
+          minimum: 1
+        public_id:
+          type: string
+          pattern: ^OB-[0-9]{4}-[0-9]{6,}$
+      additionalProperties: false
+    SupportErrorResponse:
+      type: object
+      required:
+      - ok
+      - error
+      properties:
+        ok:
+          type: boolean
+          const: false
+        error:
+          type: string
+        code:
+          type: integer
+          description: Present on selected fail-closed or anti-abuse helper failures.
+        retry_after:
+          type: integer
+          minimum: 1
+          description: Present when the per-IP support creation ceiling is exhausted.
+      additionalProperties: false
+    SupportTicketCreateRequest:
+      type: object
+      description: Customer-supplied support content. Privacy consent is purpose-bound to handling and protecting this request; it is not marketing consent.
+      required:
+      - email
+      - category
+      - subject
+      - body
+      - accept_privacy
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        name:
+          type: string
+          maxLength: 200
+          pattern: ^[^\u0000-\u001F\u007F]*$
+          description: Trimmed before persistence; ASCII control characters are rejected.
+        category:
+          $ref: '#/components/schemas/SupportTicketCategory'
+        subject:
+          type: string
+          minLength: 6
+          maxLength: 200
+          pattern: ^[^\u0000-\u001F\u007F]+$
+          description: Trimmed before length validation; ASCII control characters are rejected.
+        body:
+          type: string
+          minLength: 20
+          maxLength: 10000
+          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*$
+          description: Trimmed before length validation. TAB, CR and LF are permitted; other ASCII control characters are rejected.
+        related_company_slug:
+          type: string
+          maxLength: 200
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+          description: Optional validated context; it does not establish identity or ownership.
+        related_url:
+          type: string
+          maxLength: 2048
+          description: Optional context restricted at runtime to a single-slash absolute same-origin path or an HTTPS URL on exactly openmercantil.es, without userinfo, port, backslash or control characters. Query and fragment are removed before persistence. The URL is stored as text and never dereferenced.
+        accept_privacy:
+          type: boolean
+          const: true
+          description: Strict purpose-bound acceptance, persisted as privacy_accepted/privacy_policy_v1; never interpreted as marketing consent.
+      additionalProperties: false
+    SupportTicketCategory:
+      type: string
+      description: Stable support-routing category accepted by the current account schema.
+      enum:
+      - comercial
+      - tecnico
+      - datos
+      - rgpd
+      - partnerships
+      - sugerencia
+      - bug
+      - otro
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -379,6 +422,11 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    SupportRequestErrorResponse:
+      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
+      anyOf:
+      - $ref: '#/components/schemas/SupportErrorResponse'
+      - $ref: '#/components/schemas/ErrorResponse'
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -393,13 +441,16 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    OkResponse:
+    SupportReplyRequest:
       type: object
       required:
-      - ok
+      - body
       properties:
-        ok:
-          type: boolean
+        body:
+          type: string
+          minLength: 5
+          maxLength: 10000
+          description: Trimmed before the 5–10,000 character validation.
       additionalProperties: false
     RequestBodyTooLargeError:
       type: object
@@ -414,128 +465,50 @@ components:
           type: integer
           minimum: 1
       additionalProperties: false
-    SupportErrorResponse:
-      type: object
-      required:
-      - ok
-      - error
-      properties:
-        ok:
-          type: boolean
-          const: false
-        error:
-          type: string
-        code:
-          type: integer
-          description: Present on selected fail-closed or anti-abuse helper failures.
-        retry_after:
-          type: integer
-          minimum: 1
-          description: Present when the per-IP support creation ceiling is exhausted.
-      additionalProperties: false
-    SupportReplyRequest:
-      type: object
-      required:
-      - body
-      properties:
-        body:
-          type: string
-          minLength: 5
-          maxLength: 10000
-          description: Trimmed before the 5–10,000 character validation.
-      additionalProperties: false
-    SupportRequestErrorResponse:
-      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget
-        errors use the generic API error envelope.
-      anyOf:
-      - $ref: '#/components/schemas/SupportErrorResponse'
-      - $ref: '#/components/schemas/ErrorResponse'
-    SupportTicketCategory:
-      type: string
-      description: Stable support-routing category accepted by the current account schema.
-      enum:
-      - comercial
-      - tecnico
-      - datos
-      - rgpd
-      - partnerships
-      - sugerencia
-      - bug
-      - otro
-    SupportTicketCreateRequest:
-      type: object
-      description: Customer-supplied support content. Privacy consent is purpose-bound to handling and
-        protecting this request; it is not marketing consent.
-      required:
-      - email
-      - category
-      - subject
-      - body
-      - accept_privacy
-      properties:
-        email:
-          type: string
-          format: email
-          maxLength: 254
-        name:
-          type: string
-          maxLength: 200
-          pattern: ^[^\u0000-\u001F\u007F]*$
-          description: Trimmed before persistence; ASCII control characters are rejected.
-        category:
-          $ref: '#/components/schemas/SupportTicketCategory'
-        subject:
-          type: string
-          minLength: 6
-          maxLength: 200
-          pattern: ^[^\u0000-\u001F\u007F]+$
-          description: Trimmed before length validation; ASCII control characters are rejected.
-        body:
-          type: string
-          minLength: 20
-          maxLength: 10000
-          pattern: ^[^\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]*$
-          description: Trimmed before length validation. TAB, CR and LF are permitted; other ASCII control
-            characters are rejected.
-        related_company_slug:
-          type: string
-          maxLength: 200
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-          description: Optional validated context; it does not establish identity or ownership.
-        related_url:
-          type: string
-          maxLength: 2048
-          description: Optional context restricted at runtime to a single-slash absolute same-origin path
-            or an HTTPS URL on exactly openmercantil.es, without userinfo, port, backslash or control
-            characters. Query and fragment are removed before persistence. The URL is stored as text and
-            never dereferenced.
-        accept_privacy:
-          type: boolean
-          const: true
-          description: Strict purpose-bound acceptance, persisted as privacy_accepted/privacy_policy_v1;
-            never interpreted as marketing consent.
-      additionalProperties: false
-    SupportTicketCreatedResponse:
-      type: object
-      required:
-      - ok
-      - ticket_id
-      - public_id
-      properties:
-        ok:
-          type: boolean
-          const: true
-        ticket_id:
-          type: integer
-          minimum: 1
-        public_id:
-          type: string
-          pattern: ^OB-[0-9]{4}-[0-9]{6,}$
-      additionalProperties: false
+  responses:
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require
-        X-CSRF-Token header (obtain via GET /api/v1/user/me).
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

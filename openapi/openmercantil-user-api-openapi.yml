@@ -1,23 +1,15 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: OpenMercantil User API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -57,16 +49,12 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -76,25 +64,20 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: User
-  description: Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires
-    session cookie (browser) and X-CSRF-Token header for mutations.
+  description: Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires session cookie (browser) and X-CSRF-Token header for mutations.
 paths:
   /api/v1/user/me:
     get:
@@ -102,8 +85,7 @@ paths:
       tags:
       - User
       summary: Current authenticated user
-      description: Returns id, email, name, plan (tier), persona_primary, onboarded flag and a fresh CSRF
-        token. Requires active session cookie.
+      description: Returns id, email, name, plan (tier), persona_primary, onboarded flag and a fresh CSRF token. Requires active session cookie.
       security:
       - cookieAuth: []
       responses:
@@ -121,9 +103,7 @@ paths:
       tags:
       - User
       summary: Get the current organization, seats and visible members
-      description: Returns null organization plus can_team when the user has no team. Non-privileged members
-        receive masked peer email addresses; the caller's own email is never masked. Invitation tokens
-        are never returned.
+      description: Returns null organization plus can_team when the user has no team. Non-privileged members receive masked peer email addresses; the caller's own email is never masked. Invitation tokens are never returned.
       x-plane: account
       security:
       - cookieAuth: []
@@ -214,8 +194,7 @@ paths:
       tags:
       - User
       summary: Create or renew an organization invitation
-      description: Owner/admin mutation. Enforces seat and daily invitation limits, sends the invitation
-        out of band and never returns its token.
+      description: Owner/admin mutation. Enforces seat and daily invitation limits, sends the invitation out of band and never returns its token.
       x-plane: account
       security:
       - cookieAuth: []
@@ -252,8 +231,7 @@ paths:
       tags:
       - User
       summary: Rotate and resend an organization invitation
-      description: Owner/admin mutation with no request body. The rotated token is sent out of band and
-        never returned.
+      description: Owner/admin mutation with no request body. The rotated token is sent out of band and never returned.
       x-plane: account
       security:
       - cookieAuth: []
@@ -363,8 +341,7 @@ paths:
       tags:
       - User
       summary: Remove a member from the organization
-      description: Owner/admin mutation with no request body. Admins may remove members but not owners
-        or other admins.
+      description: Owner/admin mutation with no request body. Admins may remove members but not owners or other admins.
       x-plane: account
       security:
       - cookieAuth: []
@@ -399,8 +376,7 @@ paths:
       tags:
       - User
       summary: Leave the current organization
-      description: Member/admin mutation with no request body. Owners must transfer ownership through
-        the supported process before leaving.
+      description: Member/admin mutation with no request body. Owners must transfer ownership through the supported process before leaving.
       x-plane: account
       security:
       - cookieAuth: []
@@ -519,9 +495,7 @@ paths:
       tags:
       - User
       summary: Create segment
-      description: Create a tier-limited saved corporate segment. At least one effective UserSegmentFilters
-        anchor is required. Unknown fields and legacy forma/estado filters are rejected with 400; an individually
-        valid but unindexed combination is rejected with 422.
+      description: Create a tier-limited saved corporate segment. At least one effective UserSegmentFilters anchor is required. Unknown fields and legacy forma/estado filters are rejected with 400; an individually valid but unindexed combination is rejected with 422.
       x-plane: account
       security:
       - cookieAuth: []
@@ -541,8 +515,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserSegmentCreatedResponse'
         '400':
-          description: Malformed/unknown filter, legally unavailable legacy filter, missing effective
-            anchor or tier limit
+          description: Malformed/unknown filter, legally unavailable legacy filter, missing effective anchor or tier limit
           content:
             application/json:
               schema:
@@ -583,8 +556,7 @@ paths:
       tags:
       - User
       summary: Replace mutable segment fields
-      description: When filters_json is present it follows UserSegmentFilters. Invalid or legacy fields
-        return 400; unsupported indexed combinations return 422.
+      description: When filters_json is present it follows UserSegmentFilters. Invalid or legacy fields return 400; unsupported indexed combinations return 422.
       x-plane: account
       security:
       - cookieAuth: []
@@ -632,8 +604,7 @@ paths:
       tags:
       - User
       summary: Patch mutable segment fields
-      description: When filters_json is present it follows UserSegmentFilters. Invalid or legacy fields
-        return 400; unsupported indexed combinations return 422.
+      description: When filters_json is present it follows UserSegmentFilters. Invalid or legacy fields return 400; unsupported indexed combinations return 422.
       x-plane: account
       security:
       - cookieAuth: []
@@ -747,10 +718,7 @@ paths:
       tags:
       - User
       summary: Execute segment filters → companies
-      description: Resolves filters_json only against the immutable corporate company_public_v2 sidecar
-        and returns at most 500 rows. `count` is the number of rows in this bounded response, not an exact
-        global total. Invalid/legacy filters return 400, unsupported indexed combinations return 422,
-        and missing authority/sidecar or query failure returns 503. This mutation has no request body.
+      description: Resolves filters_json only against the immutable corporate company_public_v2 sidecar and returns at most 500 rows. `count` is the number of rows in this bounded response, not an exact global total. Invalid/legacy filters return 400, unsupported indexed combinations return 422, and missing authority/sidecar or query failure returns 503. This mutation has no request body.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1478,8 +1446,7 @@ paths:
       tags:
       - User
       summary: Audit log (MAX/Enterprise only)
-      description: Returns 402 Payment Required if tier doesn't include audit_log. Retention 90d MAX,
-        ilimitado Enterprise.
+      description: Returns 402 Payment Required if tier doesn't include audit_log. Retention 90d MAX, ilimitado Enterprise.
       security:
       - cookieAuth: []
       parameters:
@@ -1517,9 +1484,7 @@ paths:
       tags:
       - User
       summary: Run an authenticated KYC documentary lookup
-      description: MAX/Enterprise account operation. Requires a declared legitimate purpose, records an
-        audit entry and never creates a public person profile. DNI/NIE belongs only in the encrypted request
-        body, never in URL, logs or public API surfaces.
+      description: MAX/Enterprise account operation. Requires a declared legitimate purpose, records an audit entry and never creates a public person profile. DNI/NIE belongs only in the encrypted request body, never in URL, logs or public API surfaces.
       x-plane: account
       x-sensitive: true
       security:
@@ -1557,8 +1522,7 @@ paths:
       tags:
       - User
       summary: Get the caller's KYC lookup allowance and usage
-      description: Account-only quota metadata. It returns tier_allowed=false instead of exposing any
-        lookup data when the plan is not eligible.
+      description: Account-only quota metadata. It returns tier_allowed=false instead of exposing any lookup data when the plan is not eligible.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1587,8 +1551,7 @@ paths:
       tags:
       - User
       summary: Get the caller's redacted KYC lookup history
-      description: Account-only, audit-derived history. Identifiers are masked/hash-backed; it is never
-        a public people endpoint.
+      description: Account-only, audit-derived history. Identifiers are masked/hash-backed; it is never a public people endpoint.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1636,11 +1599,8 @@ paths:
         range: 422 validation_failed
       tags:
       - User
-      - API Credentials
       summary: List API credential metadata
-      description: Account-plane endpoint. Revalidates the session account in users.sqlite and returns
-        a bounded, signed-cursor page of prefixes, last four characters, scopes and lifecycle state; never
-        a token or hash.
+      description: Account-plane endpoint. Revalidates the session account in users.sqlite and returns a bounded, signed-cursor page of prefixes, last four characters, scopes and lifecycle state; never a token or hash.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1714,12 +1674,8 @@ paths:
       operationId: createUserApiCredential
       tags:
       - User
-      - API Credentials
       summary: Create an API credential
-      description: Creates a credential once and returns the full token on the original response or an
-        identical Idempotency-Key retry within 24 hours. Requires session cookie, X-CSRF-Token, a durable
-        users.sqlite idempotency schema and configured credential/idempotency key material. List/get never
-        expose the token.
+      description: Creates a credential once and returns the full token on the original response or an identical Idempotency-Key retry within 24 hours. Requires session cookie, X-CSRF-Token, a durable users.sqlite idempotency schema and configured credential/idempotency key material. List/get never expose the token.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1734,8 +1690,7 @@ paths:
               $ref: '#/components/schemas/ApiCredentialCreateRequest'
       responses:
         '201':
-          description: Credential created, or its encrypted one-time response replayed for the same key
-            and payload
+          description: Credential created, or its encrypted one-time response replayed for the same key and payload
           headers:
             Idempotency-Replayed:
               $ref: '#/components/headers/IdempotencyReplayed'
@@ -1762,11 +1717,8 @@ paths:
       operationId: rotateUserApiCredential
       tags:
       - User
-      - API Credentials
       summary: Rotate one API credential
-      description: Atomically revokes the source and stores the encrypted one-time replacement response
-        with the same transaction. An identical Idempotency-Key retry within 24 hours returns the same
-        token without rotating again.
+      description: Atomically revokes the source and stores the encrypted one-time replacement response with the same transaction. An identical Idempotency-Key retry within 24 hours returns the same token without rotating again.
       x-plane: account
       security:
       - cookieAuth: []
@@ -1816,7 +1768,6 @@ paths:
       operationId: revokeUserApiCredential
       tags:
       - User
-      - API Credentials
       summary: Revoke one API credential
       x-plane: account
       security:
@@ -1855,11 +1806,8 @@ paths:
       operationId: listUserWebhooks
       tags:
       - User
-      - Webhooks
       summary: List outbound webhook metadata
-      description: Account-plane metadata, the exact payload-contract 1.0 event allowlist and worker health.
-        Full signing secrets are never listed; signing secrets are encrypted at rest with a versioned
-        keyring. Unknown event types and schema versions fail closed.
+      description: Account-plane metadata, the exact payload-contract 1.0 event allowlist and worker health. Full signing secrets are never listed; signing secrets are encrypted at rest with a versioned keyring. Unknown event types and schema versions fail closed.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -1893,12 +1841,8 @@ paths:
       operationId: createUserWebhook
       tags:
       - User
-      - Webhooks
       summary: Create an outbound webhook
-      description: Validates HTTPS destination against SSRF, accepts only the explicit payload-contract
-        1.0 event allowlist, and atomically stores both the encrypted signing secret and an encrypted
-        24-hour idempotency replay. An identical Idempotency-Key retry returns the same secret without
-        creating a second webhook. Wildcards and unknown events fail closed with 400.
+      description: Validates HTTPS destination against SSRF, accepts only the explicit payload-contract 1.0 event allowlist, and atomically stores both the encrypted signing secret and an encrypted 24-hour idempotency replay. An identical Idempotency-Key retry returns the same secret without creating a second webhook. Wildcards and unknown events fail closed with 400.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -1941,10 +1885,8 @@ paths:
       operationId: updateUserWebhook
       tags:
       - User
-      - Webhooks
       summary: Update an outbound webhook
-      description: Revalidates URL/DNS/SSRF on every destination change and accepts only payload-contract
-        1.0 event types. Wildcards and unknown events fail closed with 400. The secret is not returned.
+      description: Revalidates URL/DNS/SSRF on every destination change and accepts only payload-contract 1.0 event types. Wildcards and unknown events fail closed with 400. The secret is not returned.
       x-webhook-event-contract-version: '1.0'
       x-plane: account
       security:
@@ -1990,7 +1932,6 @@ paths:
       operationId: deleteUserWebhook
       tags:
       - User
-      - Webhooks
       summary: Delete an outbound webhook
       x-plane: account
       security:
@@ -2029,11 +1970,8 @@ paths:
       operationId: rotateUserWebhookSecret
       tags:
       - User
-      - Webhooks
       summary: Rotate an outbound webhook signing secret
-      description: Cancels pending deliveries signed with the old key and atomically stores the encrypted
-        replacement response. An identical Idempotency-Key retry within 24 hours returns the same secret
-        without rotating again.
+      description: Cancels pending deliveries signed with the old key and atomically stores the encrypted replacement response. An identical Idempotency-Key retry within 24 hours returns the same secret without rotating again.
       x-plane: account
       security:
       - cookieAuth: []
@@ -2076,16 +2014,12 @@ paths:
     post:
       operationId: replySupportTicket
       tags:
-      - Support
       - User
       summary: Reply to a support ticket owned by the authenticated user
-      description: Requires a fresh account session, `X-CSRF-Token`, ownership of the numeric ticket id
-        and a non-closed ticket. The reply is persisted before best-effort notification. The JSON body
-        is capped at 32 KiB and ticket contents are never exposed through the public MCP.
+      description: Requires a fresh account session, `X-CSRF-Token`, ownership of the numeric ticket id and a non-closed ticket. The reply is persisted before best-effort notification. The JSON body is capped at 32 KiB and ticket contents are never exposed through the public MCP.
       x-plane: account-support
       x-max-body-bytes: 32768
-      x-rate-limit: API plan policy plus a per-user action budget of 20 replies per 15 minutes and 100
-        per day
+      x-rate-limit: API plan policy plus a per-user action budget of 20 replies per 15 minutes and 100 per day
       x-mcp-excluded: true
       security:
       - cookieAuth: []
@@ -2139,8 +2073,7 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '503':
-          description: The action-budget store, account database or migrated support schema is unavailable;
-            reply fails closed
+          description: The action-budget store, account database or migrated support schema is unavailable; reply fails closed
           content:
             application/json:
               schema:
@@ -2154,8 +2087,7 @@ paths:
       tags:
       - User
       summary: Get a live same-origin CSRF token
-      description: Returns the token for the caller's current browser session and whether it is authenticated.
-        The response is private and never cacheable.
+      description: Returns the token for the caller's current browser session and whether it is authenticated. The response is private and never cacheable.
       x-plane: account
       security: []
       responses:
@@ -2176,8 +2108,7 @@ paths:
       tags:
       - User
       summary: Resend the account email-verification link
-      description: Rate-limited before database and mail work. A new purpose-bound token is stored only
-        as a hash.
+      description: Rate-limited before database and mail work. A new purpose-bound token is stored only as a hash.
       x-plane: account
       security:
       - cookieAuth: []
@@ -2202,11 +2133,9 @@ paths:
     post:
       operationId: postCreditsCheckout
       tags:
-      - Billing
       - User
       summary: Create an idempotent credit-pack Checkout session
-      description: Requires login and CSRF. The body is capped at 16 KiB and every external attempt consumes
-        a strict per-user budget.
+      description: Requires login and CSRF. The body is capped at 16 KiB and every external attempt consumes a strict per-user budget.
       x-plane: billing
       security:
       - cookieAuth: []
@@ -2263,26 +2192,16 @@ paths:
     post:
       operationId: createCompanyLegalReport
       tags:
-      - Legal
-      - Companies
       - User
       summary: Create the authenticated user's redacted corporate legal report
-      description: Account and credit-entitlement surface for a legal entity only. The server owns beta/pricing
-        policy and a daily idempotency key scoped to user, company and UTC date; clients cannot choose
-        price or entitlement. Every report is recursively PII-redacted before egress. Documentary events
-        and citations do not prove wrongdoing, solvency, current status, identity of a natural person
-        or completeness, and this informational report is not legal advice or an official certificate.
-        Unknown or unauthorized source policy, natural-person subjects and missing helpers fail closed.
-        The JSON body is capped at 32 KiB and accepts only the CSRF fallback.
+      description: Account and credit-entitlement surface for a legal entity only. The server owns beta/pricing policy and a daily idempotency key scoped to user, company and UTC date; clients cannot choose price or entitlement. Every report is recursively PII-redacted before egress. Documentary events and citations do not prove wrongdoing, solvency, current status, identity of a natural person or completeness, and this informational report is not legal advice or an official certificate. Unknown or unauthorized source policy, natural-person subjects and missing helpers fail closed. The JSON body is capped at 32 KiB and accepts only the CSRF fallback.
       x-plane: account-paid-egress
       x-entitlement: legal_report (server-owned credits/beta policy)
-      x-source-policy: legal_report_v1; fail closed until a versioned public decision authorizes every
-        included source
+      x-source-policy: legal_report_v1; fail closed until a versioned public decision authorizes every included source
       x-activation-status: policy-closed
       x-idempotency-key: 'server: legal_report:{user_id}:{company_slug}:{UTC-date}'
       x-max-body-bytes: 32768
-      x-rate-limit: API plan policy plus a per-user action budget of 10 attempts per 15 minutes and 50
-        per day
+      x-rate-limit: API plan policy plus a per-user action budget of 10 attempts per 15 minutes and 50 per day
       x-privacy: Corporate subjects only; recursive PII redaction before serialization
       x-mcp-excluded: true
       security:
@@ -2344,8 +2263,7 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '503':
-          description: Action-budget storage, legal source policy, report helper, account schema or credit
-            ledger unavailable; generation fails closed
+          description: Action-budget storage, legal source policy, report helper, account schema or credit ledger unavailable; generation fails closed
           content:
             application/json:
               schema:
@@ -2354,12 +2272,9 @@ paths:
     post:
       operationId: postSubscriptionCheckout
       tags:
-      - Billing
       - User
       summary: Create a subscription Checkout session
-      description: 'Requires a Secure, SameSite browser session and X-CSRF-Token. Trial policy is server-owned:
-        clients cannot send trial_days or no_default_trial. Idempotency is scoped to user, plan and billing
-        period before Stripe.'
+      description: 'Requires a Secure, SameSite browser session and X-CSRF-Token. Trial policy is server-owned: clients cannot send trial_days or no_default_trial. Idempotency is scoped to user, plan and billing period before Stripe.'
       x-plane: billing
       security:
       - cookieAuth: []
@@ -2428,7 +2343,6 @@ paths:
     get:
       operationId: getBillingInvoices
       tags:
-      - Billing
       - User
       summary: List the authenticated user's invoices and subscription
       x-plane: billing
@@ -2449,7 +2363,6 @@ paths:
     get:
       operationId: getBillingPortal
       tags:
-      - Billing
       - User
       summary: Redirect to the authenticated user's Stripe portal
       x-plane: billing
@@ -2469,7 +2382,6 @@ paths:
     post:
       operationId: postBillingPortal
       tags:
-      - Billing
       - User
       summary: Create a Stripe portal session as JSON
       x-plane: billing
@@ -2498,12 +2410,9 @@ paths:
     post:
       operationId: postLegacyBillingPortal
       tags:
-      - Billing
       - User
       summary: Create a Stripe Customer Portal session through the legacy alias
-      description: Deprecated alias of `POST /api/v1/billing/portal`. Requires an authenticated browser
-        session and a valid CSRF token supplied either in `X-CSRF-Token` or the form field `csrf`. New
-        clients must use the canonical billing route.
+      description: Deprecated alias of `POST /api/v1/billing/portal`. Requires an authenticated browser session and a valid CSRF token supplied either in `X-CSRF-Token` or the form field `csrf`. New clients must use the canonical billing route.
       deprecated: true
       x-replaced-by: /api/v1/billing/portal
       x-plane: billing
@@ -2559,48 +2468,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
-  headers:
-    IdempotencyKeyExpires:
-      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key
-        is required.
-      schema:
-        type: integer
-        minimum: 1
-    IdempotencyReplayed:
-      description: True when this response was recovered from the durable encrypted replay record for
-        the same key and payload.
-      schema:
-        type: boolean
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    AccountIdempotencyKeyHeader:
-      name: Idempotency-Key
-      in: header
-      required: true
-      description: Required for account mutations that reveal a secret. Reuse the same key only for an
-        identical payload. The encrypted response can be replayed for 24 hours; a changed payload or an
-        expired key returns 409.
-      schema:
-        type: string
-        minLength: 8
-        maxLength: 128
-        pattern: ^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   responses:
-    BadRequest:
-      description: Invalid request
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -2608,8 +2478,23 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -2628,417 +2513,55 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses
-        an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ApiCredential:
+    OrganizationMember:
       type: object
       required:
       - id
       - name
-      - prefix
-      - last4
-      - hint
-      - scopes
-      - status
-      - created_at
+      - email
+      - role
       properties:
         id:
           type: integer
-          minimum: 1
         name:
           type: string
-          maxLength: 80
-        prefix:
+        email:
           type: string
-          description: Non-secret identification prefix.
-        last4:
-          type: string
-          minLength: 4
-          maxLength: 4
-        hint:
-          type: string
-        scopes:
-          type: array
-          items:
-            type: string
-            enum:
-            - public:read
-            - companies:read
-            - people:read
-            - tenders:read
-            - legal:read
-            - integrations:read
-            - exports:read
-            - account:read
-          uniqueItems: true
-        status:
+        role:
           type: string
           enum:
-          - active
-          - expired
-          - revoked
-        created_at:
+          - owner
+          - admin
+          - member
+      additionalProperties: false
+    OutboundWebhookUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        url:
           type: string
-          format: date-time
-        expires_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        revoked_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        last_used_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        rotated_from_id:
-          type:
-          - integer
-          - 'null'
-        legacy_migrated:
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+        active:
           type: boolean
       additionalProperties: false
-    ApiCredentialCreateRequest:
+    UserSegmentCreatedResponse:
       type: object
       required:
-      - scopes
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 80
-        scopes:
-          type: array
-          items:
-            type: string
-            enum:
-            - public:read
-            - companies:read
-            - people:read
-            - tenders:read
-            - legal:read
-            - integrations:read
-            - exports:read
-            - account:read
-          uniqueItems: true
-        expires_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Default 90 days; maximum 366 days.
-      additionalProperties: false
-    ApiCredentialOneTimeResponse:
-      type: object
-      required:
-      - ok
-      - credential
-      - token
-      - token_visible_once
-      - idempotency_replayed
-      - idempotency_expires_at
-      properties:
-        ok:
-          type: boolean
-          const: true
-        credential:
-          $ref: '#/components/schemas/ApiCredential'
-        token:
-          type: string
-          pattern: ^omk_live_[A-Za-z0-9_-]{43}$
-          readOnly: true
-          x-sensitive: true
-          x-visible-once: true
-          description: Visible only in the original create/rotate response and identical Idempotency-Key
-            replays during the 24-hour recovery window; never recoverable through list/get.
-        token_visible_once:
-          type: boolean
-          const: true
-        replaced_credential_id:
-          type: integer
-        idempotency_replayed:
-          type: boolean
-          readOnly: true
-        idempotency_expires_at:
-          type: integer
-          minimum: 1
-          readOnly: true
-          description: Unix timestamp for the encrypted replay window.
-      additionalProperties: false
-    ApiCredentialRotateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 80
-        scopes:
-          type: array
-          items:
-            type: string
-            enum:
-            - public:read
-            - companies:read
-            - people:read
-            - tenders:read
-            - legal:read
-            - integrations:read
-            - exports:read
-            - account:read
-          uniqueItems: true
-          minItems: 1
-        expires_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Omitted preserves the current expiry; null resets to the standard 90-day expiry;
-            maximum 366 days.
-      additionalProperties: false
-    BillingInvoice:
-      type: object
-      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
+      - id
+      - segment
       properties:
         id:
           type: integer
-        stripe_invoice_id:
-          type: string
-        invoice_number:
-          type:
-          - string
-          - 'null'
-        amount_paid_cents:
-          type:
-          - integer
-          - 'null'
-        amount_due_cents:
-          type:
-          - integer
-          - 'null'
-        subtotal_cents:
-          type:
-          - integer
-          - 'null'
-        tax_cents:
-          type:
-          - integer
-          - 'null'
-        tax_rate_pct:
-          type:
-          - number
-          - 'null'
-        currency:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-        invoice_pdf:
-          type:
-          - string
-          - 'null'
-          format: uri
-        hosted_invoice_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        period_start:
-          type:
-          - string
-          - 'null'
-        period_end:
-          type:
-          - string
-          - 'null'
-        paid_at:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    BillingInvoicesResponse:
-      type: object
-      required:
-      - ok
-      - subscription
-      - invoices
-      properties:
-        ok:
-          type: boolean
-        subscription:
-          anyOf:
-          - $ref: '#/components/schemas/BillingSubscription'
-          - type: 'null'
-        invoices:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillingInvoice'
-          maxItems: 50
-      additionalProperties: false
-    BillingSubscription:
-      type: object
-      description: Authenticated user's current subscription metadata.
-      properties:
-        id:
-          type: integer
-        stripe_subscription_id:
-          type: string
-        stripe_customer_id:
-          type:
-          - string
-          - 'null'
-        plan:
-          type: string
-        billing:
-          type:
-          - string
-          - 'null'
-        amount_cents:
-          type:
-          - integer
-          - 'null'
-        currency:
-          type:
-          - string
-          - 'null'
-        status:
-          type: string
-        current_period_start:
-          type:
-          - string
-          - 'null'
-        current_period_end:
-          type:
-          - string
-          - 'null'
-        cancel_at_period_end:
-          type:
-          - integer
-          - boolean
-        canceled_at:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-        updated_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanySearchItem:
-      type: object
-      required:
-      - slug
-      - name
-      - cif
-      - acts_count
-      properties:
-        slug:
-          type: string
-          example: mercadona-sa
-        name:
-          type: string
-          example: MERCADONA SA
-        cif:
-          type: string
-          example: A46103834
-        acts_count:
-          type: integer
-        last_seen:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        cnae_code:
-          type:
-          - string
-          - 'null'
-        cnae_section:
-          type:
-          - string
-          - 'null'
-        capital_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        first_seen:
-          type:
-          - string
-          - 'null'
-        matched_alias:
-          type: string
-          description: Present only when an exact safe alias was matched; slug is always canonical.
-        aliases:
-          type: array
-          items:
-            type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CredentialRevokedResponse:
-      type: object
-      required:
-      - ok
-      - revoked
-      properties:
-        ok:
-          type: boolean
-        revoked:
-          type: boolean
-      additionalProperties: false
-    DeletedResponse:
-      type: object
-      required:
-      - ok
-      - deleted
-      properties:
-        ok:
-          type: boolean
-        deleted:
-          type: boolean
-      additionalProperties: false
-    EmailDispatchResponse:
-      type: object
-      required:
-      - ok
-      - email_sent
-      properties:
-        ok:
-          type: boolean
-        email_sent:
-          type: boolean
+        segment:
+          $ref: '#/components/schemas/UserSegment'
       additionalProperties: false
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -3140,25 +2663,278 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    ExportUsageResponse:
+    OutboundWebhookCreateRequest:
       type: object
       required:
-      - used
-      - max
-      - remaining
-      - pct
-      - unlimited
+      - url
+      - events
       properties:
-        used:
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+      additionalProperties: false
+    UserListDetail:
+      allOf:
+      - $ref: '#/components/schemas/UserList'
+      - type: object
+        required:
+        - items
+        properties:
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/UserListItem'
+            maxItems: 1000
+        additionalProperties: false
+    UserAuditEntry:
+      type: object
+      description: Account audit entry. Sensitive metadata is not part of the public contract.
+      properties:
+        id:
           type: integer
-        max:
+        action:
+          type: string
+        target_type:
+          type:
+          - string
+          - 'null'
+        target_id:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    UserOrganizationInviteRequest:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        role:
+          type: string
+          enum:
+          - admin
+          - member
+          default: member
+      additionalProperties: false
+    UserOrganizationNameRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 80
+      additionalProperties: false
+    UserSegmentRunResponse:
+      type: object
+      required:
+      - segment_id
+      - count
+      - rows
+      - filters_applied
+      properties:
+        segment_id:
           type: integer
-        remaining:
+        count:
           type: integer
-        pct:
+          minimum: 0
+          maximum: 500
+          description: Number of rows returned in this bounded response. It is not an exact global match count.
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+          maxItems: 500
+        filters_applied:
+          $ref: '#/components/schemas/UserSegmentFilters'
+      additionalProperties: false
+    OutboundWebhook:
+      type: object
+      required:
+      - id
+      - url
+      - events
+      - active
+      - secret_prefix
+      - created_at
+      properties:
+        id:
           type: integer
-        unlimited:
+          minimum: 1
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+        active:
           type: boolean
+        secret_prefix:
+          type: string
+          maxLength: 12
+          description: Non-secret identification prefix.
+        key_id:
+          type:
+          - string
+          - 'null'
+          description: Public identifier of the current HMAC signing key.
+        secret_storage:
+          type: string
+          enum:
+          - encrypted
+          - migration_required
+        last_success_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    OrganizationInvite:
+      type: object
+      required:
+      - id
+      - email
+      - role
+      - created_at
+      - expires_at
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+        created_at:
+          type: string
+        expires_at:
+          type: string
+      additionalProperties: false
+    UserListUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+        color:
+          type:
+          - string
+          - 'null'
+          pattern: ^#[0-9A-Fa-f]{6}$
+        kind:
+          type: string
+          enum:
+          - company
+          - person
+          - mixed
+      additionalProperties: false
+    UserAuditResponse:
+      type: object
+      required:
+      - count
+      - entries
+      properties:
+        count:
+          type: integer
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserAuditEntry'
+          maxItems: 1000
+      additionalProperties: false
+    KycPersonLookupRequest:
+      type: object
+      required:
+      - dni_or_nie
+      - finalidad
+      properties:
+        dni_or_nie:
+          type: string
+          minLength: 8
+          maxLength: 12
+          writeOnly: true
+          x-sensitive: true
+          description: DNI/NIE supplied for this authenticated KYC request; never use it in public company/person routes.
+        finalidad:
+          type: string
+          minLength: 12
+          maxLength: 200
+          description: Declared legitimate purpose recorded in the account audit log.
+      additionalProperties: false
+    LegalReportPaymentRequiredError:
+      oneOf:
+      - type: object
+        required:
+        - error
+        - cost
+        - balance
+        - buy_url
+        properties:
+          error:
+            type: string
+            const: insufficient_credits
+          cost:
+            type: integer
+            minimum: 0
+          balance:
+            type: integer
+          buy_url:
+            type: string
+        additionalProperties: false
+      - type: object
+        required:
+        - error
+        properties:
+          error:
+            type: string
+            const: charge_failed
+        additionalProperties: false
+    UserListItem:
+      type: object
+      description: Saved list item owned by the authenticated account.
+      properties:
+        id:
+          type: integer
+        list_id:
+          type: integer
+        item_type:
+          type: string
+        item_slug:
+          type: string
+        note:
+          type: string
+        added_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    OrganizationCreatedResponse:
+      type: object
+      required:
+      - ok
+      - org_id
+      properties:
+        ok:
+          type: boolean
+        org_id:
+          type: integer
       additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
@@ -3174,6 +2950,295 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
+    WebhookUpdatedResponse:
+      type: object
+      required:
+      - ok
+      - webhook
+      properties:
+        ok:
+          type: boolean
+        webhook:
+          $ref: '#/components/schemas/OutboundWebhook'
+      additionalProperties: false
+    SupportRequestErrorResponse:
+      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
+      anyOf:
+      - $ref: '#/components/schemas/SupportErrorResponse'
+      - $ref: '#/components/schemas/ErrorResponse'
+    UserListCreateRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+        color:
+          type:
+          - string
+          - 'null'
+          pattern: ^#[0-9A-Fa-f]{6}$
+        kind:
+          type: string
+          enum:
+          - company
+          - person
+          - mixed
+          default: company
+      additionalProperties: false
+    UserNoteUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+          minLength: 1
+          maxLength: 50000
+        pinned:
+          type: boolean
+      additionalProperties: false
+    UserNotesForTargetResponse:
+      type: object
+      required:
+      - count
+      - notes
+      properties:
+        count:
+          type: integer
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNote'
+          maxItems: 500
+      additionalProperties: false
+    OrganizationInviteCreatedResponse:
+      type: object
+      required:
+      - ok
+      - invite_id
+      - email
+      - role
+      - expires_at
+      - renewed
+      - email_sent
+      properties:
+        ok:
+          type: boolean
+        invite_id:
+          type: integer
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+        expires_at:
+          type: string
+        renewed:
+          type: boolean
+        email_sent:
+          type: boolean
+      additionalProperties: false
+    UserTagListResponse:
+      type: object
+      required:
+      - count
+      - tier_max
+      - tags
+      properties:
+        count:
+          type: integer
+        tier_max:
+          type: integer
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserTag'
+      additionalProperties: false
+    EmailDispatchResponse:
+      type: object
+      required:
+      - ok
+      - email_sent
+      properties:
+        ok:
+          type: boolean
+        email_sent:
+          type: boolean
+      additionalProperties: false
+    StripeSessionResponse:
+      type: object
+      required:
+      - url
+      - session_id
+      properties:
+        url:
+          type: string
+          format: uri
+        session_id:
+          type: string
+      additionalProperties: false
+    UserSegment:
+      type: object
+      description: Saved account segment. Extra migration columns may be returned for backward compatibility.
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        filters_json:
+          type: string
+        filters:
+          $ref: '#/components/schemas/UserSegmentStoredFilters'
+        persona:
+          type:
+          - string
+          - 'null'
+        icon:
+          type:
+          - string
+          - 'null'
+        pinned:
+          type:
+          - integer
+          - boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    OutboundWebhookContractedEventCatalogV1:
+      type: array
+      description: All event payload contracts known by this API version, including contracted-but-unwired events that cannot yet be subscribed.
+      items:
+        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
+      minItems: 8
+      maxItems: 8
+      uniqueItems: true
+      x-webhook-event-contract-version: '1.0'
+    LegalReportDocument:
+      type: object
+      required:
+      - state
+      - axes
+      - totals
+      properties:
+        state:
+          anyOf:
+          - type: object
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        axes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalReportAxis'
+        totals:
+          type: object
+          required:
+          - axes_present
+          - events_total
+          - norms_cited
+          properties:
+            axes_present:
+              type: integer
+              minimum: 0
+            events_total:
+              type: integer
+              minimum: 0
+            norms_cited:
+              type: array
+              items:
+                type: string
+              uniqueItems: true
+          additionalProperties: false
+      additionalProperties: false
+    UserMeResponse:
+      type: object
+      required:
+      - id
+      - plan
+      - onboarded
+      - csrf
+      properties:
+        id:
+          type: integer
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+        name:
+          type:
+          - string
+          - 'null'
+        plan:
+          type: string
+        persona_primary:
+          type:
+          - string
+          - 'null'
+        onboarded:
+          type: integer
+        csrf:
+          type: string
+      additionalProperties: false
+    UserNote:
+      type: object
+      description: Private note visible only to its authenticated owner.
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        target_type:
+          type: string
+        target_id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        pinned:
+          type:
+          - integer
+          - boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    UserTagAssignmentRequest:
+      type: object
+      required:
+      - target_type
+      - target_id
+      properties:
+        target_type:
+          type: string
+          enum:
+          - company
+          - person
+          - sector
+          - borme_id
+        target_id:
+          type: string
+          minLength: 1
+          maxLength: 255
+      additionalProperties: false
     KycLookupHistoryEntry:
       type: object
       required:
@@ -3207,6 +3272,546 @@ components:
         created_at:
           type: string
       additionalProperties: false
+    OkResponse:
+      type: object
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean
+      additionalProperties: false
+    ApiCredentialCreateRequest:
+      type: object
+      required:
+      - scopes
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        scopes:
+          type: array
+          items:
+            type: string
+            enum:
+            - public:read
+            - companies:read
+            - people:read
+            - tenders:read
+            - legal:read
+            - integrations:read
+            - exports:read
+            - account:read
+          uniqueItems: true
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Default 90 days; maximum 366 days.
+      additionalProperties: false
+    UserOrganizationMemberRoleRequest:
+      type: object
+      required:
+      - role
+      properties:
+        role:
+          type: string
+          enum:
+          - admin
+          - member
+      additionalProperties: false
+    LegalReportRequest:
+      type: object
+      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
+      properties:
+        csrf:
+          type: string
+          minLength: 32
+          maxLength: 256
+          description: Body fallback; prefer X-CSRF-Token.
+      additionalProperties: false
+    LegalReportResponse:
+      type: object
+      required:
+      - ok
+      - company
+      - charged
+      - beta_free
+      - already_paid
+      - balance_after
+      - report
+      properties:
+        ok:
+          type: boolean
+          const: true
+        company:
+          type: object
+          required:
+          - slug
+          - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          additionalProperties: false
+        charged:
+          type: integer
+          minimum: 0
+        beta_free:
+          type: boolean
+        already_paid:
+          type: boolean
+        balance_after:
+          type:
+          - integer
+          - 'null'
+        report:
+          $ref: '#/components/schemas/LegalReportDocument'
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    OutboundWebhookEventCatalogV1:
+      description: Exact account-visible list of events with a currently wired durable producer.
+      allOf:
+      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+      - type: array
+        minItems: 3
+        maxItems: 3
+      x-webhook-event-contract-version: '1.0'
+    UserSegmentCreateRequest:
+      type: object
+      required:
+      - name
+      - filters
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+        filters:
+          $ref: '#/components/schemas/UserSegmentFilters'
+        persona:
+          type:
+          - string
+          - 'null'
+          maxLength: 80
+        icon:
+          type:
+          - string
+          - 'null'
+          maxLength: 80
+        pinned:
+          type: boolean
+          default: false
+      additionalProperties: false
+    UserExportRecord:
+      type: object
+      description: Authenticated user's export history metadata.
+      properties:
+        id:
+          type: integer
+        type:
+          type:
+          - string
+          - 'null'
+        format:
+          type:
+          - string
+          - 'null'
+        rows_count:
+          type: integer
+        created_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ApiCredential:
+      type: object
+      required:
+      - id
+      - name
+      - prefix
+      - last4
+      - hint
+      - scopes
+      - status
+      - created_at
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          maxLength: 80
+        prefix:
+          type: string
+          description: Non-secret identification prefix.
+        last4:
+          type: string
+          minLength: 4
+          maxLength: 4
+        hint:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+            enum:
+            - public:read
+            - companies:read
+            - people:read
+            - tenders:read
+            - legal:read
+            - integrations:read
+            - exports:read
+            - account:read
+          uniqueItems: true
+        status:
+          type: string
+          enum:
+          - active
+          - expired
+          - revoked
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        last_used_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        rotated_from_id:
+          type:
+          - integer
+          - 'null'
+        legacy_migrated:
+          type: boolean
+      additionalProperties: false
+    UserSegmentStoredFilters:
+      type: object
+      description: Read-only decoded filters_json from an existing segment. New writes must use UserSegmentFilters. Historic records may still contain removed keys such as forma or estado; clients must present them as unavailable and execution fails closed rather than ignoring them.
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    UserListCreatedResponse:
+      type: object
+      required:
+      - id
+      - list
+      properties:
+        id:
+          type: integer
+        list:
+          $ref: '#/components/schemas/UserList'
+      additionalProperties: false
+    UserListListResponse:
+      type: object
+      required:
+      - count
+      - tier_max
+      - lists
+      properties:
+        count:
+          type: integer
+        tier_max:
+          type: integer
+        lists:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserList'
+      additionalProperties: false
+    UserNoteListResponse:
+      type: object
+      required:
+      - count
+      - recent
+      properties:
+        count:
+          type: integer
+        recent:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNote'
+          maxItems: 500
+      additionalProperties: false
+    UserPersonaResponse:
+      type: object
+      required:
+      - persona_primary
+      - persona
+      - available
+      properties:
+        persona_primary:
+          type:
+          - string
+          - 'null'
+        persona:
+          anyOf:
+          - type: object
+            properties:
+              slug:
+                type: string
+              name:
+                type: string
+              tagline:
+                type: string
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        available:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonaOption'
+      additionalProperties: false
+    OutboundWebhookEventTypeV1:
+      type: string
+      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types, wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future events implicitly.
+      enum:
+      - alert.triggered
+      - tender.matched
+      - tender.deadline
+      x-webhook-event-contract-version: '1.0'
+      x-fail-closed: true
+    OutboundWebhookOneTimeResponse:
+      type: object
+      required:
+      - ok
+      - webhook
+      - secret_visible_once
+      - idempotency_replayed
+      - idempotency_expires_at
+      properties:
+        ok:
+          type: boolean
+          const: true
+        webhook:
+          type: object
+          required:
+          - id
+          - secret
+          - key_id
+          properties:
+            id:
+              type: integer
+              minimum: 1
+            secret:
+              type: string
+              pattern: ^[a-f0-9]{64}$
+              readOnly: true
+              x-sensitive: true
+              x-visible-once: true
+              description: Visible only in the original mutation response and identical Idempotency-Key replays during the 24-hour recovery window; never returned by list/get.
+            key_id:
+              type: string
+            events:
+              $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+          additionalProperties: false
+        secret_visible_once:
+          type: boolean
+          const: true
+        idempotency_replayed:
+          type: boolean
+          readOnly: true
+        idempotency_expires_at:
+          type: integer
+          minimum: 1
+          readOnly: true
+          description: Unix timestamp for the encrypted replay window.
+      additionalProperties: false
+    UserSegmentListResponse:
+      type: object
+      required:
+      - count
+      - tier_max
+      - segments
+      properties:
+        count:
+          type: integer
+        tier_max:
+          type: integer
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSegment'
+          maxItems: 500
+      additionalProperties: false
+    UserTag:
+      type: object
+      description: Private account tag and optional aggregate usage count.
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        color:
+          type:
+          - string
+          - 'null'
+        usage_count:
+          type: integer
+        created_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    PersonaOption:
+      type: object
+      required:
+      - slug
+      - name
+      - tagline
+      - icon
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        tagline:
+          type: string
+        icon:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    OutboundWebhookEventSubscriptionsV1:
+      type: array
+      description: Events with a currently wired durable producer. Contracted-but-unwired event types are not subscribable. An empty input is normalized to alert.triggered; wildcard, inactive and unknown values are rejected.
+      items:
+        $ref: '#/components/schemas/OutboundWebhookEventTypeV1'
+      maxItems: 3
+      uniqueItems: true
+      x-webhook-event-contract-version: '1.0'
+    SupportErrorResponse:
+      type: object
+      required:
+      - ok
+      - error
+      properties:
+        ok:
+          type: boolean
+          const: false
+        error:
+          type: string
+        code:
+          type: integer
+          description: Present on selected fail-closed or anti-abuse helper failures.
+        retry_after:
+          type: integer
+          minimum: 1
+          description: Present when the per-IP support creation ceiling is exhausted.
+      additionalProperties: false
+    KycUsage:
+      type: object
+      required:
+      - used
+      - max
+      - remaining
+      - window_days
+      - unlimited
+      properties:
+        used:
+          type: integer
+        max:
+          type: integer
+        remaining:
+          type: integer
+        window_days:
+          type: integer
+        unlimited:
+          type: boolean
+      additionalProperties: false
+    UserPersonaUpdateRequest:
+      type: object
+      required:
+      - persona
+      properties:
+        persona:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Slug returned by GET /api/v1/user/persona.
+      additionalProperties: false
+    UserExportListResponse:
+      type: object
+      required:
+      - recent
+      - usage
+      properties:
+        recent:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserExportRecord'
+          maxItems: 500
+        usage:
+          $ref: '#/components/schemas/ExportUsageResponse'
+      additionalProperties: false
+    UserListItemCreateRequest:
+      type: object
+      required:
+      - type
+      - slug
+      properties:
+        type:
+          type: string
+          enum:
+          - company
+          - person
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 255
+        note:
+          type: string
+          maxLength: 5000
+      additionalProperties: false
+    KycPersonLookupResults:
+      type: object
+      required:
+      - aeat_morosos
+      - claims_evidence
+      - borme_facts
+      properties:
+        aeat_morosos:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+          maxItems: 10
+        claims_evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+          maxItems: 10
+        borme_facts:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+          maxItems: 20
+      additionalProperties: false
     KycPersonLookupHistoryResponse:
       type: object
       required:
@@ -3227,25 +3832,219 @@ components:
         disclaimer:
           type: string
       additionalProperties: false
-    KycPersonLookupRequest:
+    DeletedResponse:
       type: object
       required:
-      - dni_or_nie
-      - finalidad
+      - ok
+      - deleted
       properties:
-        dni_or_nie:
+        ok:
+          type: boolean
+        deleted:
+          type: boolean
+      additionalProperties: false
+    ExportUsageResponse:
+      type: object
+      required:
+      - used
+      - max
+      - remaining
+      - pct
+      - unlimited
+      properties:
+        used:
+          type: integer
+        max:
+          type: integer
+        remaining:
+          type: integer
+        pct:
+          type: integer
+        unlimited:
+          type: boolean
+      additionalProperties: false
+    UserNoteCreateRequest:
+      type: object
+      required:
+      - target_type
+      - target_id
+      - body
+      properties:
+        target_type:
           type: string
-          minLength: 8
-          maxLength: 12
-          writeOnly: true
-          x-sensitive: true
-          description: DNI/NIE supplied for this authenticated KYC request; never use it in public company/person
-            routes.
-        finalidad:
+          enum:
+          - company
+          - person
+          - sector
+          - borme_id
+          - free
+        target_id:
           type: string
-          minLength: 12
-          maxLength: 200
-          description: Declared legitimate purpose recorded in the account audit log.
+          minLength: 1
+          maxLength: 255
+        title:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+          minLength: 1
+          maxLength: 50000
+        pinned:
+          type: boolean
+          default: false
+      additionalProperties: false
+    UserPersonaSelectedResponse:
+      type: object
+      required:
+      - ok
+      - persona
+      properties:
+        ok:
+          type: boolean
+        persona:
+          type: string
+      additionalProperties: false
+    BillingInvoicesResponse:
+      type: object
+      required:
+      - ok
+      - subscription
+      - invoices
+      properties:
+        ok:
+          type: boolean
+        subscription:
+          anyOf:
+          - $ref: '#/components/schemas/BillingSubscription'
+          - type: 'null'
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingInvoice'
+          maxItems: 50
+      additionalProperties: false
+    CompanySearchItem:
+      type: object
+      required:
+      - slug
+      - name
+      - cif
+      - acts_count
+      properties:
+        slug:
+          type: string
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
+          type: integer
+        last_seen:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        cnae_code:
+          type:
+          - string
+          - 'null'
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        matched_alias:
+          type: string
+          description: Present only when an exact safe alias was matched; slug is always canonical.
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    WebhookWorkerHealth:
+      type: object
+      required:
+      - available
+      - status
+      - reason
+      properties:
+        available:
+          type: boolean
+        status:
+          type: string
+        age_seconds:
+          type:
+          - integer
+          - 'null'
+        reason:
+          type: string
+      additionalProperties: false
+    UserNoteCreatedResponse:
+      type: object
+      required:
+      - id
+      - note
+      properties:
+        id:
+          type: integer
+        note:
+          $ref: '#/components/schemas/UserNote'
+      additionalProperties: false
+    UserOrganizationResponse:
+      type: object
+      properties:
+        org:
+          anyOf:
+          - type: object
+            required:
+            - id
+            - name
+            - my_role
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              my_role:
+                type: string
+            additionalProperties: false
+          - type: 'null'
+        can_team:
+          type: boolean
+        seats:
+          type: object
+          required:
+          - used
+          - max
+          properties:
+            used:
+              type: integer
+            max:
+              type: integer
+          additionalProperties: false
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationMember'
+        invites:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationInvite'
       additionalProperties: false
     KycPersonLookupResponse:
       type: object
@@ -3305,76 +4104,318 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    KycPersonLookupResults:
+    ApiCredentialOneTimeResponse:
       type: object
       required:
-      - aeat_morosos
-      - claims_evidence
-      - borme_facts
+      - ok
+      - credential
+      - token
+      - token_visible_once
+      - idempotency_replayed
+      - idempotency_expires_at
       properties:
-        aeat_morosos:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-          maxItems: 10
-        claims_evidence:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-          maxItems: 10
-        borme_facts:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-          maxItems: 20
-      additionalProperties: false
-    KycPersonLookupUsageResponse:
-      type: object
-      required:
-      - tier_allowed
-      properties:
-        tier_allowed:
+        ok:
           type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        upgrade_url:
-          type:
-          - string
-          - 'null'
-        usage:
-          $ref: '#/components/schemas/KycUsage'
-        disclaimer:
-          type:
-          - string
-          - 'null'
+          const: true
+        credential:
+          $ref: '#/components/schemas/ApiCredential'
+        token:
+          type: string
+          pattern: ^omk_live_[A-Za-z0-9_-]{43}$
+          readOnly: true
+          x-sensitive: true
+          x-visible-once: true
+          description: Visible only in the original create/rotate response and identical Idempotency-Key replays during the 24-hour recovery window; never recoverable through list/get.
+        token_visible_once:
+          type: boolean
+          const: true
+        replaced_credential_id:
+          type: integer
+        idempotency_replayed:
+          type: boolean
+          readOnly: true
+        idempotency_expires_at:
+          type: integer
+          minimum: 1
+          readOnly: true
+          description: Unix timestamp for the encrypted replay window.
       additionalProperties: false
-    KycUsage:
+    UserTagCreatedResponse:
       type: object
       required:
-      - used
-      - max
-      - remaining
-      - window_days
-      - unlimited
+      - id
+      - tag
       properties:
-        used:
+        id:
           type: integer
-        max:
-          type: integer
-        remaining:
-          type: integer
-        window_days:
-          type: integer
-        unlimited:
+        tag:
+          $ref: '#/components/schemas/UserTag'
+      additionalProperties: false
+    UserTagCreateRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        color:
+          type:
+          - string
+          - 'null'
+          pattern: ^#[0-9A-Fa-f]{6}$
+      additionalProperties: false
+    ApiCredentialRotateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        scopes:
+          type: array
+          items:
+            type: string
+            enum:
+            - public:read
+            - companies:read
+            - people:read
+            - tenders:read
+            - legal:read
+            - integrations:read
+            - exports:read
+            - account:read
+          uniqueItems: true
+          minItems: 1
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Omitted preserves the current expiry; null resets to the standard 90-day expiry; maximum 366 days.
+      additionalProperties: false
+    UserSegmentPinResponse:
+      type: object
+      required:
+      - pinned
+      properties:
+        pinned:
           type: boolean
       additionalProperties: false
+    UserSegmentFilters:
+      type: object
+      minProperties: 1
+      description: 'Corporate-only filters executed exclusively over the immutable company_public_v2 sidecar. At least one effective anchor is required: provincia, cnae_prefix, a capital bound, a year bound or recent_days. `forma` and `estado` are deliberately not accepted; stored legacy filters containing either fail closed. Without provincia/cnae_prefix, capital and temporal anchors cannot be combined; capital-only anchors accept only capital_desc/capital_asc (or the default), and temporal-only anchors accept only recent/oldest (or the default).'
+      x-effective-filter-fields:
+      - provincia
+      - cnae_prefix
+      - capital_min
+      - capital_max
+      - year_min
+      - year_max
+      - recent_days
+      x-rejected-fields:
+        forma: legal_form_filter_unavailable
+        estado: status_filter_unavailable
+      x-rejected-combinations:
+      - when: capital bound plus temporal bound without provincia or cnae_prefix
+        error: unsupported_filter_combination
+        status: 422
+      - when: capital-only anchor with sort other than capital_desc or capital_asc
+        error: unsupported_sort_for_anchor
+        status: 422
+      - when: temporal-only anchor with sort other than recent or oldest
+        error: unsupported_sort_for_anchor
+        status: 422
+      properties:
+        provincia:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Canonical Spanish province name or supported alias; matched exactly after normalization.
+        cnae_prefix:
+          type: string
+          pattern: ^[0-9]{1,4}$
+        capital_min:
+          type: integer
+          minimum: 0
+          maximum: 90000000000000
+          description: Euros. Must not exceed capital_max when both are present.
+        capital_max:
+          type: integer
+          minimum: 0
+          maximum: 90000000000000
+          description: Euros. Must be greater than or equal to capital_min when both are present.
+        year_min:
+          type: integer
+          minimum: 1800
+          maximum: 2200
+          description: Inclusive year of the first documentary record; must not exceed year_max.
+        year_max:
+          type: integer
+          minimum: 1800
+          maximum: 2200
+          description: Inclusive year of the first documentary record; must be greater than or equal to year_min.
+        recent_days:
+          type: integer
+          minimum: 1
+          maximum: 3650
+          description: First documentary record within this rolling number of days.
+        sort:
+          type: string
+          enum:
+          - capital_desc
+          - capital_asc
+          - acts_desc
+          - oldest
+          - recent
+          description: Indexed ordering. The accepted value depends on the effective anchor as documented in x-rejected-combinations.
+      additionalProperties: false
+    UserSegmentUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 5000
+        filters_json:
+          $ref: '#/components/schemas/UserSegmentFilters'
+        icon:
+          type:
+          - string
+          - 'null'
+          maxLength: 80
+        pinned:
+          type: boolean
+      additionalProperties: false
+    UserList:
+      type: object
+      description: Saved user list; migration columns may be appended.
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type:
+          - string
+          - 'null'
+        kind:
+          type: string
+          enum:
+          - company
+          - person
+          - mixed
+        item_count:
+          type: integer
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    OutboundWebhookContractedEventTypeV1:
+      type: string
+      description: Versioned event names with a defined payload contract. Only names also present in OutboundWebhookEventTypeV1 are currently subscribable.
+      enum:
+      - alert.triggered
+      - borme.daily
+      - cartera.change
+      - sanction.matched
+      - segment.executed
+      - tender.matched
+      - tender.deadline
+      - webhook.test
+      x-webhook-event-contract-version: '1.0'
+    CredentialRevokedResponse:
+      type: object
+      required:
+      - ok
+      - revoked
+      properties:
+        ok:
+          type: boolean
+        revoked:
+          type: boolean
+      additionalProperties: false
+    BillingInvoice:
+      type: object
+      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
+      properties:
+        id:
+          type: integer
+        stripe_invoice_id:
+          type: string
+        invoice_number:
+          type:
+          - string
+          - 'null'
+        amount_paid_cents:
+          type:
+          - integer
+          - 'null'
+        amount_due_cents:
+          type:
+          - integer
+          - 'null'
+        subtotal_cents:
+          type:
+          - integer
+          - 'null'
+        tax_cents:
+          type:
+          - integer
+          - 'null'
+        tax_rate_pct:
+          type:
+          - number
+          - 'null'
+        currency:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        invoice_pdf:
+          type:
+          - string
+          - 'null'
+          format: uri
+        hosted_invoice_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        period_start:
+          type:
+          - string
+          - 'null'
+        period_end:
+          type:
+          - string
+          - 'null'
+        paid_at:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     LegalReportAxis:
       type: object
-      description: One documentary axis in the redacted corporate legal-history projection. Presence records
-        sourced events; it does not assert wrongdoing, solvency, current status or identity beyond the
-        corporate subject guard.
+      description: One documentary axis in the redacted corporate legal-history projection. Presence records sourced events; it does not assert wrongdoing, solvency, current status or identity beyond the corporate subject guard.
       required:
       - axis_id
       - label
@@ -3437,442 +4478,38 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    LegalReportDocument:
-      type: object
-      required:
-      - state
-      - axes
-      - totals
-      properties:
-        state:
-          anyOf:
-          - type: object
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        axes:
-          type: array
-          items:
-            $ref: '#/components/schemas/LegalReportAxis'
-        totals:
-          type: object
-          required:
-          - axes_present
-          - events_total
-          - norms_cited
-          properties:
-            axes_present:
-              type: integer
-              minimum: 0
-            events_total:
-              type: integer
-              minimum: 0
-            norms_cited:
-              type: array
-              items:
-                type: string
-              uniqueItems: true
-          additionalProperties: false
-      additionalProperties: false
-    LegalReportPaymentRequiredError:
-      oneOf:
-      - type: object
-        required:
-        - error
-        - cost
-        - balance
-        - buy_url
-        properties:
-          error:
-            type: string
-            const: insufficient_credits
-          cost:
-            type: integer
-            minimum: 0
-          balance:
-            type: integer
-          buy_url:
-            type: string
-        additionalProperties: false
-      - type: object
-        required:
-        - error
-        properties:
-          error:
-            type: string
-            const: charge_failed
-        additionalProperties: false
-    LegalReportRequest:
-      type: object
-      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the
-        daily idempotency key are server-owned.
-      properties:
-        csrf:
-          type: string
-          minLength: 32
-          maxLength: 256
-          description: Body fallback; prefer X-CSRF-Token.
-      additionalProperties: false
-    LegalReportResponse:
+    VerificationDispatchResponse:
       type: object
       required:
       - ok
-      - company
-      - charged
-      - beta_free
-      - already_paid
-      - balance_after
-      - report
+      - sent
       properties:
         ok:
           type: boolean
-          const: true
-        company:
-          type: object
-          required:
-          - slug
-          - name
-          properties:
-            slug:
-              type: string
-            name:
-              type: string
-          additionalProperties: false
-        charged:
-          type: integer
-          minimum: 0
-        beta_free:
-          type: boolean
-        already_paid:
-          type: boolean
-        balance_after:
-          type:
-          - integer
-          - 'null'
-        report:
-          $ref: '#/components/schemas/LegalReportDocument'
-      additionalProperties: false
-    OkResponse:
-      type: object
-      required:
-      - ok
-      properties:
-        ok:
+        sent:
           type: boolean
       additionalProperties: false
-    OrganizationCreatedResponse:
+    KycPersonLookupUsageResponse:
       type: object
       required:
-      - ok
-      - org_id
+      - tier_allowed
       properties:
-        ok:
+        tier_allowed:
           type: boolean
-        org_id:
-          type: integer
-      additionalProperties: false
-    OrganizationInvite:
-      type: object
-      required:
-      - id
-      - email
-      - role
-      - created_at
-      - expires_at
-      properties:
-        id:
-          type: integer
-        email:
-          type: string
-          format: email
-        role:
-          type: string
-        created_at:
-          type: string
-        expires_at:
-          type: string
-      additionalProperties: false
-    OrganizationInviteCreatedResponse:
-      type: object
-      required:
-      - ok
-      - invite_id
-      - email
-      - role
-      - expires_at
-      - renewed
-      - email_sent
-      properties:
-        ok:
-          type: boolean
-        invite_id:
-          type: integer
-        email:
-          type: string
-          format: email
-        role:
-          type: string
-        expires_at:
-          type: string
-        renewed:
-          type: boolean
-        email_sent:
-          type: boolean
-      additionalProperties: false
-    OrganizationMember:
-      type: object
-      required:
-      - id
-      - name
-      - email
-      - role
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-          enum:
-          - owner
-          - admin
-          - member
-      additionalProperties: false
-    OutboundWebhook:
-      type: object
-      required:
-      - id
-      - url
-      - events
-      - active
-      - secret_prefix
-      - created_at
-      properties:
-        id:
-          type: integer
-          minimum: 1
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-        active:
-          type: boolean
-        secret_prefix:
-          type: string
-          maxLength: 12
-          description: Non-secret identification prefix.
-        key_id:
+        message:
           type:
           - string
           - 'null'
-          description: Public identifier of the current HMAC signing key.
-        secret_storage:
-          type: string
-          enum:
-          - encrypted
-          - migration_required
-        last_success_at:
+        upgrade_url:
           type:
           - string
           - 'null'
-          format: date-time
-        created_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-    OutboundWebhookContractedEventCatalogV1:
-      type: array
-      description: All event payload contracts known by this API version, including contracted-but-unwired
-        events that cannot yet be subscribed.
-      items:
-        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
-      minItems: 8
-      maxItems: 8
-      uniqueItems: true
-      x-webhook-event-contract-version: '1.0'
-    OutboundWebhookContractedEventTypeV1:
-      type: string
-      description: Versioned event names with a defined payload contract. Only names also present in OutboundWebhookEventTypeV1
-        are currently subscribable.
-      enum:
-      - alert.triggered
-      - borme.daily
-      - cartera.change
-      - sanction.matched
-      - segment.executed
-      - tender.matched
-      - tender.deadline
-      - webhook.test
-      x-webhook-event-contract-version: '1.0'
-    OutboundWebhookCreateRequest:
-      type: object
-      required:
-      - url
-      - events
-      properties:
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-      additionalProperties: false
-    OutboundWebhookEventCatalogV1:
-      description: Exact account-visible list of events with a currently wired durable producer.
-      allOf:
-      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-      - type: array
-        minItems: 3
-        maxItems: 3
-      x-webhook-event-contract-version: '1.0'
-    OutboundWebhookEventSubscriptionsV1:
-      type: array
-      description: Events with a currently wired durable producer. Contracted-but-unwired event types
-        are not subscribable. An empty input is normalized to alert.triggered; wildcard, inactive and
-        unknown values are rejected.
-      items:
-        $ref: '#/components/schemas/OutboundWebhookEventTypeV1'
-      maxItems: 3
-      uniqueItems: true
-      x-webhook-event-contract-version: '1.0'
-    OutboundWebhookEventTypeV1:
-      type: string
-      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types,
-        wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an
-        explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future
-        events implicitly.
-      enum:
-      - alert.triggered
-      - tender.matched
-      - tender.deadline
-      x-webhook-event-contract-version: '1.0'
-      x-fail-closed: true
-    OutboundWebhookOneTimeResponse:
-      type: object
-      required:
-      - ok
-      - webhook
-      - secret_visible_once
-      - idempotency_replayed
-      - idempotency_expires_at
-      properties:
-        ok:
-          type: boolean
-          const: true
-        webhook:
-          type: object
-          required:
-          - id
-          - secret
-          - key_id
-          properties:
-            id:
-              type: integer
-              minimum: 1
-            secret:
-              type: string
-              pattern: ^[a-f0-9]{64}$
-              readOnly: true
-              x-sensitive: true
-              x-visible-once: true
-              description: Visible only in the original mutation response and identical Idempotency-Key
-                replays during the 24-hour recovery window; never returned by list/get.
-            key_id:
-              type: string
-            events:
-              $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-          additionalProperties: false
-        secret_visible_once:
-          type: boolean
-          const: true
-        idempotency_replayed:
-          type: boolean
-          readOnly: true
-        idempotency_expires_at:
-          type: integer
-          minimum: 1
-          readOnly: true
-          description: Unix timestamp for the encrypted replay window.
-      additionalProperties: false
-    OutboundWebhookUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-        active:
-          type: boolean
-      additionalProperties: false
-    PersonaOption:
-      type: object
-      required:
-      - slug
-      - name
-      - tagline
-      - icon
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        tagline:
-          type: string
-        icon:
+        usage:
+          $ref: '#/components/schemas/KycUsage'
+        disclaimer:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-    StripeSessionResponse:
-      type: object
-      required:
-      - url
-      - session_id
-      properties:
-        url:
-          type: string
-          format: uri
-        session_id:
-          type: string
-      additionalProperties: false
-    SupportErrorResponse:
-      type: object
-      required:
-      - ok
-      - error
-      properties:
-        ok:
-          type: boolean
-          const: false
-        error:
-          type: string
-        code:
-          type: integer
-          description: Present on selected fail-closed or anti-abuse helper failures.
-        retry_after:
-          type: integer
-          minimum: 1
-          description: Present when the per-IP support creation ceiling is exhausted.
       additionalProperties: false
     SupportReplyRequest:
       type: object
@@ -3885,854 +4522,107 @@ components:
           maxLength: 10000
           description: Trimmed before the 5–10,000 character validation.
       additionalProperties: false
-    SupportRequestErrorResponse:
-      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget
-        errors use the generic API error envelope.
-      anyOf:
-      - $ref: '#/components/schemas/SupportErrorResponse'
-      - $ref: '#/components/schemas/ErrorResponse'
-    UserAuditEntry:
+    BillingSubscription:
       type: object
-      description: Account audit entry. Sensitive metadata is not part of the public contract.
+      description: Authenticated user's current subscription metadata.
       properties:
         id:
           type: integer
-        action:
+        stripe_subscription_id:
           type: string
-        target_type:
-          type:
-          - string
-          - 'null'
-        target_id:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserAuditResponse:
-      type: object
-      required:
-      - count
-      - entries
-      properties:
-        count:
-          type: integer
-        entries:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserAuditEntry'
-          maxItems: 1000
-      additionalProperties: false
-    UserExportListResponse:
-      type: object
-      required:
-      - recent
-      - usage
-      properties:
-        recent:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserExportRecord'
-          maxItems: 500
-        usage:
-          $ref: '#/components/schemas/ExportUsageResponse'
-      additionalProperties: false
-    UserExportRecord:
-      type: object
-      description: Authenticated user's export history metadata.
-      properties:
-        id:
-          type: integer
-        type:
-          type:
-          - string
-          - 'null'
-        format:
-          type:
-          - string
-          - 'null'
-        rows_count:
-          type: integer
-        created_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserList:
-      type: object
-      description: Saved user list; migration columns may be appended.
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        color:
-          type:
-          - string
-          - 'null'
-        kind:
-          type: string
-          enum:
-          - company
-          - person
-          - mixed
-        item_count:
-          type: integer
-        created_at:
-          type: string
-        updated_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserListCreateRequest:
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 120
-        description:
-          type: string
-          maxLength: 5000
-        color:
-          type:
-          - string
-          - 'null'
-          pattern: ^#[0-9A-Fa-f]{6}$
-        kind:
-          type: string
-          enum:
-          - company
-          - person
-          - mixed
-          default: company
-      additionalProperties: false
-    UserListCreatedResponse:
-      type: object
-      required:
-      - id
-      - list
-      properties:
-        id:
-          type: integer
-        list:
-          $ref: '#/components/schemas/UserList'
-      additionalProperties: false
-    UserListDetail:
-      allOf:
-      - $ref: '#/components/schemas/UserList'
-      - type: object
-        required:
-        - items
-        properties:
-          items:
-            type: array
-            items:
-              $ref: '#/components/schemas/UserListItem'
-            maxItems: 1000
-        additionalProperties: false
-    UserListItem:
-      type: object
-      description: Saved list item owned by the authenticated account.
-      properties:
-        id:
-          type: integer
-        list_id:
-          type: integer
-        item_type:
-          type: string
-        item_slug:
-          type: string
-        note:
-          type: string
-        added_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserListItemCreateRequest:
-      type: object
-      required:
-      - type
-      - slug
-      properties:
-        type:
-          type: string
-          enum:
-          - company
-          - person
-        slug:
-          type: string
-          minLength: 1
-          maxLength: 255
-        note:
-          type: string
-          maxLength: 5000
-      additionalProperties: false
-    UserListListResponse:
-      type: object
-      required:
-      - count
-      - tier_max
-      - lists
-      properties:
-        count:
-          type: integer
-        tier_max:
-          type: integer
-        lists:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserList'
-      additionalProperties: false
-    UserListUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 120
-        description:
-          type: string
-          maxLength: 5000
-        color:
-          type:
-          - string
-          - 'null'
-          pattern: ^#[0-9A-Fa-f]{6}$
-        kind:
-          type: string
-          enum:
-          - company
-          - person
-          - mixed
-      additionalProperties: false
-    UserMeResponse:
-      type: object
-      required:
-      - id
-      - plan
-      - onboarded
-      - csrf
-      properties:
-        id:
-          type: integer
-        email:
-          type:
-          - string
-          - 'null'
-          format: email
-        name:
+        stripe_customer_id:
           type:
           - string
           - 'null'
         plan:
           type: string
-        persona_primary:
+        billing:
           type:
           - string
           - 'null'
-        onboarded:
-          type: integer
-        csrf:
-          type: string
-      additionalProperties: false
-    UserNote:
-      type: object
-      description: Private note visible only to its authenticated owner.
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        target_type:
-          type: string
-        target_id:
-          type: string
-        title:
-          type: string
-        body:
-          type: string
-        pinned:
+        amount_cents:
           type:
           - integer
-          - boolean
-        created_at:
-          type: string
-        updated_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserNoteCreateRequest:
-      type: object
-      required:
-      - target_type
-      - target_id
-      - body
-      properties:
-        target_type:
-          type: string
-          enum:
-          - company
-          - person
-          - sector
-          - borme_id
-          - free
-        target_id:
-          type: string
-          minLength: 1
-          maxLength: 255
-        title:
-          type: string
-          maxLength: 255
-        body:
-          type: string
-          minLength: 1
-          maxLength: 50000
-        pinned:
-          type: boolean
-          default: false
-      additionalProperties: false
-    UserNoteCreatedResponse:
-      type: object
-      required:
-      - id
-      - note
-      properties:
-        id:
-          type: integer
-        note:
-          $ref: '#/components/schemas/UserNote'
-      additionalProperties: false
-    UserNoteListResponse:
-      type: object
-      required:
-      - count
-      - recent
-      properties:
-        count:
-          type: integer
-        recent:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserNote'
-          maxItems: 500
-      additionalProperties: false
-    UserNoteUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        title:
-          type: string
-          maxLength: 255
-        body:
-          type: string
-          minLength: 1
-          maxLength: 50000
-        pinned:
-          type: boolean
-      additionalProperties: false
-    UserNotesForTargetResponse:
-      type: object
-      required:
-      - count
-      - notes
-      properties:
-        count:
-          type: integer
-        notes:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserNote'
-          maxItems: 500
-      additionalProperties: false
-    UserOrganizationInviteRequest:
-      type: object
-      required:
-      - email
-      properties:
-        email:
-          type: string
-          format: email
-          maxLength: 320
-        role:
-          type: string
-          enum:
-          - admin
-          - member
-          default: member
-      additionalProperties: false
-    UserOrganizationMemberRoleRequest:
-      type: object
-      required:
-      - role
-      properties:
-        role:
-          type: string
-          enum:
-          - admin
-          - member
-      additionalProperties: false
-    UserOrganizationNameRequest:
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          minLength: 2
-          maxLength: 80
-      additionalProperties: false
-    UserOrganizationResponse:
-      type: object
-      properties:
-        org:
-          anyOf:
-          - type: object
-            required:
-            - id
-            - name
-            - my_role
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              my_role:
-                type: string
-            additionalProperties: false
-          - type: 'null'
-        can_team:
-          type: boolean
-        seats:
-          type: object
-          required:
-          - used
-          - max
-          properties:
-            used:
-              type: integer
-            max:
-              type: integer
-          additionalProperties: false
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationMember'
-        invites:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationInvite'
-      additionalProperties: false
-    UserPersonaResponse:
-      type: object
-      required:
-      - persona_primary
-      - persona
-      - available
-      properties:
-        persona_primary:
+          - 'null'
+        currency:
           type:
           - string
           - 'null'
-        persona:
-          anyOf:
-          - type: object
-            properties:
-              slug:
-                type: string
-              name:
-                type: string
-              tagline:
-                type: string
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        available:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonaOption'
-      additionalProperties: false
-    UserPersonaSelectedResponse:
-      type: object
-      required:
-      - ok
-      - persona
-      properties:
-        ok:
-          type: boolean
-        persona:
-          type: string
-      additionalProperties: false
-    UserPersonaUpdateRequest:
-      type: object
-      required:
-      - persona
-      properties:
-        persona:
-          type: string
-          minLength: 1
-          maxLength: 80
-          description: Slug returned by GET /api/v1/user/persona.
-      additionalProperties: false
-    UserSegment:
-      type: object
-      description: Saved account segment. Extra migration columns may be returned for backward compatibility.
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        filters_json:
-          type: string
-        filters:
-          $ref: '#/components/schemas/UserSegmentStoredFilters'
-        persona:
-          type:
-          - string
-          - 'null'
-        icon:
-          type:
-          - string
-          - 'null'
-        pinned:
-          type:
-          - integer
-          - boolean
-        created_at:
-          type: string
-        updated_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserSegmentCreateRequest:
-      type: object
-      required:
-      - name
-      - filters
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 120
-        description:
-          type: string
-          maxLength: 5000
-        filters:
-          $ref: '#/components/schemas/UserSegmentFilters'
-        persona:
-          type:
-          - string
-          - 'null'
-          maxLength: 80
-        icon:
-          type:
-          - string
-          - 'null'
-          maxLength: 80
-        pinned:
-          type: boolean
-          default: false
-      additionalProperties: false
-    UserSegmentCreatedResponse:
-      type: object
-      required:
-      - id
-      - segment
-      properties:
-        id:
-          type: integer
-        segment:
-          $ref: '#/components/schemas/UserSegment'
-      additionalProperties: false
-    UserSegmentFilters:
-      type: object
-      minProperties: 1
-      description: 'Corporate-only filters executed exclusively over the immutable company_public_v2 sidecar.
-        At least one effective anchor is required: provincia, cnae_prefix, a capital bound, a year bound
-        or recent_days. `forma` and `estado` are deliberately not accepted; stored legacy filters containing
-        either fail closed. Without provincia/cnae_prefix, capital and temporal anchors cannot be combined;
-        capital-only anchors accept only capital_desc/capital_asc (or the default), and temporal-only
-        anchors accept only recent/oldest (or the default).'
-      x-effective-filter-fields:
-      - provincia
-      - cnae_prefix
-      - capital_min
-      - capital_max
-      - year_min
-      - year_max
-      - recent_days
-      x-rejected-fields:
-        forma: legal_form_filter_unavailable
-        estado: status_filter_unavailable
-      x-rejected-combinations:
-      - when: capital bound plus temporal bound without provincia or cnae_prefix
-        error: unsupported_filter_combination
-        status: 422
-      - when: capital-only anchor with sort other than capital_desc or capital_asc
-        error: unsupported_sort_for_anchor
-        status: 422
-      - when: temporal-only anchor with sort other than recent or oldest
-        error: unsupported_sort_for_anchor
-        status: 422
-      properties:
-        provincia:
-          type: string
-          minLength: 1
-          maxLength: 80
-          description: Canonical Spanish province name or supported alias; matched exactly after normalization.
-        cnae_prefix:
-          type: string
-          pattern: ^[0-9]{1,4}$
-        capital_min:
-          type: integer
-          minimum: 0
-          maximum: 90000000000000
-          description: Euros. Must not exceed capital_max when both are present.
-        capital_max:
-          type: integer
-          minimum: 0
-          maximum: 90000000000000
-          description: Euros. Must be greater than or equal to capital_min when both are present.
-        year_min:
-          type: integer
-          minimum: 1800
-          maximum: 2200
-          description: Inclusive year of the first documentary record; must not exceed year_max.
-        year_max:
-          type: integer
-          minimum: 1800
-          maximum: 2200
-          description: Inclusive year of the first documentary record; must be greater than or equal to
-            year_min.
-        recent_days:
-          type: integer
-          minimum: 1
-          maximum: 3650
-          description: First documentary record within this rolling number of days.
-        sort:
-          type: string
-          enum:
-          - capital_desc
-          - capital_asc
-          - acts_desc
-          - oldest
-          - recent
-          description: Indexed ordering. The accepted value depends on the effective anchor as documented
-            in x-rejected-combinations.
-      additionalProperties: false
-    UserSegmentListResponse:
-      type: object
-      required:
-      - count
-      - tier_max
-      - segments
-      properties:
-        count:
-          type: integer
-        tier_max:
-          type: integer
-        segments:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserSegment'
-          maxItems: 500
-      additionalProperties: false
-    UserSegmentPinResponse:
-      type: object
-      required:
-      - pinned
-      properties:
-        pinned:
-          type: boolean
-      additionalProperties: false
-    UserSegmentRunResponse:
-      type: object
-      required:
-      - segment_id
-      - count
-      - rows
-      - filters_applied
-      properties:
-        segment_id:
-          type: integer
-        count:
-          type: integer
-          minimum: 0
-          maximum: 500
-          description: Number of rows returned in this bounded response. It is not an exact global match
-            count.
-        rows:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanySearchItem'
-          maxItems: 500
-        filters_applied:
-          $ref: '#/components/schemas/UserSegmentFilters'
-      additionalProperties: false
-    UserSegmentStoredFilters:
-      type: object
-      description: Read-only decoded filters_json from an existing segment. New writes must use UserSegmentFilters.
-        Historic records may still contain removed keys such as forma or estado; clients must present
-        them as unavailable and execution fails closed rather than ignoring them.
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserSegmentUpdateRequest:
-      type: object
-      minProperties: 1
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 120
-        description:
-          type: string
-          maxLength: 5000
-        filters_json:
-          $ref: '#/components/schemas/UserSegmentFilters'
-        icon:
-          type:
-          - string
-          - 'null'
-          maxLength: 80
-        pinned:
-          type: boolean
-      additionalProperties: false
-    UserTag:
-      type: object
-      description: Private account tag and optional aggregate usage count.
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
-          type: string
-        color:
-          type:
-          - string
-          - 'null'
-        usage_count:
-          type: integer
-        created_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    UserTagAssignmentRequest:
-      type: object
-      required:
-      - target_type
-      - target_id
-      properties:
-        target_type:
-          type: string
-          enum:
-          - company
-          - person
-          - sector
-          - borme_id
-        target_id:
-          type: string
-          minLength: 1
-          maxLength: 255
-      additionalProperties: false
-    UserTagCreateRequest:
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 60
-        color:
-          type:
-          - string
-          - 'null'
-          pattern: ^#[0-9A-Fa-f]{6}$
-      additionalProperties: false
-    UserTagCreatedResponse:
-      type: object
-      required:
-      - id
-      - tag
-      properties:
-        id:
-          type: integer
-        tag:
-          $ref: '#/components/schemas/UserTag'
-      additionalProperties: false
-    UserTagListResponse:
-      type: object
-      required:
-      - count
-      - tier_max
-      - tags
-      properties:
-        count:
-          type: integer
-        tier_max:
-          type: integer
-        tags:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserTag'
-      additionalProperties: false
-    VerificationDispatchResponse:
-      type: object
-      required:
-      - ok
-      - sent
-      properties:
-        ok:
-          type: boolean
-        sent:
-          type: boolean
-      additionalProperties: false
-    WebhookUpdatedResponse:
-      type: object
-      required:
-      - ok
-      - webhook
-      properties:
-        ok:
-          type: boolean
-        webhook:
-          $ref: '#/components/schemas/OutboundWebhook'
-      additionalProperties: false
-    WebhookWorkerHealth:
-      type: object
-      required:
-      - available
-      - status
-      - reason
-      properties:
-        available:
-          type: boolean
         status:
           type: string
-        age_seconds:
+        current_period_start:
+          type:
+          - string
+          - 'null'
+        current_period_end:
+          type:
+          - string
+          - 'null'
+        cancel_at_period_end:
           type:
           - integer
+          - boolean
+        canceled_at:
+          type:
+          - string
           - 'null'
-        reason:
+        created_at:
           type: string
-      additionalProperties: false
+        updated_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+  headers:
+    IdempotencyKeyExpires:
+      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key is required.
+      schema:
+        type: integer
+        minimum: 1
+    IdempotencyReplayed:
+      description: True when this response was recovered from the durable encrypted replay record for the same key and payload.
+      schema:
+        type: boolean
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
+    AccountIdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Required for account mutations that reveal a secret. Reuse the same key only for an identical payload. The encrypted response can be replayed for 24 hours; a changed payload or an expired key returns 409.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        pattern: ^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require
-        X-CSRF-Token header (obtain via GET /api/v1/user/me).
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion

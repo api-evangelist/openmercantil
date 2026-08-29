@@ -1,100 +1,32 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: OpenMercantil Billing API
-  version: 1.9.3
-  summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
-    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
-    and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
-    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
-    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source
-    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
-    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
-    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
-    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
-  termsOfService: https://openmercantil.es/terminos-de-uso
+  title: Openmercantil Billing API
   contact:
     name: OpenMercantil
     url: https://openmercantil.es/soporte
     email: social@openmercantil.es
-  license:
-    name: Source-specific upstream terms; see response catalog metadata
-    url: https://openmercantil.es/terminos-de-uso
-  x-publisher:
-    name: OpenMercantil
-    url: https://openmercantil.es/
-    email: social@openmercantil.es
-  x-spatial: http://publications.europa.eu/resource/authority/country/ESP
-  x-temporal: 2009-01-01/..
-  x-language: es
-  x-dcat-catalog: https://openmercantil.es/catalog.rdf
-  x-rate-limit:
-    free:
-      per_min: 60
-      per_day: 200
-      kind: anonymous-ip
-    profesional:
-      per_min: 120
-      per_day: 5000
-      kind: api-key
-    max:
-      per_min: 600
-      per_day: 50000
-      kind: api-key
-    enterprise:
-      per_min: 1200
-      per_day: 500000
-      kind: contract
-  x-methodology: https://openmercantil.es/metodologia
-  x-sources: https://openmercantil.es/fuentes
-  x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
-    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
-    GET read plane.
-  x-account-segment-contract:
-    projection: company_public_v2 immutable corporate sidecar
-    synchronous_row_cap: 500
-    bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total.
-      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
-      50001.
-    related_web_dataset_surface:
-      preview_path: /mi-cuenta/datasets/preview
-      export_path: /mi-cuenta/datasets/export.csv
-      synchronous_export_max_rows: 500
-      overflow_status: 503
-      overflow_error: async_export_required
-  x-company-identity-contract:
-    version: '1.0'
-    projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
-      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
-      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
-      preflights through REST.
-    resolution:
-      published: canonical corporate slug admitted
-      safe_alias: internally canonicalized and Content-Location emitted
-      withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
-      unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
-      in application code. DNI/NIE and ambiguous CIFs return zero items.
-    public_company_count: company_public_projection_state.row_count
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  x-refined-note:
+  - x-account-segment-contract differs across the merged source definitions and was not carried
+  - x-company-identity-contract differs across the merged source definitions and was not carried
+  - x-contract-status differs across the merged source definitions and was not carried
+  - x-corrections differs across the merged source definitions and was not carried
+  - x-dcat-catalog differs across the merged source definitions and was not carried
+  - x-language differs across the merged source definitions and was not carried
+  - x-methodology differs across the merged source definitions and was not carried
+  - x-publisher differs across the merged source definitions and was not carried
+  - x-rate-limit differs across the merged source definitions and was not carried
+  - x-sources differs across the merged source definitions and was not carried
+  - x-spatial differs across the merged source definitions and was not carried
+  - x-temporal differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged Billing across 2 of this provider''s published API definitions: openmercantil-openapi-1.9.3.json, openmercantil-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://openmercantil.es
   description: Production
 tags:
 - name: Billing
-  description: Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded,
-    idempotent and never exposed through the public MCP.
+  description: Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded, idempotent and never exposed through the public MCP.
 paths:
   /api/v1/donation:
     post:
@@ -102,9 +34,7 @@ paths:
       tags:
       - Billing
       summary: Create a one-time donation Checkout session
-      description: Anonymous or authenticated. Body is capped at 16 KiB; Stripe work is fail-closed, budgeted
-        by trusted client IP and idempotent within a 15-minute retry window. A supplied idempotency key
-        is hashed and namespaced before Stripe.
+      description: Anonymous or authenticated. Body is capped at 16 KiB; Stripe work is fail-closed, budgeted by trusted client IP and idempotent within a 15-minute retry window. A supplied idempotency key is hashed and namespaced before Stripe.
       x-plane: billing
       security: []
       parameters:
@@ -149,15 +79,16 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           description: Action budget or Stripe unavailable
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/credits/checkout:
     post:
       operationId: postCreditsCheckout
       tags:
       - Billing
-      - User
       summary: Create an idempotent credit-pack Checkout session
-      description: Requires login and CSRF. The body is capped at 16 KiB and every external attempt consumes
-        a strict per-user budget.
+      description: Requires login and CSRF. The body is capped at 16 KiB and every external attempt consumes a strict per-user budget.
       x-plane: billing
       security:
       - cookieAuth: []
@@ -210,16 +141,16 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           description: Action budget or Stripe unavailable
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/checkout:
     post:
       operationId: postSubscriptionCheckout
       tags:
       - Billing
-      - User
       summary: Create a subscription Checkout session
-      description: 'Requires a Secure, SameSite browser session and X-CSRF-Token. Trial policy is server-owned:
-        clients cannot send trial_days or no_default_trial. Idempotency is scoped to user, plan and billing
-        period before Stripe.'
+      description: 'Requires a Secure, SameSite browser session and X-CSRF-Token. Trial policy is server-owned: clients cannot send trial_days or no_default_trial. Idempotency is scoped to user, plan and billing period before Stripe.'
       x-plane: billing
       security:
       - cookieAuth: []
@@ -284,12 +215,14 @@ paths:
           description: Action budget or Stripe unavailable
         '403':
           description: Invalid CSRF token
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/billing/invoices:
     get:
       operationId: getBillingInvoices
       tags:
       - Billing
-      - User
       summary: List the authenticated user's invoices and subscription
       x-plane: billing
       security:
@@ -305,12 +238,14 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/billing/portal:
     get:
       operationId: getBillingPortal
       tags:
       - Billing
-      - User
       summary: Redirect to the authenticated user's Stripe portal
       x-plane: billing
       security:
@@ -330,7 +265,6 @@ paths:
       operationId: postBillingPortal
       tags:
       - Billing
-      - User
       summary: Create a Stripe portal session as JSON
       x-plane: billing
       security:
@@ -354,16 +288,16 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '503':
           description: Action budget or Stripe unavailable
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/portal:
     post:
       operationId: postLegacyBillingPortal
       tags:
       - Billing
-      - User
       summary: Create a Stripe Customer Portal session through the legacy alias
-      description: Deprecated alias of `POST /api/v1/billing/portal`. Requires an authenticated browser
-        session and a valid CSRF token supplied either in `X-CSRF-Token` or the form field `csrf`. New
-        clients must use the canonical billing route.
+      description: Deprecated alias of `POST /api/v1/billing/portal`. Requires an authenticated browser session and a valid CSRF token supplied either in `X-CSRF-Token` or the form field `csrf`. New clients must use the canonical billing route.
       deprecated: true
       x-replaced-by: /api/v1/billing/portal
       x-plane: billing
@@ -418,18 +352,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+    servers:
+    - url: https://openmercantil.es
+      description: Production
   /api/v1/stripe-webhook:
     post:
       operationId: receiveStripeWebhook
       tags:
       - Billing
-      - Integrations
       summary: Receive a signed Stripe event
-      description: Provider callback, not an end-user API. The exact raw JSON body is capped at 512 KiB
-        and verified against `Stripe-Signature` before durable inbox claim or side effects. Provider `event.id`
-        supplies idempotency; terminal duplicates return 200, active leases return 503 for retry, and
-        failures return 500 so Stripe retries. No webhook secret, signature, raw payload or internal exception
-        is returned. This route is excluded from every public MCP surface.
+      description: Provider callback, not an end-user API. The exact raw JSON body is capped at 512 KiB and verified against `Stripe-Signature` before durable inbox claim or side effects. Provider `event.id` supplies idempotency; terminal duplicates return 200, active leases return 503 for retry, and failures return 500 so Stripe retries. No webhook secret, signature, raw payload or internal exception is returned. This route is excluded from every public MCP surface.
       x-plane: integration-provider-callback
       x-provider: stripe
       x-max-body-bytes: 524288
@@ -441,8 +373,7 @@ paths:
       - name: Stripe-Signature
         in: header
         required: true
-        description: Stripe-generated signature verified over the exact raw body. It is sensitive request
-          metadata and must never be logged or echoed.
+        description: Stripe-generated signature verified over the exact raw body. It is sensitive request metadata and must never be logged or echoed.
         schema:
           type: string
           minLength: 1
@@ -454,8 +385,7 @@ paths:
               $ref: '#/components/schemas/StripeWebhookEventRequest'
       responses:
         '200':
-          description: Event accepted, deliberately ignored, or already terminal. All response bodies
-            are non-secret acknowledgements.
+          description: Event accepted, deliberately ignored, or already terminal. All response bodies are non-secret acknowledgements.
           content:
             text/plain:
               schema:
@@ -504,8 +434,7 @@ paths:
                 - webhook inbox unavailable
                 - error
         '503':
-          description: Another worker owns an active lease or a signed OpenMercantil checkout cannot yet
-            be resolved to its authoritative account owner; Stripe must retry
+          description: Another worker owns an active lease or a signed OpenMercantil checkout cannot yet be resolved to its authoritative account owner; Stripe must retry
           headers:
             Retry-After:
               description: Retry delay in seconds
@@ -520,23 +449,10 @@ paths:
                 - event already processing
                 - credits owner unavailable
                 - subscription owner unavailable
+    servers:
+    - url: https://openmercantil.es
+      description: Production
 components:
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   responses:
     BadRequest:
       description: Invalid request
@@ -564,6 +480,35 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests_2:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
+    BadRequest_2:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
   schemas:
     BillingInvoice:
       type: object
@@ -631,79 +576,9 @@ components:
           type: string
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    BillingInvoicesResponse:
-      type: object
-      required:
-      - ok
-      - subscription
-      - invoices
-      properties:
-        ok:
-          type: boolean
-        subscription:
-          anyOf:
-          - $ref: '#/components/schemas/BillingSubscription'
-          - type: 'null'
-        invoices:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillingInvoice'
-          maxItems: 50
-      additionalProperties: false
-    BillingSubscription:
-      type: object
-      description: Authenticated user's current subscription metadata.
-      properties:
-        id:
-          type: integer
-        stripe_subscription_id:
-          type: string
-        stripe_customer_id:
-          type:
-          - string
-          - 'null'
-        plan:
-          type: string
-        billing:
-          type:
-          - string
-          - 'null'
-        amount_cents:
-          type:
-          - integer
-          - 'null'
-        currency:
-          type:
-          - string
-          - 'null'
-        status:
-          type: string
-        current_period_start:
-          type:
-          - string
-          - 'null'
-        current_period_end:
-          type:
-          - string
-          - 'null'
-        cancel_at_period_end:
-          type:
-          - integer
-          - boolean
-        canceled_at:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-        updated_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
-        these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
       - error
       properties:
@@ -819,35 +694,28 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    RequestBodyTooLargeError:
+    BillingInvoicesResponse:
       type: object
       required:
-      - error
-      - max_bytes
+      - ok
+      - subscription
+      - invoices
       properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-    StripeSessionResponse:
-      type: object
-      required:
-      - url
-      - session_id
-      properties:
-        url:
-          type: string
-          format: uri
-        session_id:
-          type: string
+        ok:
+          type: boolean
+        subscription:
+          anyOf:
+          - $ref: '#/components/schemas/BillingSubscription'
+          - type: 'null'
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingInvoice'
+          maxItems: 50
       additionalProperties: false
     StripeWebhookEventRequest:
       type: object
-      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used
-        for verification. Provider extension fields remain typed JSON and are not reflected to callers.
+      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
       required:
       - id
       - type
@@ -889,10 +757,129 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    StripeSessionResponse:
+      type: object
+      required:
+      - url
+      - session_id
+      properties:
+        url:
+          type: string
+          format: uri
+        session_id:
+          type: string
+      additionalProperties: false
+    BillingSubscription:
+      type: object
+      description: Authenticated user's current subscription metadata.
+      properties:
+        id:
+          type: integer
+        stripe_subscription_id:
+          type: string
+        stripe_customer_id:
+          type:
+          - string
+          - 'null'
+        plan:
+          type: string
+        billing:
+          type:
+          - string
+          - 'null'
+        amount_cents:
+          type:
+          - integer
+          - 'null'
+        currency:
+          type:
+          - string
+          - 'null'
+        status:
+          type: string
+        current_period_start:
+          type:
+          - string
+          - 'null'
+        current_period_end:
+          type:
+          - string
+          - 'null'
+        cancel_at_period_end:
+          type:
+          - integer
+          - boolean
+        canceled_at:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+        updated_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ErrorResponse_2:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
       name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require
-        X-CSRF-Token header (obtain via GET /api/v1/user/me).
+      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque omk_* credential
+      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
+externalDocs:
+  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
+  url: https://openmercantil.es/api/documentacion
+x-refined-from:
+- openmercantil-openapi-1.9.3.json
+- openmercantil-openapi.yml

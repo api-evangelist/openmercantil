@@ -1,15 +1,23 @@
-openapi: 3.2.0
+openapi: 3.1.0
 info:
   title: OpenMercantil Risk Signals API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
+  description: 'Public JSON API for Spanish company information derived from BORME and other public sources.
+    OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil
+    and does NOT replace official certificates or registry extracts.
 
 
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
+    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día,
+    MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`,
+    `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
 
 
-    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
+    **License and attribution.** Source-specific metadata in each response and the active versioned source
+    catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown,
+    review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material
+    is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed;
+    CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
 
 
     **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
@@ -49,12 +57,16 @@ info:
   x-methodology: https://openmercantil.es/metodologia
   x-sources: https://openmercantil.es/fuentes
   x-corrections: https://openmercantil.es/correcciones
-  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted GET read plane.
+  x-contract-status: Public read, browser-account and provider-callback surfaces are explicitly separated
+    in this contract. Operator/admin routes are excluded. The public MCP consumes only the allowlisted
+    GET read plane.
   x-account-segment-contract:
     projection: company_public_v2 immutable corporate sidecar
     synchronous_row_cap: 500
     bounded_count_cap: 50001
-    count_semantics: The segment run response count is the number of rows returned, never a global total. Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches 50001.
+    count_semantics: The segment run response count is the number of rows returned, never a global total.
+      Dataset preview uses total_is_lower_bound=true and total_lower_bound when the bounded count reaches
+      50001.
     related_web_dataset_surface:
       preview_path: /mi-cuenta/datasets/preview
       export_path: /mi-cuenta/datasets/export.csv
@@ -64,13 +76,17 @@ info:
   x-company-identity-contract:
     version: '1.0'
     projection: company_public_v2 immutable generation-bound corporate sidecar
-    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these preflights through REST.
+    applies_to: Every /api/v1/company/{slug}*, /api/v1/empresa/{slug}* and /api/v1/grafo/{slug} read before
+      any report, cache, graph or dataset lookup. /api/v1/companies/compare resolves both requested subjects
+      in one bounded company_public_v2 batch before either row is exposed; MCP company tools inherit these
+      preflights through REST.
     resolution:
       published: canonical corporate slug admitted
       safe_alias: internally canonicalized and Content-Location emitted
       withheld: neutral 404; includes absent, personal and ambiguous/quarantined identities
       unavailable: 503 with no-store; clients must not infer absence
-    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored in application code. DNI/NIE and ambiguous CIFs return zero items.
+    search: Exact corporate CIF, exact canonical/safe-alias slug, or bounded name_prefix2 pool scored
+      in application code. DNI/NIE and ambiguous CIFs return zero items.
     public_company_count: company_public_projection_state.row_count
 servers:
 - url: https://openmercantil.es
@@ -83,9 +99,12 @@ paths:
     get:
       operationId: getCompanyBySlugSanctions
       tags:
+      - Companies
       - Risk Signals
       summary: Get policy-gated sanctions dataset
-      description: This route is fail-closed. It returns data only when the exact sanctions dataset has a valid public decision, license metadata and identity policy in the active source catalog. OpenSanctions is currently in review, so the route returns 503 without reading or serializing its payload.
+      description: This route is fail-closed. It returns data only when the exact sanctions dataset has
+        a valid public decision, license metadata and identity policy in the active source catalog. OpenSanctions
+        is currently in review, so the route returns 503 without reading or serializing its payload.
       parameters:
       - name: slug
         in: path
@@ -109,9 +128,14 @@ paths:
     get:
       operationId: getCompanyBySlugRiskSignals
       tags:
+      - Companies
       - Risk Signals
       summary: Get documentary risk signals
-      description: Return only documentary signals whose exact dataset and negative-claim surface are authorized by the active source catalog. Other integrated sources are omitted without implying absence of the underlying fact. CENDOJ judgment text, OpenSanctions, AEPD and any unknown dataset are not exposed unless a future version records a field-specific public decision. Appearance never implies guilt, infringement, responsibility or current liability.
+      description: Return only documentary signals whose exact dataset and negative-claim surface are
+        authorized by the active source catalog. Other integrated sources are omitted without implying
+        absence of the underlying fact. CENDOJ judgment text, OpenSanctions, AEPD and any unknown dataset
+        are not exposed unless a future version records a field-specific public decision. Appearance never
+        implies guilt, infringement, responsibility or current liability.
       parameters:
       - name: slug
         in: path
@@ -170,7 +194,8 @@ paths:
                     type: string
                   _legal_notice:
                     type: string
-                    example: Documentary signals only. Appearance does not imply guilt, infringement or current liability.
+                    example: Documentary signals only. Appearance does not imply guilt, infringement or
+                      current liability.
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -181,9 +206,12 @@ paths:
     get:
       operationId: getCompanyBySlugAeatMoroso
       tags:
+      - Companies
       - Risk Signals
       summary: Check policy-gated AEAT debtor-list mention
-      description: Negative-claim route gated before lookup. It returns 503 until the exact AEAT dataset has validated reuse, identity-match and cite-or-abstain policy metadata. Appearance would be documentary only and never imply current liability.
+      description: Negative-claim route gated before lookup. It returns 503 until the exact AEAT dataset
+        has validated reuse, identity-match and cite-or-abstain policy metadata. Appearance would be documentary
+        only and never imply current liability.
       x-rate-limit: free 60/min · 200/day
       parameters:
       - name: slug
@@ -208,9 +236,11 @@ paths:
     get:
       operationId: getCompanyBySlugEmbargoes
       tags:
+      - Companies
       - Risk Signals
       summary: Documentary embargo/garnishment mentions
-      description: Return documentary mentions of embargoes (embargo de bienes, anotaciones registrales) when published in public registries. Documentary only — does not certify current status.
+      description: Return documentary mentions of embargoes (embargo de bienes, anotaciones registrales)
+        when published in public registries. Documentary only — does not certify current status.
       x-rate-limit: free 60/min · 200/day
       parameters:
       - name: slug
@@ -232,9 +262,16 @@ paths:
         '503':
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
   responses:
     LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid,
+        unsupported or not authorized for this public surface.'
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -244,10 +281,22 @@ components:
             $ref: '#/components/schemas/ErrorResponse'
           example:
             error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes
+              activa.
             source_catalog_version: 2026-07-12.2
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      description: The public read failed closed because its legal source catalog, subject classification,
+        bounded projection, database helper or required artifact is unavailable. Clients must not infer
+        an empty result.
       headers:
         Cache-Control:
           description: Unavailable public reads are never cacheable.
@@ -288,63 +337,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    DocumentarySanction:
-      type: object
-      description: Sanitized documentary sanction record; appearance does not imply current liability.
-      properties:
-        source:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     CompanyAeatDebtorResponse:
       type: object
       required:
@@ -377,9 +370,129 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    CompanyEmbargoesResponse:
+      type: object
+      required:
+      - slug
+      - count
+      - items
+      - source
+      - note
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        summary:
+          anyOf:
+          - type: object
+            properties:
+              count:
+                type: integer
+              total_amount_eur:
+                type:
+                - number
+                - 'null'
+              latest_date:
+                type:
+                - string
+                - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbargoRecord'
+          maxItems: 100
+        source:
+          type: string
+        note:
+          type: string
+      additionalProperties: false
+    CompanySanctionsResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentarySanction'
+        source:
+          type:
+          - string
+          - 'null'
+        note:
+          type:
+          - string
+          - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    DocumentarySanction:
+      type: object
+      description: Sanitized documentary sanction record; appearance does not imply current liability.
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    EmbargoRecord:
+      type: object
+      description: Documentary official-notice record; may not reflect later unpublished resolutions.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        amount_eur:
+          type:
+          - number
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow
+        these fields further where required.
       required:
       - error
       properties:
@@ -495,116 +608,20 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    CompanyEmbargoesResponse:
+    ProjectionUnavailableError:
       type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty
+        or negative result.
       required:
-      - slug
-      - count
-      - items
-      - source
-      - note
+      - error
+      - detail
+      - projection
       properties:
-        slug:
+        error:
           type: string
-        count:
-          type: integer
-        summary:
-          anyOf:
-          - type: object
-            properties:
-              count:
-                type: integer
-              total_amount_eur:
-                type:
-                - number
-                - 'null'
-              latest_date:
-                type:
-                - string
-                - 'null'
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbargoRecord'
-          maxItems: 100
-        source:
+          const: projection_unavailable
+        detail:
           type: string
-        note:
+        projection:
           type: string
       additionalProperties: false
-    EmbargoRecord:
-      type: object
-      description: Documentary official-notice record; may not reflect later unpublished resolutions.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        amount_eur:
-          type:
-          - number
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanySanctionsResponse:
-      type: object
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentarySanction'
-        source:
-          type:
-          - string
-          - 'null'
-        note:
-          type:
-          - string
-          - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: ob_sess
-      description: Browser session cookie set after login at /mi-cuenta/login. Mutations also require X-CSRF-Token header (obtain via GET /api/v1/user/me).
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-API-Key
-      description: Optional opaque omk_* API credential for public GETs. Anonymous access remains valid; a credential with the operation's x-api-credential-scope (or public:read) selects its account quota. Never place credentials in query strings.
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: opaque omk_* credential
-      description: 'Optional Authorization: Bearer transport for the same opaque omk_* API credential accepted by X-API-Key. It is not a JWT or OAuth access token.'
-externalDocs:
-  description: Documentación narrativa con ejemplos en curl/Python/JavaScript
-  url: https://openmercantil.es/api/documentacion

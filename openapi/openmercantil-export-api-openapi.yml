@@ -1,0 +1,256 @@
+openapi: 3.2.0
+info:
+  title: OpenMercantil Public Export API
+  version: 1.4.0
+  description: 'Public JSON API for Spanish company information derived from BORME and other
+
+    public sources. OpenMercantil is independent and informational; it is not
+
+    the BOE, BORME or Registro Mercantil and does not replace official
+
+    certificates or registry extracts. The API is free and public, requires no
+
+    API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
+
+    available and documented at https://openmercantil.es/api/documentacion.
+
+    '
+  termsOfService: https://openmercantil.es/terminos-de-uso
+  contact:
+    name: OpenMercantil
+    url: https://openmercantil.es/soporte
+    email: social@openmercantil.es
+  license:
+    name: CC BY 4.0 For Derived Public-Data Outputs
+    url: https://creativecommons.org/licenses/by/4.0/
+servers:
+- url: https://openmercantil.es
+  description: Production
+tags:
+- name: Export
+  description: Bulk and per-resource export endpoints
+paths:
+  /api/v1/company/{slug}/export:
+    get:
+      tags:
+      - Export
+      summary: Export A Company Report
+      operationId: exportCompany
+      description: Export a company report in JSON or CSV format.
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: inditex-sa-a15075062
+      - name: format
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - json
+          - csv
+          default: json
+      responses:
+        '200':
+          description: Exported report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyReport'
+            text/csv:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/export/events:
+    get:
+      tags:
+      - Export
+      summary: Export Events
+      operationId: exportEvents
+      description: Export BORME events in bulk for a given year or year/range, in JSON or CSV.
+      parameters:
+      - name: year
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 2020
+          maximum: 2029
+          example: 2025
+      - name: format
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - json
+          - csv
+          default: csv
+      responses:
+        '200':
+          description: Export stream
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/sectores/stats.csv:
+    get:
+      tags:
+      - Export
+      summary: Export Sector Aggregate Statistics As CSV
+      operationId: getSectorStatsCsv
+      description: CSV download of aggregate sector statistics.
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-companies.csv:
+    get:
+      tags:
+      - Export
+      summary: Top Companies By Public Contracts As CSV
+      operationId: getTopCompaniesByContractsCsv
+      description: CSV download of the top-companies-by-contracts ranking (v1.4).
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/v1/contracts/top-persons.csv:
+    get:
+      tags:
+      - Export
+      summary: Top Persons By Public Contracts As CSV
+      operationId: getTopPersonsByContractsCsv
+      description: CSV download of the top-persons-by-contracts ranking (v1.4).
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+      responses:
+        '200':
+          description: CSV download
+          content:
+            text/csv:
+              schema:
+                type: string
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+    CompanyReport:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        cif:
+          type: string
+        registered_address:
+          type: string
+        province:
+          type: string
+        registry:
+          type: string
+        legal_form:
+          type: string
+        status:
+          type: string
+        cnae:
+          type: string
+        founding_date:
+          type:
+          - string
+          - 'null'
+          format: date
+        last_event:
+          type:
+          - string
+          - 'null'
+        events_count:
+          type: integer
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Session cookie issued after web sign-in, required only for billing endpoints.
