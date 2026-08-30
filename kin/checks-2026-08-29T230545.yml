@@ -1,16 +1,16 @@
 ---
 kin_checks:
   slug: openmercantil
-  schema_version: 0.15.1
-  scored_at: '2026-08-28'
-  run_ts: 2026-08-28T221322
+  schema_version: 0.16.0
+  scored_at: '2026-08-29'
+  run_ts: 2026-08-29T230545
   note: Actionable checks only (missed + partial). earned/na are every other check
-    in rubric/scoring-0.15.1.yml; counts below let you verify that.
+    in rubric/scoring-0.16.0.yml; counts below let you verify that.
   counts:
     total: 130
-    earned: 68
-    partial: 13
-    missed: 26
+    earned: 65
+    partial: 15
+    missed: 27
     na: 23
   checks:
   - id: well_known_published
@@ -19,10 +19,10 @@ kin_checks:
     status: missed
   - id: openapi_3_2
     status: missed
-    detail: 0 of 17 openapi documents pass
+    detail: 0 of 25 openapi documents pass
   - id: webhooks_or_callbacks
     status: missed
-    detail: 0 of 17 openapi documents pass
+    detail: 0 of 25 openapi documents pass
   - id: json_schema_present
     status: missed
   - id: json_schema_per_resource
@@ -30,6 +30,8 @@ kin_checks:
   - id: json_ld_property_depth
     status: missed
   - id: domain_standard_conformance
+    status: missed
+  - id: overlay_published
     status: missed
   - id: roadmap_present
     status: missed
@@ -67,21 +69,29 @@ kin_checks:
     status: missed
   - id: agentic_commerce
     status: missed
+  - id: openapi_3_0
+    status: partial
+    earned: 2.88
+    detail: 24 of 25 openapi documents pass
   - id: operations_description_coverage
     status: partial
-    earned: 4.94
-    detail: 14 of 17 openapi documents pass
+    earned: 5.28
+    detail: 22 of 25 openapi documents pass
   - id: response_coverage
     status: partial
-    earned: 2.94
-    detail: 10 of 17 openapi documents pass
+    earned: 3.6
+    detail: 18 of 25 openapi documents pass
   - id: examples_present
     status: partial
     earned: 1.0
   - id: components_reuse
     status: partial
-    earned: 2.82
-    detail: 16 of 17 openapi documents pass
+    earned: 2.16
+    detail: 18 of 25 openapi documents pass
+  - id: security_applied
+    status: partial
+    earned: 2.04
+    detail: 17 of 25 openapi documents pass
   - id: lifecycle_documented
     status: partial
     earned: 3.19
