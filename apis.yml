@@ -496,6 +496,8 @@ apis:
   humanURL: https://openmercantil.es/api/documentacion
   baseURL: https://openmercantil.es
   tags:
+  - Networks
+  tags_raw:
   - Network
   properties:
   - type: OpenAPI
