@@ -3,16 +3,7 @@ info:
   title: OpenMercantil BORME API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
+  description: Public JSON API for Spanish company information derived from BORME and other public sources.
   termsOfService: https://openmercantil.es/terminos-de-uso
   contact:
     name: OpenMercantil
@@ -466,249 +457,7 @@ paths:
         '503':
           $ref: '#/components/responses/PublicReadUnavailable'
 components:
-  responses:
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
-    InternalServerError:
-      description: The bounded operation failed without exposing internal exception details.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
   schemas:
-    BormeEvent:
-      type: object
-      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        publish_date:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        act_type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        text:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    CompanyEventsResponse:
-      type: object
-      required:
-      - slug
-      - year
-      - page
-      - page_size
-      - total
-      - pages
-      - items
-      properties:
-        slug:
-          type: string
-        year:
-          type: string
-          pattern: ^\d{4}$
-        page:
-          type: integer
-        page_size:
-          type: integer
-        total:
-          type: integer
-        pages:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-          maxItems: 100
-      additionalProperties: false
-    DailySummary:
-      type: object
-      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with the artifact version.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        count:
-          type: integer
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-        provinces:
-          type: object
-          additionalProperties:
-            type: integer
-        types:
-          type: object
-          additionalProperties:
-            type: integer
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    BormeFact:
-      type: object
-      description: Sanitized structured BORME fact; DNI/NIE is redacted before caching.
-      properties:
-        fact_type:
-          type: string
-        publish_date:
-          type:
-          - string
-          - 'null'
-        event_date:
-          type:
-          - string
-          - 'null'
-        text_value:
-          type:
-          - string
-          - 'null'
-        person_name:
-          type:
-          - string
-          - 'null'
-        role:
-          type:
-          - string
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -872,6 +621,156 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    BormeEvent:
+      type: object
+      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        publish_date:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        act_type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyEventsResponse:
+      type: object
+      required:
+      - slug
+      - year
+      - page
+      - page_size
+      - total
+      - pages
+      - items
+      properties:
+        slug:
+          type: string
+        year:
+          type: string
+          pattern: ^\d{4}$
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+          maxItems: 100
+      additionalProperties: false
+    BormeFact:
+      type: object
+      description: Sanitized structured BORME fact; DNI/NIE is redacted before caching.
+      properties:
+        fact_type:
+          type: string
+        publish_date:
+          type:
+          - string
+          - 'null'
+        event_date:
+          type:
+          - string
+          - 'null'
+        text_value:
+          type:
+          - string
+          - 'null'
+        person_name:
+          type:
+          - string
+          - 'null'
+        role:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    DailySummary:
+      type: object
+      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with the artifact version.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        count:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+        provinces:
+          type: object
+          additionalProperties:
+            type: integer
+        types:
+          type: object
+          additionalProperties:
+            type: integer
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -886,6 +785,98 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
+  responses:
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: The bounded operation failed without exposing internal exception details.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   headers:
     XSourceCatalogVersion:
       description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
@@ -893,11 +884,6 @@ components:
         type: string
         minLength: 1
       example: 2026-07-12.2
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
     XAttributionRequired:
       description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
       schema:
@@ -912,6 +898,11 @@ components:
         minLength: 1
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: borme,placsp
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
   parameters:
     IfNoneMatchHeader:
       name: If-None-Match

@@ -20,7 +20,7 @@ info:
   - x-spatial differs across the merged source definitions and was not carried
   - x-temporal differs across the merged source definitions and was not carried
   version: '1.0'
-  description: 'Operations tagged Companies across 3 of this provider''s published API definitions: openmercantil-openapi-1.9.3.json, openmercantil-openapi.yml, openmercantil-risk-signals-api-openapi.yml. Each path carries the servers of the definition it was published in.'
+  description: 'Operations tagged Companies across 2 of this provider''s published API definitions: openmercantil-openapi-1.9.3.json, openmercantil-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://openmercantil.es
   description: Production
@@ -1965,310 +1965,197 @@ paths:
     - url: https://openmercantil.es
       description: Production
 components:
-  responses:
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    InternalServerError:
-      description: The bounded operation failed without exposing internal exception details.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests_2:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-        X-RateLimit-Limit:
-          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          description: Remaining requests in the current window.
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          description: Unix timestamp when the rate-limit counter resets.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-    NotFound_2:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-  headers:
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    PrivateRevalidationCacheControl:
-      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
-      schema:
-        type: string
-        const: private, no-cache, must-revalidate
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    CompanyContentLocation:
-      description: Present when a safe historical company alias was accepted and processed as its canonical company slug.
-      schema:
-        type: string
-        pattern: ^/api/v1/(?:company|empresa|grafo)/[a-z0-9]+(?:-[a-z0-9]+)*(?:/.*)?$
-      example: /api/v1/company/mercadona-sa
-    CompanyCompareContentLocation:
-      description: Canonical comparison URL with the two canonical slugs in stable lexical order.
-      schema:
-        type: string
-        pattern: ^/api/v1/companies/compare\?slugs=[a-z0-9]+(?:-[a-z0-9]+)*,[a-z0-9]+(?:-[a-z0-9]+)*$
-      example: /api/v1/companies/compare?slugs=empresa-a-sa,empresa-b-sl
   schemas:
-    OfficerDocumentaryMention:
+    OfficerList:
+      type: array
+      maxItems: 500
+      items:
+        $ref: '#/components/schemas/OfficerDocumentaryMention'
+    CompanyAccountsResponse:
       type: object
-      description: Documentary officer mention. It never contains DNI, contact details or a personal address.
+      description: Current annual-accounts aggregate helper response. The operation remains source-policy gated; al_dia and has_financials are runtime aggregate flags, not registry certificates.
+      required:
+      - projection_status
+      - projection
+      - slug
+      - cif
+      - count
+      - al_dia
+      - last_year
+      - last_deposit_date
+      - has_financials
+      - years
+      - _source_catalog
+      - _data_sources_used
       properties:
-        name:
+        projection_status:
           type: string
-        person_slug:
+          const: available
+        projection:
+          type: string
+          const: annual_accounts_v1
+        slug:
+          type: string
+        cif:
           type:
           - string
           - 'null'
-        role:
+        count:
+          type: integer
+          minimum: 0
+        al_dia:
+          type: boolean
+        last_year:
+          type:
+          - integer
+          - 'null'
+        last_deposit_date:
           type:
           - string
           - 'null'
-        appointed_at:
+        has_financials:
+          type: boolean
+        years:
+          oneOf:
+          - type: object
+            propertyNames:
+              pattern: ^-?[0-9]+$
+            additionalProperties:
+              $ref: '#/components/schemas/FinancialAccountsRecord'
+          - type: array
+            maxItems: 0
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    CompanyCompareNotFound:
+      type: object
+      description: Neutral absence envelope; it does not identify which input was absent or withheld.
+      required:
+      - error
+      properties:
+        error:
+          type: string
+          const: not_found
+      additionalProperties: false
+    CompanyCompareLegalUnavailable:
+      type: object
+      description: The active public-source policy could not authorize BORME before comparison admission.
+      required:
+      - error
+      - detail
+      - source_catalog_version
+      properties:
+        error:
+          type: string
+          const: legal_layer_unavailable
+        detail:
+          type: string
+        source_catalog_version:
+          type: string
+          minLength: 1
+      additionalProperties: false
+    OfflineProjectionError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        projection:
           type:
           - string
           - 'null'
-        ended_at:
+        derivation:
           type:
           - string
           - 'null'
-        source:
+        detail:
           type:
           - string
           - 'null'
-        source_url:
+      additionalProperties: false
+    CnmvEventRecord:
+      type: object
+      required:
+      - date
+      - type
+      - title
+      - notice_url
+      properties:
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          minLength: 1
+          maxLength: 120
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        notice_url:
+          type: string
+          format: uri
+          pattern: ^https://(?:[^/]+\.)?cnmv\.es/
+      additionalProperties: false
+    RelationshipRecord:
+      type: object
+      description: Policy-authorized corporate relationship record.
+      properties:
+        source_slug:
+          type: string
+        relationship_type:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        slug:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        official_url:
           type:
           - string
           - 'null'
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    SourceCatalogEnvelope:
+    CompanyRelationshipsResponse:
       type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    CompanyActivityScoreResponse:
-      type: object
-      required:
-      - slug
-      - score
-      - breakdown
       properties:
         slug:
           type: string
-        score:
-          type: number
-          minimum: 0
-          maximum: 100
-        breakdown:
-          type: object
-          additionalProperties:
-            type: object
-            required:
-            - value
-            - max
-            - desc
-            properties:
-              value:
-                type: number
-              max:
-                type: number
-              desc:
-                type: string
-            additionalProperties: false
-        methodology:
-          type:
-          - string
-          - 'null'
+        count:
+          type: integer
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipRecord'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipRecord'
+        source_catalog_version:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    PublicCompanyDownload:
-      type: object
-      additionalProperties: false
-      required:
-      - filename
-      - download_url
-      - media_type
-      - bytes
-      - row_count
-      - sha256
-      - source_generation
-      properties:
-        filename:
-          type: string
-          enum:
-          - muestra_empresas_100.csv
-          - muestra_nuevas_50.json
-          - company_top.json
-        download_url:
-          type: string
-          enum:
-          - /assets/samples/muestra_empresas_100.csv
-          - /assets/samples/muestra_nuevas_50.json
-          - /descargas/company_top.json
-        media_type:
-          type: string
-          enum:
-          - text/csv
-          - application/json
-        bytes:
-          type: integer
-          minimum: 1
-        row_count:
-          type: integer
-          minimum: 0
-        sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
     BormeFact:
       type: object
       description: Sanitized structured BORME fact; DNI/NIE is redacted before caching.
@@ -2302,445 +2189,302 @@ components:
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    ErrorResponse:
+    CompanySimilarResponse:
       type: object
-      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
-      - error
+      - slug
+      - count
+      - items
       properties:
-        error:
-          type: string
-          minLength: 1
-        message:
-          type: string
-        detail:
-          type: string
-        code:
-          type: string
-        status:
-          type:
-          - integer
-          - string
-        projection:
-          type: string
-        reason:
-          type: string
-        source_catalog_version:
-          type: string
-        allowed_parameters:
-          type: array
-          uniqueItems: true
-          items:
-            type: string
         slug:
           type: string
-        key:
-          type: string
-        maximum:
+        count:
           type: integer
-          minimum: 1
-        parameter:
-          type: string
-        fields:
+        items:
           type: array
           items:
-            type: string
-        max_bytes:
-          type: integer
-          minimum: 1
-        allowed:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-        valid:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-        date:
-          type: string
-        login_url:
-          type: string
-        plan:
-          type: string
-        limited_by:
+            $ref: '#/components/schemas/CompanySearchItem'
+          maxItems: 20
+      additionalProperties: false
+    CompanyIntegrationSourceMetadata:
+      type: object
+      description: Projection-bound legal metadata plus the exact governed acquisition boundary for a company integration source.
+      required:
+      - slug
+      - name
+      - license
+      - license_url
+      - attribution_required
+      - attribution_text
+      - official_url
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - data_updated_at
+      - catalog_version
+      - acquisition_coverage
+      properties:
+        slug:
           type: string
           enum:
-          - minute
-          - day
-        daily_limit:
-          type: integer
-          minimum: 1
-        reset_at:
-          type: integer
-          minimum: 1
-        reset_at_human:
+          - bdns
+          - cnmv
+          - ted_eu
+          - wikidata
+        name:
           type: string
-          format: date-time
-        retry_after_s:
-          type: integer
-          minimum: 1
-        retry_after:
-          type: integer
-          minimum: 1
-        upgrade:
+          minLength: 1
+        license:
+          type: string
+          minLength: 1
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
           type: string
           format: uri
-        upgrade_url:
+        reuse_conditions:
           type: string
-        action:
+          minLength: 1
+        policy_effective_date:
           type: string
-        limit:
-          type: integer
-          minimum: 0
-        remaining:
-          type: integer
-          minimum: 0
-        needed:
-          type: integer
-          minimum: 0
-        shortfall:
-          type: integer
-          minimum: 0
-        ok:
-          type: boolean
-        _alias_of:
+          format: date
+        reviewed_at:
           type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+          minLength: 1
+        acquisition_coverage:
+          $ref: '#/components/schemas/CompanyIntegrationAcquisitionCoverage'
       additionalProperties: false
-    CompanyProcurementResponse:
+    EmbargoRecord:
       type: object
-      required:
-      - schema_version
-      - slug
-      - count
-      - items
-      - page
-      - monetary_rollup
-      - rollup_policy
+      description: Documentary official-notice record; may not reflect later unpublished resolutions.
       properties:
-        schema_version:
-          type: string
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        amount_eur:
+          type:
+          - number
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
         slug:
           type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TenderNotice'
-          maxItems: 100
-        page:
-          type: object
-          required:
-          - limit
-          - has_more
-          properties:
-            limit:
-              type: integer
-            has_more:
-              type: boolean
-          additionalProperties: false
-        monetary_rollup:
-          type: 'null'
-        rollup_policy:
+        name:
           type: string
-        coverage:
-          $ref: '#/components/schemas/TenderCoverage'
-        attribution:
+        license:
           type: string
-        disclaimer:
-          type: string
-        _alias_of:
-          type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-      additionalProperties: false
-    PublicCompanyDownloadCatalog:
-      type: object
-      additionalProperties: false
-      required:
-      - schema_version
-      - projection
-      - artifact_contract_version
-      - source_generation
-      - company_count
-      - acts_count_sum
-      - min_first_seen
-      - max_last_seen
-      - count
-      - items
-      - source_metadata
-      - _legal_notice
-      - _source_catalog
-      - _data_sources_used
-      - _attributions
-      properties:
-        schema_version:
-          type: string
-          const: '1.0'
-        projection:
-          type: string
-          const: company_public_download_catalog_v1
-        artifact_contract_version:
-          type: string
-          const: '1.1'
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        company_count:
-          type: integer
-          minimum: 0
-        acts_count_sum:
-          type: integer
-          minimum: 0
-        min_first_seen:
-          type: string
-          format: date
-        max_last_seen:
-          type: string
-          format: date
-        count:
-          type: integer
-          const: 3
-        items:
-          type: array
-          minItems: 3
-          maxItems: 3
-          items:
-            $ref: '#/components/schemas/PublicCompanyDownload'
-        source_metadata:
-          $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _legal_notice:
-          type: string
-          minLength: 1
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          required:
-          - borme
-          properties:
-            borme:
-              type: string
-              minLength: 1
-          additionalProperties: false
-    GrantRecord:
-      type: object
-      description: Minimized, attested BDNS row. award_amount_cents is an awarded amount, never proof of payment.
-      required:
-      - bdns_code
-      - granting_body
-      - title
-      - award_year
-      - instrument
-      - award_amount_cents
-      - award_amount_currency
-      - amount_quality
-      - amount_semantics
-      properties:
-        bdns_code:
-          type: string
-        granting_body:
-          type: string
-        title:
-          type: string
-        award_year:
-          type:
-          - integer
-          - 'null'
-          minimum: 1900
-        instrument:
+        license_url:
           type:
           - string
           - 'null'
-        award_amount_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 1
-        award_amount_currency:
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
           type:
           - string
           - 'null'
-          enum:
-          - EUR
-          - null
-        amount_quality:
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
           type: string
-          enum:
-          - reported_positive_cents
-          - unknown_zero_ambiguous
-          - unknown_missing
-        amount_semantics:
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
           type: string
-          const: awarded_not_payment
-      additionalProperties: false
-    CompanyCompareAuthority:
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    BdeSectorMetric:
       type: object
-      description: Public generation authority. Internal paths and identity/content/contract/policy fingerprints are deliberately omitted.
       required:
-      - projection
-      - schema_version
-      - builder_version
-      - source_generation
-      - projected_at
-      - row_count
-      - cache_namespace
+      - value
+      - unit
+      - year
+      - source
       properties:
-        projection:
+        value:
+          type: number
+        unit:
           type: string
-          const: company_public_v2
-        schema_version:
-          type: string
-          minLength: 1
-        builder_version:
-          type: string
-          minLength: 1
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        projected_at:
-          type: string
-          minLength: 1
-        row_count:
+        year:
           type: integer
-          minimum: 1
-        cache_namespace:
+        source:
           type: string
-          minLength: 1
-          maxLength: 240
-          pattern: ^[a-z0-9_.:-]+$
+          const: bde
       additionalProperties: false
-    CompanySourcesResponse:
+    SourceCatalogEnvelope:
       type: object
-      description: Coverage summary for exactly four sources in one company_integrations_public_v1 generation. It is not the global legal catalog.
       required:
-      - projection_status
-      - projection
-      - slug
-      - cif
-      - complete_bounded_projection
-      - coverage_status
-      - sources_count
-      - available_sources_count
+      - catalog_version
+      - policy_fingerprint
       - sources
-      - coverage_notice
-      - _source_catalog
-      - _data_sources_used
       properties:
-        projection_status:
+        catalog_version:
           type: string
-          const: available
-        projection:
-          $ref: '#/components/schemas/CompanyIntegrationProjection'
-        slug:
+        policy_fingerprint:
           type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        cif:
+        policy_effective_date:
           type: string
-          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
-        complete_bounded_projection:
-          type: boolean
-          const: true
-        coverage_status:
-          type: string
-          enum:
-          - available
-          - empty
-        sources_count:
-          type: integer
-          const: 4
-        available_sources_count:
-          type: integer
-          minimum: 0
-          maximum: 4
+          format: date
         sources:
-          type: array
-          minItems: 4
-          maxItems: 4
-          items:
-            $ref: '#/components/schemas/CompanySourceCoverageRecord'
-        coverage_notice:
-          type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
           type: object
           additionalProperties:
-            type: string
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
       additionalProperties: false
-    CompanyActivityResponse:
+    CompanyIntegrationAcquisitionCoverage:
       type: object
+      description: Attested acquisition boundary for one governed source package. Completeness applies only to this exact bounded scope; complete_history_claimed and source_snapshot_claimed are always false, so this metadata never asserts complete historical or upstream snapshot coverage.
       required:
-      - slug
-      - count
-      - series
+      - scope
+      - declared_scope_complete
+      - complete_history_claimed
+      - source_snapshot_claimed
+      - window_start
+      - window_end
+      - relative_window_days
+      - source_as_of
+      - identity_seed_subject_count
+      - request_count
+      - partition_count
+      - source_package_schema
+      - source_package_manifest_sha256
+      - source_fragment_schema
+      - source_fragment_sha256
+      - source_authority_binding_sha256
+      - coverage_sha256
       properties:
-        slug:
+        scope:
           type: string
-        count:
+          enum:
+          - bounded_newest_first_page_prefix
+          - directory_snapshot_plus_relative_event_window
+          - publication_date_window_page_walk
+          - exact_identity_seed_lookup_snapshot
+        declared_scope_complete:
+          type: boolean
+          const: true
+          description: All partitions declared by this bounded acquisition scope were captured; this is not a complete-history claim.
+        complete_history_claimed:
+          type: boolean
+          const: false
+        source_snapshot_claimed:
+          type: boolean
+          const: false
+        window_start:
+          type:
+          - string
+          - 'null'
+          format: date
+        window_end:
+          type:
+          - string
+          - 'null'
+          format: date
+        relative_window_days:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        source_as_of:
+          type:
+          - string
+          - 'null'
+          format: date
+        identity_seed_subject_count:
           type: integer
-        series:
-          type: array
-          items:
-            type: object
-            properties:
-              period:
-                type: string
-              count:
-                type: integer
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-      additionalProperties: false
-    LegalReportPaymentRequiredError:
-      oneOf:
-      - type: object
-        required:
-        - error
-        - cost
-        - balance
-        - buy_url
-        properties:
-          error:
-            type: string
-            const: insufficient_credits
-          cost:
-            type: integer
-            minimum: 0
-          balance:
-            type: integer
-          buy_url:
-            type: string
-        additionalProperties: false
-      - type: object
-        required:
-        - error
-        properties:
-          error:
-            type: string
-            const: charge_failed
-        additionalProperties: false
-    CompanyCompareNotFound:
-      type: object
-      description: Neutral absence envelope; it does not identify which input was absent or withheld.
-      required:
-      - error
-      properties:
-        error:
+          minimum: 1
+        request_count:
+          type: integer
+          minimum: 1
+        partition_count:
+          type: integer
+          minimum: 1
+        source_package_schema:
           type: string
-          const: not_found
+          enum:
+          - openmercantil-bdns-reingest-package/v2
+          - openmercantil-cnmv-reingest-package/v2
+          - openmercantil-ted-reingest-package/v2
+          - openmercantil-wikidata-reingest-package/v2
+        source_package_manifest_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_fragment_schema:
+          type: string
+          enum:
+          - openmercantil-bdns-reingest-source-fragment/v2
+          - openmercantil-cnmv-reingest-source-fragment/v2
+          - openmercantil-ted-reingest-source-fragment/v2
+          - openmercantil-wikidata-reingest-source-fragment/v2
+        source_fragment_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_authority_binding_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        coverage_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+          description: Digest of the producer-declared bounded coverage object; it is integrity evidence, not proof of complete history.
       additionalProperties: false
-    CompanyGrantsResponse:
+    CompanyWikidataResponse:
       type: object
-      description: Generation-bound BDNS view. count is the total projected row count; returned_count is the bounded slice length. No monetary rollup is emitted.
+      description: Generation-bound minimized Wikidata company view. Empty describes the bounded projection only.
       required:
       - projection_status
       - projection
@@ -2751,9 +2495,7 @@ components:
       - source_metadata
       - coverage_notice
       - count
-      - returned_count
-      - items
-      - amount_notice
+      - item
       - _source_catalog
       - _data_sources_used
       properties:
@@ -2783,18 +2525,11 @@ components:
         count:
           type: integer
           minimum: 0
-          maximum: 200
-        returned_count:
-          type: integer
-          minimum: 0
-          maximum: 200
-        items:
-          type: array
-          maxItems: 200
-          items:
-            $ref: '#/components/schemas/GrantRecord'
-        amount_notice:
-          type: string
+          maximum: 1
+        item:
+          anyOf:
+          - $ref: '#/components/schemas/WikidataCompanyRecord'
+          - type: 'null'
         _source_catalog:
           $ref: '#/components/schemas/SourceCatalogEnvelope'
         _data_sources_used:
@@ -2805,291 +2540,6 @@ components:
           type: object
           additionalProperties:
             type: string
-      additionalProperties: false
-    CompanyReport:
-      type: object
-      description: Sanitized company report. The stable envelope is explicit; versioned BORME report fields may be added.
-      properties:
-        company:
-          $ref: '#/components/schemas/CompanyIdentity'
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-        officers:
-          type: array
-          items:
-            $ref: '#/components/schemas/OfficerDocumentaryMention'
-        summary:
-          type: object
-          description: Versioned aggregate fields emitted by the report artifact.
-          properties: {}
-          additionalProperties:
-            $ref: '#/components/schemas/JsonValue'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: array
-          items:
-            type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    CnmvListingRecord:
-      type: object
-      required:
-      - ticker
-      - isin
-      - market
-      properties:
-        ticker:
-          type: string
-          minLength: 1
-          maxLength: 20
-        isin:
-          type: string
-          minLength: 12
-          maxLength: 12
-        market:
-          type: string
-          minLength: 1
-          maxLength: 80
-      additionalProperties: false
-    SectorCompaniesResponse:
-      type: object
-      required:
-      - code
-      - count
-      - count_status
-      - limit
-      - offset
-      - sort
-      - items
-      properties:
-        code:
-          type: string
-        count:
-          type:
-          - integer
-          - 'null'
-        count_status:
-          type: string
-          enum:
-          - precomputed
-          - not_precomputed
-        limit:
-          type: integer
-        offset:
-          type: integer
-        sort:
-          type: string
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanySearchItem'
-          maxItems: 100
-      additionalProperties: false
-    CompanyBdeResponse:
-      type: object
-      description: Banco de Espana Central de Balances ratios for the company's two-digit CNAE sector. These are sector metrics, not a supervised-entity record or company score.
-      required:
-      - projection_status
-      - projection
-      - slug
-      - is_alias
-      - identity_generation
-      - projection_generation
-      - projected_at
-      - source_catalog_version
-      - coverage_status
-      - has_data
-      - metrics
-      - _source_catalog
-      - _data_sources_used
-      properties:
-        projection_status:
-          type: string
-          const: available
-        projection:
-          type: string
-          const: bde_sector_ratios_v1
-        slug:
-          type: string
-        is_alias:
-          type: boolean
-        identity_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        projection_generation:
-          type: string
-          pattern: ^sr1-[a-f0-9]{64}$
-        projected_at:
-          type: string
-          format: date-time
-        source_catalog_version:
-          type: string
-          minLength: 1
-        coverage_status:
-          type: string
-          enum:
-          - matched
-          - sector_not_projected
-          - cnae_unavailable
-        has_data:
-          type: boolean
-        cnae_code:
-          type: string
-        sector_code:
-          type: string
-          pattern: ^[0-9]{2}$
-        metrics:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/BdeSectorMetric'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
-    CompanySimilarResponse:
-      type: object
-      required:
-      - slug
-      - count
-      - items
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanySearchItem'
-          maxItems: 20
-      additionalProperties: false
-    BormeEvent:
-      type: object
-      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        publish_date:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        act_type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        text:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    TenderCoverage:
-      type: object
-      properties:
-        projection:
-          type:
-          - string
-          - 'null'
-        lots:
-          type:
-          - string
-          - 'null'
-        multiple_cpv:
-          type:
-          - string
-          - 'null'
-        supplier_edges:
-          type:
-          - string
-          - 'null'
-        documents:
-          type:
-          - string
-          - 'null'
-        cpv_prefix_filter:
-          type:
-          - string
-          - 'null'
-          description: Indexed offline 2-8 digit prefix coverage; undated projection rows are excluded.
-        projection_generation:
-          type: string
-          pattern: ^placsp12-[a-f0-9]{64}$
-          description: Immutable PLACSP projection generation used for this response.
-        company_public_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-          description: Immutable company_public_v2 generation that revalidated the requested company identity.
       additionalProperties: false
     TenderNotice:
       type: object
@@ -3267,257 +2717,74 @@ components:
         source:
           type: string
           const: PLACSP
-    CompanyAeatDebtorResponse:
-      type: object
-      required:
-      - slug
-      - listed
-      properties:
-        slug:
-          type: string
-        cif:
-          type:
-          - string
-          - 'null'
-        listed:
-          type: boolean
-        debt_eur:
-          type:
-          - number
-          - 'null'
-        period:
-          type:
-          - string
-          - 'null'
-        published_date:
-          type:
-          - string
-          - 'null'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanyRelationshipsResponse:
+    TenderCoverage:
       type: object
       properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        relationships:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipRecord'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipRecord'
-        source_catalog_version:
-          type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    EmbargoRecord:
-      type: object
-      description: Documentary official-notice record; may not reflect later unpublished resolutions.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        amount_eur:
-          type:
-          - number
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    OfflineProjectionError:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: string
         projection:
           type:
           - string
           - 'null'
-        derivation:
+        lots:
           type:
           - string
           - 'null'
-        detail:
+        multiple_cpv:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    DocumentarySanction:
-      type: object
-      description: Sanitized documentary sanction record; appearance does not imply current liability.
-      properties:
-        source:
+        supplier_edges:
           type:
           - string
           - 'null'
-        date:
+        documents:
           type:
           - string
           - 'null'
-        authority:
+        cpv_prefix_filter:
           type:
           - string
           - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    LegalReportDocument:
-      type: object
-      required:
-      - state
-      - axes
-      - totals
-      properties:
-        state:
-          anyOf:
-          - type: object
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        axes:
-          type: array
-          items:
-            $ref: '#/components/schemas/LegalReportAxis'
-        totals:
-          type: object
-          required:
-          - axes_present
-          - events_total
-          - norms_cited
-          properties:
-            axes_present:
-              type: integer
-              minimum: 0
-            events_total:
-              type: integer
-              minimum: 0
-            norms_cited:
-              type: array
-              items:
-                type: string
-              uniqueItems: true
-          additionalProperties: false
-      additionalProperties: false
-    BdeSectorMetric:
-      type: object
-      required:
-      - value
-      - unit
-      - year
-      - source
-      properties:
-        value:
-          type: number
-        unit:
+          description: Indexed offline 2-8 digit prefix coverage; undated projection rows are excluded.
+        projection_generation:
           type: string
-        year:
-          type: integer
-        source:
+          pattern: ^placsp12-[a-f0-9]{64}$
+          description: Immutable PLACSP projection generation used for this response.
+        company_public_generation:
           type: string
-          const: bde
+          pattern: ^cpv2-[a-f0-9]{64}$
+          description: Immutable company_public_v2 generation that revalidated the requested company identity.
       additionalProperties: false
-    LegalReportRequest:
+    TenderParty:
       type: object
-      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
-      properties:
-        csrf:
-          type: string
-          minLength: 32
-          maxLength: 256
-          description: Body fallback; prefer X-CSRF-Token.
       additionalProperties: false
-    LegalReportResponse:
-      type: object
-      required:
-      - ok
-      - company
-      - charged
-      - beta_free
-      - already_paid
-      - balance_after
-      - report
       properties:
-        ok:
+        name:
+          type:
+          - string
+          - 'null'
+        cif:
+          type:
+          - string
+          - 'null'
+          description: Corporate CIF only.
+        nif:
+          type:
+          - string
+          - 'null'
+          description: Public-body NIF; never a supplier DNI/NIE.
+        dir3:
+          type:
+          - string
+          - 'null'
+        company_slug:
+          type:
+          - string
+          - 'null'
+        withheld:
           type: boolean
-          const: true
-        company:
-          type: object
-          required:
-          - slug
-          - name
-          properties:
-            slug:
-              type: string
-            name:
-              type: string
-          additionalProperties: false
-        charged:
-          type: integer
-          minimum: 0
-        beta_free:
-          type: boolean
-        already_paid:
-          type: boolean
-        balance_after:
-          type:
-          - integer
-          - 'null'
-        report:
-          $ref: '#/components/schemas/LegalReportDocument'
-      additionalProperties: false
-    RequestBodyTooLargeError:
+    CompanyTedResponse:
       type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-    CompanyWikidataResponse:
-      type: object
-      description: Generation-bound minimized Wikidata company view. Empty describes the bounded projection only.
+      description: Generation-bound minimized TED view. count is the total projected row count; returned_count is the bounded slice length.
       required:
       - projection_status
       - projection
@@ -3528,7 +2795,9 @@ components:
       - source_metadata
       - coverage_notice
       - count
-      - item
+      - returned_count
+      - items
+      - documentary_notice
       - _source_catalog
       - _data_sources_used
       properties:
@@ -3558,11 +2827,107 @@ components:
         count:
           type: integer
           minimum: 0
-          maximum: 1
-        item:
-          anyOf:
-          - $ref: '#/components/schemas/WikidataCompanyRecord'
-          - type: 'null'
+          maximum: 100
+        returned_count:
+          type: integer
+          minimum: 0
+          maximum: 100
+        items:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/TedContractRecord'
+        documentary_notice:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    CompanyIntegrationProjection:
+      type: object
+      required:
+      - name
+      - schema_version
+      - builder_version
+      - generation
+      properties:
+        name:
+          type: string
+          const: company_integrations_public_v1
+        schema_version:
+          type: string
+          const: '1.3'
+        builder_version:
+          type: string
+          const: 1.4.0
+        generation:
+          type: string
+          pattern: ^cipv1-[a-f0-9]{64}$
+      additionalProperties: false
+    CompanyBdeResponse:
+      type: object
+      description: Banco de Espana Central de Balances ratios for the company's two-digit CNAE sector. These are sector metrics, not a supervised-entity record or company score.
+      required:
+      - projection_status
+      - projection
+      - slug
+      - is_alias
+      - identity_generation
+      - projection_generation
+      - projected_at
+      - source_catalog_version
+      - coverage_status
+      - has_data
+      - metrics
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        projection_status:
+          type: string
+          const: available
+        projection:
+          type: string
+          const: bde_sector_ratios_v1
+        slug:
+          type: string
+        is_alias:
+          type: boolean
+        identity_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        projection_generation:
+          type: string
+          pattern: ^sr1-[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+        source_catalog_version:
+          type: string
+          minLength: 1
+        coverage_status:
+          type: string
+          enum:
+          - matched
+          - sector_not_projected
+          - cnae_unavailable
+        has_data:
+          type: boolean
+        cnae_code:
+          type: string
+        sector_code:
+          type: string
+          pattern: ^[0-9]{2}$
+        metrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BdeSectorMetric'
         _source_catalog:
           $ref: '#/components/schemas/SourceCatalogEnvelope'
         _data_sources_used:
@@ -3647,19 +3012,24 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    CompanyIdentity:
+    FinancialAccountsRecord:
       type: object
-      description: Stable company identity fields. Historical report builders may append documented BORME fields.
+      description: Source-precedence annual-accounts row emitted under a year key. Monetary values are integer euros derived from stored cents; no accounting concept is inferred.
+      required:
+      - source
+      - deposit_date
+      - status
+      - ingresos_eur
+      - beneficio_eur
+      - activo_eur
+      - patrimonio_eur
+      - pdf_url
       properties:
-        slug:
-          type: string
-        name:
-          type: string
-        cif:
+        source:
           type:
           - string
           - 'null'
-        province:
+        deposit_date:
           type:
           - string
           - 'null'
@@ -3667,95 +3037,27 @@ components:
           type:
           - string
           - 'null'
-        status_detail:
+        ingresos_eur:
+          type:
+          - integer
+          - 'null'
+        beneficio_eur:
+          type:
+          - integer
+          - 'null'
+        activo_eur:
+          type:
+          - integer
+          - 'null'
+        patrimonio_eur:
+          type:
+          - integer
+          - 'null'
+        pdf_url:
           type:
           - string
           - 'null'
-        status_date:
-          type:
-          - string
-          - 'null'
-        cnae:
-          type:
-          - string
-          - 'null'
-        cnae_source:
-          type:
-          - string
-          - 'null'
-        first_seen:
-          type:
-          - string
-          - 'null'
-        last_seen:
-          type:
-          - string
-          - 'null'
-        acts_count:
-          type: integer
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanyEmbargoesResponse:
-      type: object
-      required:
-      - slug
-      - count
-      - items
-      - source
-      - note
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        summary:
-          anyOf:
-          - type: object
-            properties:
-              count:
-                type: integer
-              total_amount_eur:
-                type:
-                - number
-                - 'null'
-              latest_date:
-                type:
-                - string
-                - 'null'
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbargoRecord'
-          maxItems: 100
-        source:
-          type: string
-        note:
-          type: string
       additionalProperties: false
-    CompanySanctionsResponse:
-      type: object
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentarySanction'
-        source:
-          type:
-          - string
-          - 'null'
-        note:
-          type:
-          - string
-          - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     CompanyCompareResponse:
       type: object
       description: Stable company_compare_v1 response. All three arrays are index-aligned and sorted lexicographically by canonical slug.
@@ -3804,9 +3106,718 @@ components:
         authority:
           $ref: '#/components/schemas/CompanyCompareAuthority'
       additionalProperties: false
-    CompanyTedResponse:
+    CompanyFactsResponse:
       type: object
-      description: Generation-bound minimized TED view. count is the total projected row count; returned_count is the bounded slice length.
+      required:
+      - slug
+      - count
+      - has_more
+      - facts
+      - summary
+      - source
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        has_more:
+          type: boolean
+        facts:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeFact'
+          maxItems: 200
+        summary:
+          type: object
+          description: Closed summary derived from the same hash-attested company report as the returned facts.
+          required:
+          - total_facts
+          - first_seen
+          - last_seen
+          - types
+          properties:
+            total_facts:
+              type: integer
+              minimum: 0
+            first_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            last_seen:
+              type:
+              - string
+              - 'null'
+              format: date
+            types:
+              type: object
+              description: Counts keyed by the documented BORME fact_type.
+              additionalProperties:
+                type: integer
+                minimum: 0
+          additionalProperties: false
+        attribution:
+          type: string
+        source:
+          type: string
+          const: borme
+        sync_date:
+          type: string
+          format: date-time
+      additionalProperties: false
+    DocumentarySanction:
+      type: object
+      description: Sanitized documentary sanction record; appearance does not imply current liability.
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    CompanyActivityScoreResponse:
+      type: object
+      required:
+      - slug
+      - score
+      - breakdown
+      properties:
+        slug:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        breakdown:
+          type: object
+          additionalProperties:
+            type: object
+            required:
+            - value
+            - max
+            - desc
+            properties:
+              value:
+                type: number
+              max:
+                type: number
+              desc:
+                type: string
+            additionalProperties: false
+        methodology:
+          type:
+          - string
+          - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    BormeEvent:
+      type: object
+      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        publish_date:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        act_type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    SectorCompaniesResponse:
+      type: object
+      required:
+      - code
+      - count
+      - count_status
+      - limit
+      - offset
+      - sort
+      - items
+      properties:
+        code:
+          type: string
+        count:
+          type:
+          - integer
+          - 'null'
+        count_status:
+          type: string
+          enum:
+          - precomputed
+          - not_precomputed
+        limit:
+          type: integer
+        offset:
+          type: integer
+        sort:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+          maxItems: 100
+      additionalProperties: false
+    CompanySourcesResponse:
+      type: object
+      description: Coverage summary for exactly four sources in one company_integrations_public_v1 generation. It is not the global legal catalog.
+      required:
+      - projection_status
+      - projection
+      - slug
+      - cif
+      - complete_bounded_projection
+      - coverage_status
+      - sources_count
+      - available_sources_count
+      - sources
+      - coverage_notice
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        projection_status:
+          type: string
+          const: available
+        projection:
+          $ref: '#/components/schemas/CompanyIntegrationProjection'
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        cif:
+          type: string
+          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
+        complete_bounded_projection:
+          type: boolean
+          const: true
+        coverage_status:
+          type: string
+          enum:
+          - available
+          - empty
+        sources_count:
+          type: integer
+          const: 4
+        available_sources_count:
+          type: integer
+          minimum: 0
+          maximum: 4
+        sources:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/CompanySourceCoverageRecord'
+        coverage_notice:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    LegalReportRequest:
+      type: object
+      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
+      properties:
+        csrf:
+          type: string
+          minLength: 32
+          maxLength: 256
+          description: Body fallback; prefer X-CSRF-Token.
+      additionalProperties: false
+    CompanyIdentity:
+      type: object
+      description: Stable company identity fields. Historical report builders may append documented BORME fields.
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        cif:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        status_detail:
+          type:
+          - string
+          - 'null'
+        status_date:
+          type:
+          - string
+          - 'null'
+        cnae:
+          type:
+          - string
+          - 'null'
+        cnae_source:
+          type:
+          - string
+          - 'null'
+        first_seen:
+          type:
+          - string
+          - 'null'
+        last_seen:
+          type:
+          - string
+          - 'null'
+        acts_count:
+          type: integer
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyEnrichmentResponse:
+      type: object
+      description: Policy-filtered enrichment envelope. Only public catalog sources survive egress filtering.
+      properties:
+        slug:
+          type: string
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    PublicCompanyDownloadCatalog:
+      type: object
+      additionalProperties: false
+      required:
+      - schema_version
+      - projection
+      - artifact_contract_version
+      - source_generation
+      - company_count
+      - acts_count_sum
+      - min_first_seen
+      - max_last_seen
+      - count
+      - items
+      - source_metadata
+      - _legal_notice
+      - _source_catalog
+      - _data_sources_used
+      - _attributions
+      properties:
+        schema_version:
+          type: string
+          const: '1.0'
+        projection:
+          type: string
+          const: company_public_download_catalog_v1
+        artifact_contract_version:
+          type: string
+          const: '1.1'
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        company_count:
+          type: integer
+          minimum: 0
+        acts_count_sum:
+          type: integer
+          minimum: 0
+        min_first_seen:
+          type: string
+          format: date
+        max_last_seen:
+          type: string
+          format: date
+        count:
+          type: integer
+          const: 3
+        items:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PublicCompanyDownload'
+        source_metadata:
+          $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _legal_notice:
+          type: string
+          minLength: 1
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          required:
+          - borme
+          properties:
+            borme:
+              type: string
+              minLength: 1
+          additionalProperties: false
+    CompanySanctionsResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentarySanction'
+        source:
+          type:
+          - string
+          - 'null'
+        note:
+          type:
+          - string
+          - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    TedContractRecord:
+      type: object
+      description: Minimized, attested TED notice. Tenderer, currency and connector free text are excluded.
+      required:
+      - publication_number
+      - publication_date
+      - buyer_name
+      - notice_url
+      properties:
+        publication_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        publication_date:
+          type: string
+          format: date
+        buyer_name:
+          type: string
+          minLength: 1
+          maxLength: 300
+        notice_url:
+          type: string
+          format: uri
+          pattern: ^https://(?:[^/]+\.)?ted\.europa\.eu/
+      additionalProperties: false
+    CompanySearchItem:
+      type: object
+      required:
+      - slug
+      - name
+      - cif
+      - acts_count
+      properties:
+        slug:
+          type: string
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
+          type: integer
+        last_seen:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        cnae_code:
+          type:
+          - string
+          - 'null'
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        matched_alias:
+          type: string
+          description: Present only when an exact safe alias was matched; slug is always canonical.
+        aliases:
+          type: array
+          items:
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyAeatDebtorResponse:
+      type: object
+      required:
+      - slug
+      - listed
+      properties:
+        slug:
+          type: string
+        cif:
+          type:
+          - string
+          - 'null'
+        listed:
+          type: boolean
+        debt_eur:
+          type:
+          - number
+          - 'null'
+        period:
+          type:
+          - string
+          - 'null'
+        published_date:
+          type:
+          - string
+          - 'null'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyCompareInvalidRequest:
+      type: object
+      required:
+      - error
+      - detail
+      properties:
+        error:
+          type: string
+          const: invalid_parameter
+        detail:
+          type: string
+      additionalProperties: false
+    CompanyEmbargoesResponse:
+      type: object
+      required:
+      - slug
+      - count
+      - items
+      - source
+      - note
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        summary:
+          anyOf:
+          - type: object
+            properties:
+              count:
+                type: integer
+              total_amount_eur:
+                type:
+                - number
+                - 'null'
+              latest_date:
+                type:
+                - string
+                - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbargoRecord'
+          maxItems: 100
+        source:
+          type: string
+        note:
+          type: string
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    LegalReportDocument:
+      type: object
+      required:
+      - state
+      - axes
+      - totals
+      properties:
+        state:
+          anyOf:
+          - type: object
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        axes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalReportAxis'
+        totals:
+          type: object
+          required:
+          - axes_present
+          - events_total
+          - norms_cited
+          properties:
+            axes_present:
+              type: integer
+              minimum: 0
+            events_total:
+              type: integer
+              minimum: 0
+            norms_cited:
+              type: array
+              items:
+                type: string
+              uniqueItems: true
+          additionalProperties: false
+      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    LegalReportPaymentRequiredError:
+      oneOf:
+      - type: object
+        required:
+        - error
+        - cost
+        - balance
+        - buy_url
+        properties:
+          error:
+            type: string
+            const: insufficient_credits
+          cost:
+            type: integer
+            minimum: 0
+          balance:
+            type: integer
+          buy_url:
+            type: string
+        additionalProperties: false
+      - type: object
+        required:
+        - error
+        properties:
+          error:
+            type: string
+            const: charge_failed
+        additionalProperties: false
+    CompanyGrantsResponse:
+      type: object
+      description: Generation-bound BDNS view. count is the total projected row count; returned_count is the bounded slice length. No monetary rollup is emitted.
       required:
       - projection_status
       - projection
@@ -3819,7 +3830,7 @@ components:
       - count
       - returned_count
       - items
-      - documentary_notice
+      - amount_notice
       - _source_catalog
       - _data_sources_used
       properties:
@@ -3849,17 +3860,17 @@ components:
         count:
           type: integer
           minimum: 0
-          maximum: 100
+          maximum: 200
         returned_count:
           type: integer
           minimum: 0
-          maximum: 100
+          maximum: 200
         items:
           type: array
-          maxItems: 100
+          maxItems: 200
           items:
-            $ref: '#/components/schemas/TedContractRecord'
-        documentary_notice:
+            $ref: '#/components/schemas/GrantRecord'
+        amount_notice:
           type: string
         _source_catalog:
           $ref: '#/components/schemas/SourceCatalogEnvelope'
@@ -3872,358 +3883,47 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    CompanyCompareLegalUnavailable:
+    PublicCompanyDownload:
       type: object
-      description: The active public-source policy could not authorize BORME before comparison admission.
-      required:
-      - error
-      - detail
-      - source_catalog_version
-      properties:
-        error:
-          type: string
-          const: legal_layer_unavailable
-        detail:
-          type: string
-        source_catalog_version:
-          type: string
-          minLength: 1
       additionalProperties: false
-    FinancialAccountsRecord:
-      type: object
-      description: Source-precedence annual-accounts row emitted under a year key. Monetary values are integer euros derived from stored cents; no accounting concept is inferred.
       required:
-      - source
-      - deposit_date
-      - status
-      - ingresos_eur
-      - beneficio_eur
-      - activo_eur
-      - patrimonio_eur
-      - pdf_url
+      - filename
+      - download_url
+      - media_type
+      - bytes
+      - row_count
+      - sha256
+      - source_generation
       properties:
-        source:
-          type:
-          - string
-          - 'null'
-        deposit_date:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-        ingresos_eur:
-          type:
-          - integer
-          - 'null'
-        beneficio_eur:
-          type:
-          - integer
-          - 'null'
-        activo_eur:
-          type:
-          - integer
-          - 'null'
-        patrimonio_eur:
-          type:
-          - integer
-          - 'null'
-        pdf_url:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RelationshipRecord:
-      type: object
-      description: Policy-authorized corporate relationship record.
-      properties:
-        source_slug:
-          type: string
-        relationship_type:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-        slug:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanyIntegrationAcquisitionCoverage:
-      type: object
-      description: Attested acquisition boundary for one governed source package. Completeness applies only to this exact bounded scope; complete_history_claimed and source_snapshot_claimed are always false, so this metadata never asserts complete historical or upstream snapshot coverage.
-      required:
-      - scope
-      - declared_scope_complete
-      - complete_history_claimed
-      - source_snapshot_claimed
-      - window_start
-      - window_end
-      - relative_window_days
-      - source_as_of
-      - identity_seed_subject_count
-      - request_count
-      - partition_count
-      - source_package_schema
-      - source_package_manifest_sha256
-      - source_fragment_schema
-      - source_fragment_sha256
-      - source_authority_binding_sha256
-      - coverage_sha256
-      properties:
-        scope:
+        filename:
           type: string
           enum:
-          - bounded_newest_first_page_prefix
-          - directory_snapshot_plus_relative_event_window
-          - publication_date_window_page_walk
-          - exact_identity_seed_lookup_snapshot
-        declared_scope_complete:
-          type: boolean
-          const: true
-          description: All partitions declared by this bounded acquisition scope were captured; this is not a complete-history claim.
-        complete_history_claimed:
-          type: boolean
-          const: false
-        source_snapshot_claimed:
-          type: boolean
-          const: false
-        window_start:
-          type:
-          - string
-          - 'null'
-          format: date
-        window_end:
-          type:
-          - string
-          - 'null'
-          format: date
-        relative_window_days:
-          type:
-          - integer
-          - 'null'
-          minimum: 1
-        source_as_of:
-          type:
-          - string
-          - 'null'
-          format: date
-        identity_seed_subject_count:
+          - muestra_empresas_100.csv
+          - muestra_nuevas_50.json
+          - company_top.json
+        download_url:
+          type: string
+          enum:
+          - /assets/samples/muestra_empresas_100.csv
+          - /assets/samples/muestra_nuevas_50.json
+          - /descargas/company_top.json
+        media_type:
+          type: string
+          enum:
+          - text/csv
+          - application/json
+        bytes:
           type: integer
           minimum: 1
-        request_count:
-          type: integer
-          minimum: 1
-        partition_count:
-          type: integer
-          minimum: 1
-        source_package_schema:
-          type: string
-          enum:
-          - openmercantil-bdns-reingest-package/v2
-          - openmercantil-cnmv-reingest-package/v2
-          - openmercantil-ted-reingest-package/v2
-          - openmercantil-wikidata-reingest-package/v2
-        source_package_manifest_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_fragment_schema:
-          type: string
-          enum:
-          - openmercantil-bdns-reingest-source-fragment/v2
-          - openmercantil-cnmv-reingest-source-fragment/v2
-          - openmercantil-ted-reingest-source-fragment/v2
-          - openmercantil-wikidata-reingest-source-fragment/v2
-        source_fragment_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_authority_binding_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        coverage_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Digest of the producer-declared bounded coverage object; it is integrity evidence, not proof of complete history.
-      additionalProperties: false
-    OfficerList:
-      type: array
-      maxItems: 500
-      items:
-        $ref: '#/components/schemas/OfficerDocumentaryMention'
-    CompanySourceCoverageRecord:
-      type: object
-      required:
-      - source_slug
-      - coverage_status
-      - count
-      - metadata
-      properties:
-        source_slug:
-          type: string
-          enum:
-          - bdns
-          - cnmv
-          - ted_eu
-          - wikidata
-        coverage_status:
-          type: string
-          enum:
-          - available
-          - empty
-        count:
+        row_count:
           type: integer
           minimum: 0
-          maximum: 200
-        metadata:
-          $ref: '#/components/schemas/CompanyIntegrationSourceMetadata'
-      additionalProperties: false
-    WikidataCompanyRecord:
-      type: object
-      description: Structured CC0 subset only; no label, logo, website, CEO, LEI, Wikipedia text or media.
-      required:
-      - qid
-      - entity_url
-      - ticker
-      - inception
-      properties:
-        qid:
+        sha256:
           type: string
-          pattern: ^Q[1-9][0-9]*$
-        entity_url:
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
           type: string
-          format: uri
-          pattern: ^https://www\.wikidata\.org/entity/Q[1-9][0-9]*$
-        ticker:
-          type:
-          - string
-          - 'null'
-        inception:
-          type:
-          - string
-          - 'null'
-          format: date
-      additionalProperties: false
-    CompanyCompareInvalidRequest:
-      type: object
-      required:
-      - error
-      - detail
-      properties:
-        error:
-          type: string
-          const: invalid_parameter
-        detail:
-          type: string
-      additionalProperties: false
-    CompanyEnrichmentResponse:
-      type: object
-      description: Policy-filtered enrichment envelope. Only public catalog sources survive egress filtering.
-      properties:
-        slug:
-          type: string
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/JsonValue'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    TedContractRecord:
-      type: object
-      description: Minimized, attested TED notice. Tenderer, currency and connector free text are excluded.
-      required:
-      - publication_number
-      - publication_date
-      - buyer_name
-      - notice_url
-      properties:
-        publication_number:
-          type: string
-          minLength: 1
-          maxLength: 100
-        publication_date:
-          type: string
-          format: date
-        buyer_name:
-          type: string
-          minLength: 1
-          maxLength: 300
-        notice_url:
-          type: string
-          format: uri
-          pattern: ^https://(?:[^/]+\.)?ted\.europa\.eu/
-      additionalProperties: false
+          pattern: ^cpv2-[a-f0-9]{64}$
     CompanyLeiResponse:
       type: object
       description: Current GLEIF helper shape. The source-policy gate may make this operation unavailable; has_lei=false is the runtime empty shape, not independent proof of non-registration.
@@ -4354,421 +4054,155 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    CnmvEventRecord:
+    ErrorResponse:
       type: object
+      description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
       required:
-      - date
-      - type
-      - title
-      - notice_url
+      - error
       properties:
-        date:
-          type: string
-          format: date
-        type:
+        error:
           type: string
           minLength: 1
-          maxLength: 120
-        title:
+        message:
           type: string
-          minLength: 1
-          maxLength: 500
-        notice_url:
+        detail:
           type: string
-          format: uri
-          pattern: ^https://(?:[^/]+\.)?cnmv\.es/
-      additionalProperties: false
-    CompanySearchItem:
-      type: object
-      required:
-      - slug
-      - name
-      - cif
-      - acts_count
-      properties:
-        slug:
+        code:
           type: string
-          example: mercadona-sa
-        name:
-          type: string
-          example: MERCADONA SA
-        cif:
-          type: string
-          example: A46103834
-        acts_count:
-          type: integer
-        last_seen:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        cnae_code:
-          type:
-          - string
-          - 'null'
-        cnae_section:
-          type:
-          - string
-          - 'null'
-        capital_cents:
+        status:
           type:
           - integer
-          - 'null'
-          minimum: 0
-        first_seen:
-          type:
           - string
-          - 'null'
-        matched_alias:
-          type: string
-          description: Present only when an exact safe alias was matched; slug is always canonical.
-        aliases:
-          type: array
-          items:
-            type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    CompanyCompareEntity:
-      type: object
-      description: Exact allowlisted company_public_v2 row used by a comparison. No report, officer, status, score, account or raw fields are permitted.
-      required:
-      - slug
-      - name
-      - cif
-      - province
-      - cnae_code
-      - cnae_section
-      - capital_cents
-      - first_seen
-      - last_seen
-      - acts_count
-      properties:
-        slug:
-          type: string
-          maxLength: 240
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          minLength: 1
-        cif:
-          type: string
-          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
-        province:
-          type:
-          - string
-          - 'null'
-        cnae_code:
-          type:
-          - string
-          - 'null'
-        cnae_section:
-          type:
-          - string
-          - 'null'
-        capital_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        first_seen:
-          type:
-          - string
-          - 'null'
-        last_seen:
-          type:
-          - string
-          - 'null'
-        acts_count:
-          type: integer
-          minimum: 0
-      additionalProperties: false
-    CompanyEventsResponse:
-      type: object
-      required:
-      - slug
-      - year
-      - page
-      - page_size
-      - total
-      - pages
-      - items
-      properties:
-        slug:
-          type: string
-        year:
-          type: string
-          pattern: ^\d{4}$
-        page:
-          type: integer
-        page_size:
-          type: integer
-        total:
-          type: integer
-        pages:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-          maxItems: 100
-      additionalProperties: false
-    TenderMoney:
-      type: object
-      additionalProperties: false
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          type:
-          - number
-          - 'null'
-          minimum: 0
-          maximum: 10000000000
-        currency:
-          type:
-          - string
-          - 'null'
-          pattern: ^[A-Z]{3}$
-    CompanyAccountsResponse:
-      type: object
-      description: Current annual-accounts aggregate helper response. The operation remains source-policy gated; al_dia and has_financials are runtime aggregate flags, not registry certificates.
-      required:
-      - projection_status
-      - projection
-      - slug
-      - cif
-      - count
-      - al_dia
-      - last_year
-      - last_deposit_date
-      - has_financials
-      - years
-      - _source_catalog
-      - _data_sources_used
-      properties:
-        projection_status:
-          type: string
-          const: available
         projection:
           type: string
-          const: annual_accounts_v1
+        reason:
+          type: string
+        source_catalog_version:
+          type: string
+        allowed_parameters:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
         slug:
           type: string
-        cif:
-          type:
-          - string
-          - 'null'
-        count:
+        key:
+          type: string
+        maximum:
           type: integer
-          minimum: 0
-        al_dia:
-          type: boolean
-        last_year:
-          type:
-          - integer
-          - 'null'
-        last_deposit_date:
-          type:
-          - string
-          - 'null'
-        has_financials:
-          type: boolean
-        years:
-          oneOf:
-          - type: object
-            propertyNames:
-              pattern: ^-?[0-9]+$
-            additionalProperties:
-              $ref: '#/components/schemas/FinancialAccountsRecord'
-          - type: array
-            maxItems: 0
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
+          minimum: 1
+        parameter:
+          type: string
+        fields:
           type: array
           items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
             type: string
-      additionalProperties: false
-    CompanyIntegrationProjection:
-      type: object
-      required:
-      - name
-      - schema_version
-      - builder_version
-      - generation
-      properties:
-        name:
+        max_bytes:
+          type: integer
+          minimum: 1
+        allowed:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        valid:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+        date:
           type: string
-          const: company_integrations_public_v1
-        schema_version:
+        login_url:
           type: string
-          const: '1.3'
-        builder_version:
+        plan:
           type: string
-          const: 1.4.0
-        generation:
-          type: string
-          pattern: ^cipv1-[a-f0-9]{64}$
-      additionalProperties: false
-    TenderParty:
-      type: object
-      additionalProperties: false
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        cif:
-          type:
-          - string
-          - 'null'
-          description: Corporate CIF only.
-        nif:
-          type:
-          - string
-          - 'null'
-          description: Public-body NIF; never a supplier DNI/NIE.
-        dir3:
-          type:
-          - string
-          - 'null'
-        company_slug:
-          type:
-          - string
-          - 'null'
-        withheld:
-          type: boolean
-    CompanyIntegrationSourceMetadata:
-      type: object
-      description: Projection-bound legal metadata plus the exact governed acquisition boundary for a company integration source.
-      required:
-      - slug
-      - name
-      - license
-      - license_url
-      - attribution_required
-      - attribution_text
-      - official_url
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - data_updated_at
-      - catalog_version
-      - acquisition_coverage
-      properties:
-        slug:
+        limited_by:
           type: string
           enum:
-          - bdns
-          - cnmv
-          - ted_eu
-          - wikidata
-        name:
+          - minute
+          - day
+        daily_limit:
+          type: integer
+          minimum: 1
+        reset_at:
+          type: integer
+          minimum: 1
+        reset_at_human:
           type: string
-          minLength: 1
-        license:
-          type: string
-          minLength: 1
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type: string
-          format: uri
-        reuse_conditions:
-          type: string
-          minLength: 1
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
           format: date-time
-        catalog_version:
+        retry_after_s:
+          type: integer
+          minimum: 1
+        retry_after:
+          type: integer
+          minimum: 1
+        upgrade:
           type: string
-          minLength: 1
-        acquisition_coverage:
-          $ref: '#/components/schemas/CompanyIntegrationAcquisitionCoverage'
+          format: uri
+        upgrade_url:
+          type: string
+        action:
+          type: string
+        limit:
+          type: integer
+          minimum: 0
+        remaining:
+          type: integer
+          minimum: 0
+        needed:
+          type: integer
+          minimum: 0
+        shortfall:
+          type: integer
+          minimum: 0
+        ok:
+          type: boolean
+        _alias_of:
+          type: string
       additionalProperties: false
-    CompanyFactsResponse:
+    WikidataCompanyRecord:
+      type: object
+      description: Structured CC0 subset only; no label, logo, website, CEO, LEI, Wikipedia text or media.
+      required:
+      - qid
+      - entity_url
+      - ticker
+      - inception
+      properties:
+        qid:
+          type: string
+          pattern: ^Q[1-9][0-9]*$
+        entity_url:
+          type: string
+          format: uri
+          pattern: ^https://www\.wikidata\.org/entity/Q[1-9][0-9]*$
+        ticker:
+          type:
+          - string
+          - 'null'
+        inception:
+          type:
+          - string
+          - 'null'
+          format: date
+      additionalProperties: false
+    CnmvListingRecord:
       type: object
       required:
-      - slug
-      - count
-      - has_more
-      - facts
-      - summary
-      - source
+      - ticker
+      - isin
+      - market
       properties:
-        slug:
+        ticker:
           type: string
-        count:
-          type: integer
-        has_more:
-          type: boolean
-        facts:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeFact'
-          maxItems: 200
-        summary:
-          type: object
-          description: Closed summary derived from the same hash-attested company report as the returned facts.
-          required:
-          - total_facts
-          - first_seen
-          - last_seen
-          - types
-          properties:
-            total_facts:
-              type: integer
-              minimum: 0
-            first_seen:
-              type:
-              - string
-              - 'null'
-              format: date
-            last_seen:
-              type:
-              - string
-              - 'null'
-              format: date
-            types:
-              type: object
-              description: Counts keyed by the documented BORME fact_type.
-              additionalProperties:
-                type: integer
-                minimum: 0
-          additionalProperties: false
-        attribution:
+          minLength: 1
+          maxLength: 20
+        isin:
           type: string
-        source:
+          minLength: 12
+          maxLength: 12
+        market:
           type: string
-          const: borme
-        sync_date:
-          type: string
-          format: date-time
+          minLength: 1
+          maxLength: 80
       additionalProperties: false
     LegalReportAxis:
       type: object
@@ -4835,25 +4269,416 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    Officer:
+    LegalReportResponse:
       type: object
+      required:
+      - ok
+      - company
+      - charged
+      - beta_free
+      - already_paid
+      - balance_after
+      - report
       properties:
-        person_slug:
+        ok:
+          type: boolean
+          const: true
+        company:
+          type: object
+          required:
+          - slug
+          - name
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+          additionalProperties: false
+        charged:
+          type: integer
+          minimum: 0
+        beta_free:
+          type: boolean
+        already_paid:
+          type: boolean
+        balance_after:
+          type:
+          - integer
+          - 'null'
+        report:
+          $ref: '#/components/schemas/LegalReportDocument'
+      additionalProperties: false
+    CompanyActivityResponse:
+      type: object
+      required:
+      - slug
+      - count
+      - series
+      properties:
+        slug:
           type: string
+        count:
+          type: integer
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              count:
+                type: integer
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+      additionalProperties: false
+    CompanyCompareEntity:
+      type: object
+      description: Exact allowlisted company_public_v2 row used by a comparison. No report, officer, status, score, account or raw fields are permitted.
+      required:
+      - slug
+      - name
+      - cif
+      - province
+      - cnae_code
+      - cnae_section
+      - capital_cents
+      - first_seen
+      - last_seen
+      - acts_count
+      properties:
+        slug:
+          type: string
+          maxLength: 240
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
         name:
           type: string
-        role:
+          minLength: 1
+        cif:
           type: string
-        appointed:
+          pattern: ^[ABCDEFGHJNPQRSUVW][0-9]{7}[0-9A-J]$
+        province:
           type:
           - string
           - 'null'
-          format: date
-        ceased:
+        cnae_code:
           type:
           - string
           - 'null'
-          format: date
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        last_seen:
+          type:
+          - string
+          - 'null'
+        acts_count:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    GrantRecord:
+      type: object
+      description: Minimized, attested BDNS row. award_amount_cents is an awarded amount, never proof of payment.
+      required:
+      - bdns_code
+      - granting_body
+      - title
+      - award_year
+      - instrument
+      - award_amount_cents
+      - award_amount_currency
+      - amount_quality
+      - amount_semantics
+      properties:
+        bdns_code:
+          type: string
+        granting_body:
+          type: string
+        title:
+          type: string
+        award_year:
+          type:
+          - integer
+          - 'null'
+          minimum: 1900
+        instrument:
+          type:
+          - string
+          - 'null'
+        award_amount_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        award_amount_currency:
+          type:
+          - string
+          - 'null'
+          enum:
+          - EUR
+          - null
+        amount_quality:
+          type: string
+          enum:
+          - reported_positive_cents
+          - unknown_zero_ambiguous
+          - unknown_missing
+        amount_semantics:
+          type: string
+          const: awarded_not_payment
+      additionalProperties: false
+    CompanyEventsResponse:
+      type: object
+      required:
+      - slug
+      - year
+      - page
+      - page_size
+      - total
+      - pages
+      - items
+      properties:
+        slug:
+          type: string
+        year:
+          type: string
+          pattern: ^\d{4}$
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+          maxItems: 100
+      additionalProperties: false
+    CompanyReport:
+      type: object
+      description: Sanitized company report. The stable envelope is explicit; versioned BORME report fields may be added.
+      properties:
+        company:
+          $ref: '#/components/schemas/CompanyIdentity'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+        officers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficerDocumentaryMention'
+        summary:
+          type: object
+          description: Versioned aggregate fields emitted by the report artifact.
+          properties: {}
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: array
+          items:
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanyProcurementResponse:
+      type: object
+      required:
+      - schema_version
+      - slug
+      - count
+      - items
+      - page
+      - monetary_rollup
+      - rollup_policy
+      properties:
+        schema_version:
+          type: string
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TenderNotice'
+          maxItems: 100
+        page:
+          type: object
+          required:
+          - limit
+          - has_more
+          properties:
+            limit:
+              type: integer
+            has_more:
+              type: boolean
+          additionalProperties: false
+        monetary_rollup:
+          type: 'null'
+        rollup_policy:
+          type: string
+        coverage:
+          $ref: '#/components/schemas/TenderCoverage'
+        attribution:
+          type: string
+        disclaimer:
+          type: string
+        _alias_of:
+          type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+      additionalProperties: false
+    CompanySourceCoverageRecord:
+      type: object
+      required:
+      - source_slug
+      - coverage_status
+      - count
+      - metadata
+      properties:
+        source_slug:
+          type: string
+          enum:
+          - bdns
+          - cnmv
+          - ted_eu
+          - wikidata
+        coverage_status:
+          type: string
+          enum:
+          - available
+          - empty
+        count:
+          type: integer
+          minimum: 0
+          maximum: 200
+        metadata:
+          $ref: '#/components/schemas/CompanyIntegrationSourceMetadata'
+      additionalProperties: false
+    TenderMoney:
+      type: object
+      additionalProperties: false
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+          maximum: 10000000000
+        currency:
+          type:
+          - string
+          - 'null'
+          pattern: ^[A-Z]{3}$
+    CompanyCompareAuthority:
+      type: object
+      description: Public generation authority. Internal paths and identity/content/contract/policy fingerprints are deliberately omitted.
+      required:
+      - projection
+      - schema_version
+      - builder_version
+      - source_generation
+      - projected_at
+      - row_count
+      - cache_namespace
+      properties:
+        projection:
+          type: string
+          const: company_public_v2
+        schema_version:
+          type: string
+          minLength: 1
+        builder_version:
+          type: string
+          minLength: 1
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        projected_at:
+          type: string
+          minLength: 1
+        row_count:
+          type: integer
+          minimum: 1
+        cache_namespace:
+          type: string
+          minLength: 1
+          maxLength: 240
+          pattern: ^[a-z0-9_.:-]+$
+      additionalProperties: false
+    OfficerDocumentaryMention:
+      type: object
+      description: Documentary officer mention. It never contains DNI, contact details or a personal address.
+      properties:
+        name:
+          type: string
+        person_slug:
+          type:
+          - string
+          - 'null'
+        role:
+          type:
+          - string
+          - 'null'
+        appointed_at:
+          type:
+          - string
+          - 'null'
+        ended_at:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    EventList:
+      type: object
+      properties:
+        slug:
+          type: string
+        year:
+          type:
+          - integer
+          - 'null'
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyEvent'
       additionalProperties: true
     CompanyEvent:
       type: object
@@ -4873,6 +4698,14 @@ components:
           - string
           - 'null'
           format: uri
+      additionalProperties: true
+    ErrorResponse_2:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
       additionalProperties: true
     CompanyScore:
       type: object
@@ -4922,46 +4755,6 @@ components:
           items:
             type: string
       additionalProperties: true
-    ErrorResponse_2:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-      additionalProperties: true
-    Geocode:
-      type: object
-      properties:
-        lat:
-          type: number
-        lng:
-          type: number
-        address:
-          type: string
-        source:
-          type: string
-      additionalProperties: true
-    EventList:
-      type: object
-      properties:
-        slug:
-          type: string
-        year:
-          type:
-          - integer
-          - 'null'
-        page:
-          type: integer
-        page_size:
-          type: integer
-        total:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanyEvent'
-      additionalProperties: true
     TrustScore:
       type: object
       properties:
@@ -4983,6 +4776,213 @@ components:
           items:
             $ref: '#/components/schemas/Officer'
       additionalProperties: true
+    Officer:
+      type: object
+      properties:
+        person_slug:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        appointed:
+          type:
+          - string
+          - 'null'
+          format: date
+        ceased:
+          type:
+          - string
+          - 'null'
+          format: date
+      additionalProperties: true
+    Geocode:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        address:
+          type: string
+        source:
+          type: string
+      additionalProperties: true
+  headers:
+    CompanyContentLocation:
+      description: Present when a safe historical company alias was accepted and processed as its canonical company slug.
+      schema:
+        type: string
+        pattern: ^/api/v1/(?:company|empresa|grafo)/[a-z0-9]+(?:-[a-z0-9]+)*(?:/.*)?$
+      example: /api/v1/company/mercadona-sa
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    CompanyCompareContentLocation:
+      description: Canonical comparison URL with the two canonical slugs in stable lexical order.
+      schema:
+        type: string
+        pattern: ^/api/v1/companies/compare\?slugs=[a-z0-9]+(?:-[a-z0-9]+)*,[a-z0-9]+(?:-[a-z0-9]+)*$
+      example: /api/v1/companies/compare?slugs=empresa-a-sa,empresa-b-sl
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    PrivateRevalidationCacheControl:
+      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
+      schema:
+        type: string
+        const: private, no-cache, must-revalidate
+  responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: The bounded operation failed without exposing internal exception details.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests_2:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
+    NotFound_2:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
   parameters:
     CompanySlugPath:
       name: slug
@@ -5038,4 +5038,3 @@ externalDocs:
 x-refined-from:
 - openmercantil-openapi-1.9.3.json
 - openmercantil-openapi.yml
-- openmercantil-risk-signals-api-openapi.yml

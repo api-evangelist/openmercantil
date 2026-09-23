@@ -3,16 +3,7 @@ info:
   title: OpenMercantil Risk Signals API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
+  description: Public JSON API for Spanish company information derived from BORME and other public sources.
   termsOfService: https://openmercantil.es/terminos-de-uso
   contact:
     name: OpenMercantil
@@ -232,88 +223,7 @@ paths:
         '503':
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
-  responses:
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
     DocumentarySanction:
       type: object
       description: Sanitized documentary sanction record; appearance does not imply current liability.
@@ -343,6 +253,49 @@ components:
           type:
           - string
           - 'null'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    EmbargoRecord:
+      type: object
+      description: Documentary official-notice record; may not reflect later unpublished resolutions.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        amount_eur:
+          type:
+          - number
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
     CompanyAeatDebtorResponse:
@@ -377,6 +330,46 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    CompanyEmbargoesResponse:
+      type: object
+      required:
+      - slug
+      - count
+      - items
+      - source
+      - note
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        summary:
+          anyOf:
+          - type: object
+            properties:
+              count:
+                type: integer
+              total_amount_eur:
+                type:
+                - number
+                - 'null'
+              latest_date:
+                type:
+                - string
+                - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmbargoRecord'
+          maxItems: 100
+        source:
+          type: string
+        note:
+          type: string
+      additionalProperties: false
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -495,73 +488,6 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    CompanyEmbargoesResponse:
-      type: object
-      required:
-      - slug
-      - count
-      - items
-      - source
-      - note
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        summary:
-          anyOf:
-          - type: object
-            properties:
-              count:
-                type: integer
-              total_amount_eur:
-                type:
-                - number
-                - 'null'
-              latest_date:
-                type:
-                - string
-                - 'null'
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/EmbargoRecord'
-          maxItems: 100
-        source:
-          type: string
-        note:
-          type: string
-      additionalProperties: false
-    EmbargoRecord:
-      type: object
-      description: Documentary official-notice record; may not reflect later unpublished resolutions.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        amount_eur:
-          type:
-          - number
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     CompanySanctionsResponse:
       type: object
       properties:
@@ -583,6 +509,71 @@ components:
           - 'null'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+  responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.

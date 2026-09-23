@@ -173,224 +173,7 @@ paths:
     - url: https://openmercantil.es
       description: Production
 components:
-  responses:
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
-    BadRequest_2:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-    TooManyRequests_2:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-        X-RateLimit-Limit:
-          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          description: Remaining requests in the current window.
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          description: Unix timestamp when the rate-limit counter resets.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
   schemas:
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    SearchResponse:
-      type: object
-      required:
-      - query
-      - count
-      - items
-      properties:
-        query:
-          type: string
-        count:
-          type: integer
-        offset:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanySearchItem'
-    PersonPublicProjectionMetadata:
-      type: object
-      required:
-      - name
-      - schema_version
-      - contract_sha256
-      - source_generation
-      - content_sha256
-      - projected_at
-      properties:
-        name:
-          type: string
-          const: person_public_v1
-        schema_version:
-          type: string
-          const: '1.0'
-        contract_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        content_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        projected_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    PersonSearchItem:
-      type: object
-      description: Documentary person search result; no DNI, contact data or personal address.
-      required:
-      - slug
-      - name
-      - mentions_count
-      - companies_count
-      - first_seen
-      - last_seen
-      - subject_type
-      - identity_resolution
-      - source_slug
-      properties:
-        slug:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          minLength: 1
-        mentions_count:
-          type: integer
-          minimum: 1
-        companies_count:
-          type: integer
-          minimum: 1
-        first_seen:
-          type:
-          - string
-          - 'null'
-          format: date
-        last_seen:
-          type:
-          - string
-          - 'null'
-          format: date
-        subject_type:
-          type: string
-          const: person_documentary_mentions
-        identity_resolution:
-          type: string
-          const: not_performed
-        source_slug:
-          type: string
-          const: borme
-      additionalProperties: false
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -495,6 +278,109 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    SearchResponse:
+      type: object
+      required:
+      - query
+      - count
+      - items
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+        offset:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
     PersonSearchResponse:
       type: object
       required:
@@ -552,71 +438,6 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
     CompanySearchItem:
       type: object
       required:
@@ -670,24 +491,95 @@ components:
             type: string
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    PersonSearchItem_2:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    PersonPublicProjectionMetadata:
       type: object
+      required:
+      - name
+      - schema_version
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
+      properties:
+        name:
+          type: string
+          const: person_public_v1
+        schema_version:
+          type: string
+          const: '1.0'
+        contract_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PersonSearchItem:
+      type: object
+      description: Documentary person search result; no DNI, contact data or personal address.
+      required:
+      - slug
+      - name
+      - mentions_count
+      - companies_count
+      - first_seen
+      - last_seen
+      - subject_type
+      - identity_resolution
+      - source_slug
       properties:
         slug:
           type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
         name:
           type: string
-        company_count:
+          minLength: 1
+        mentions_count:
           type: integer
-      additionalProperties: true
-    ErrorResponse_2:
-      type: object
-      properties:
-        error:
+          minimum: 1
+        companies_count:
+          type: integer
+          minimum: 1
+        first_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        last_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        subject_type:
           type: string
-        message:
+          const: person_documentary_mentions
+        identity_resolution:
           type: string
-      additionalProperties: true
+          const: not_performed
+        source_slug:
+          type: string
+          const: borme
+      additionalProperties: false
     PersonSearchResponse_2:
       type: object
       properties:
@@ -699,6 +591,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PersonSearchItem_2'
+      additionalProperties: true
+    PersonSearchItem_2:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        company_count:
+          type: integer
       additionalProperties: true
     CompanySearchItem_2:
       type: object
@@ -723,6 +625,104 @@ components:
           items:
             type: string
       additionalProperties: true
+    ErrorResponse_2:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
+  responses:
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests_2:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
+    BadRequest_2:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
   headers:
     XSourceCatalogVersion:
       description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
@@ -730,11 +730,6 @@ components:
         type: string
         minLength: 1
       example: 2026-07-12.2
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
     XAttributionRequired:
       description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
       schema:
@@ -749,6 +744,11 @@ components:
         minLength: 1
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: borme,placsp
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
   parameters:
     IfNoneMatchHeader:
       name: If-None-Match

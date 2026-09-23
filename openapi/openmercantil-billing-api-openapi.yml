@@ -454,11 +454,8 @@ paths:
       description: Production
 components:
   responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
+    Unauthorized:
+      description: Authentication required (no active session)
       content:
         application/json:
           schema:
@@ -474,12 +471,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    BadRequest_2:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
     TooManyRequests_2:
       description: Rate limit exceeded
       headers:
@@ -503,79 +509,29 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse_2'
-    BadRequest_2:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
   schemas:
-    BillingInvoice:
+    StripeSessionResponse:
       type: object
-      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
+      required:
+      - url
+      - session_id
       properties:
-        id:
-          type: integer
-        stripe_invoice_id:
+        url:
           type: string
-        invoice_number:
-          type:
-          - string
-          - 'null'
-        amount_paid_cents:
-          type:
-          - integer
-          - 'null'
-        amount_due_cents:
-          type:
-          - integer
-          - 'null'
-        subtotal_cents:
-          type:
-          - integer
-          - 'null'
-        tax_cents:
-          type:
-          - integer
-          - 'null'
-        tax_rate_pct:
-          type:
-          - number
-          - 'null'
-        currency:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-        invoice_pdf:
-          type:
-          - string
-          - 'null'
           format: uri
-        hosted_invoice_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        period_start:
-          type:
-          - string
-          - 'null'
-        period_end:
-          type:
-          - string
-          - 'null'
-        paid_at:
-          type:
-          - string
-          - 'null'
-        created_at:
+        session_id:
           type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
+      additionalProperties: false
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -680,38 +636,18 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    BillingInvoicesResponse:
+    RequestBodyTooLargeError:
       type: object
       required:
-      - ok
-      - subscription
-      - invoices
+      - error
+      - max_bytes
       properties:
-        ok:
-          type: boolean
-        subscription:
-          anyOf:
-          - $ref: '#/components/schemas/BillingSubscription'
-          - type: 'null'
-        invoices:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillingInvoice'
-          maxItems: 50
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
       additionalProperties: false
     StripeWebhookEventRequest:
       type: object
@@ -757,31 +693,72 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    RequestBodyTooLargeError:
+    BillingInvoice:
       type: object
-      required:
-      - error
-      - max_bytes
+      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
       properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
+        id:
           type: integer
-          minimum: 1
-      additionalProperties: false
-    StripeSessionResponse:
-      type: object
-      required:
-      - url
-      - session_id
-      properties:
-        url:
+        stripe_invoice_id:
           type: string
+        invoice_number:
+          type:
+          - string
+          - 'null'
+        amount_paid_cents:
+          type:
+          - integer
+          - 'null'
+        amount_due_cents:
+          type:
+          - integer
+          - 'null'
+        subtotal_cents:
+          type:
+          - integer
+          - 'null'
+        tax_cents:
+          type:
+          - integer
+          - 'null'
+        tax_rate_pct:
+          type:
+          - number
+          - 'null'
+        currency:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        invoice_pdf:
+          type:
+          - string
+          - 'null'
           format: uri
-        session_id:
+        hosted_invoice_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        period_start:
+          type:
+          - string
+          - 'null'
+        period_end:
+          type:
+          - string
+          - 'null'
+        paid_at:
+          type:
+          - string
+          - 'null'
+        created_at:
           type: string
-      additionalProperties: false
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     BillingSubscription:
       type: object
       description: Authenticated user's current subscription metadata.
@@ -832,6 +809,39 @@ components:
           type: string
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    BillingInvoicesResponse:
+      type: object
+      required:
+      - ok
+      - subscription
+      - invoices
+      properties:
+        ok:
+          type: boolean
+        subscription:
+          anyOf:
+          - $ref: '#/components/schemas/BillingSubscription'
+          - type: 'null'
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingInvoice'
+          maxItems: 50
+      additionalProperties: false
     ErrorResponse_2:
       type: object
       properties:
@@ -840,16 +850,6 @@ components:
         message:
           type: string
       additionalProperties: true
-  parameters:
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.

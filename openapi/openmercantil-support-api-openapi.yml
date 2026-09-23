@@ -3,16 +3,7 @@ info:
   title: OpenMercantil Support API
   version: 1.9.3
   summary: Versioned public-read, browser-account, billing, support and provider-callback contracts.
-  description: 'Public JSON API for Spanish company information derived from BORME and other public sources. OpenMercantil is an independent informational service; it is NOT the BOE, BORME or Registro Mercantil and does NOT replace official certificates or registry extracts.
-
-
-    **Rate limits.** Free: 60 req/min y 200 req/día por IP. Planes superiores (Profesional 5.000 req/día, MAX 50.000 req/día, Enterprise 500.000+ req/día) según cuenta y API key. Cabeceras `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `X-OpenMercantil-Plan`, `Retry-After`.
-
-
-    **License and attribution.** Source-specific metadata in each response and the active versioned source catalog prevails. OpenMercantil does not relicense upstream content under a blanket license. Unknown, review and restricted datasets are omitted or return `503 legal_layer_unavailable`. BOE/BORME material is re-used under Ley 37/2007 and its official version remains boe.es. Court judgments are not exposed; CENDOJ remains citation-index only under CGPJ Reglamento 3/2010.
-
-
-    **Machine-readable catalog (DCAT-AP-ES):** https://openmercantil.es/catalog.rdf'
+  description: Public JSON API for Spanish company information derived from BORME and other public sources.
   termsOfService: https://openmercantil.es/terminos-de-uso
   contact:
     name: OpenMercantil
@@ -215,6 +206,18 @@ paths:
                 error: Servicio no disponible.
 components:
   schemas:
+    SupportTicketCategory:
+      type: string
+      description: Stable support-routing category accepted by the current account schema.
+      enum:
+      - comercial
+      - tecnico
+      - datos
+      - rgpd
+      - partnerships
+      - sugerencia
+      - bug
+      - otro
     OkResponse:
       type: object
       required:
@@ -223,23 +226,11 @@ components:
         ok:
           type: boolean
       additionalProperties: false
-    SupportTicketCreatedResponse:
-      type: object
-      required:
-      - ok
-      - ticket_id
-      - public_id
-      properties:
-        ok:
-          type: boolean
-          const: true
-        ticket_id:
-          type: integer
-          minimum: 1
-        public_id:
-          type: string
-          pattern: ^OB-[0-9]{4}-[0-9]{6,}$
-      additionalProperties: false
+    SupportRequestErrorResponse:
+      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
+      anyOf:
+      - $ref: '#/components/schemas/SupportErrorResponse'
+      - $ref: '#/components/schemas/ErrorResponse'
     SupportErrorResponse:
       type: object
       required:
@@ -306,18 +297,17 @@ components:
           const: true
           description: Strict purpose-bound acceptance, persisted as privacy_accepted/privacy_policy_v1; never interpreted as marketing consent.
       additionalProperties: false
-    SupportTicketCategory:
-      type: string
-      description: Stable support-routing category accepted by the current account schema.
-      enum:
-      - comercial
-      - tecnico
-      - datos
-      - rgpd
-      - partnerships
-      - sugerencia
-      - bug
-      - otro
+    SupportReplyRequest:
+      type: object
+      required:
+      - body
+      properties:
+        body:
+          type: string
+          minLength: 5
+          maxLength: 10000
+          description: Trimmed before the 5–10,000 character validation.
+      additionalProperties: false
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -422,11 +412,36 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    SupportRequestErrorResponse:
-      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
-      anyOf:
-      - $ref: '#/components/schemas/SupportErrorResponse'
-      - $ref: '#/components/schemas/ErrorResponse'
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    SupportTicketCreatedResponse:
+      type: object
+      required:
+      - ok
+      - ticket_id
+      - public_id
+      properties:
+        ok:
+          type: boolean
+          const: true
+        ticket_id:
+          type: integer
+          minimum: 1
+        public_id:
+          type: string
+          pattern: ^OB-[0-9]{4}-[0-9]{6,}$
+      additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -441,30 +456,6 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    SupportReplyRequest:
-      type: object
-      required:
-      - body
-      properties:
-        body:
-          type: string
-          minLength: 5
-          maxLength: 10000
-          description: Trimmed before the 5–10,000 character validation.
-      additionalProperties: false
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
   responses:
     Unauthorized:
       description: Authentication required (no active session)

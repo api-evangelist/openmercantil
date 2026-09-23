@@ -12,9 +12,7 @@ info:
 
     API key, and is rate-limited per IP. Versions v1.0 through v1.4 are
 
-    available and documented at https://openmercantil.es/api/documentacion.
-
-    '
+    available and documented at https://openmercantil.es/api/documentacion.'
   termsOfService: https://openmercantil.es/terminos-de-uso
   contact:
     name: OpenMercantil
