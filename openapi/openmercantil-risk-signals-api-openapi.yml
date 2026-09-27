@@ -224,6 +224,47 @@ paths:
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
   schemas:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    EmbargoRecord:
+      type: object
+      description: Documentary official-notice record; may not reflect later unpublished resolutions.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        amount_eur:
+          type:
+          - number
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     DocumentarySanction:
       type: object
       description: Sanitized documentary sanction record; appearance does not imply current liability.
@@ -253,49 +294,6 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    EmbargoRecord:
-      type: object
-      description: Documentary official-notice record; may not reflect later unpublished resolutions.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        amount_eur:
-          type:
-          - number
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
     CompanyAeatDebtorResponse:
@@ -328,6 +326,43 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/JsonValue'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    CompanySanctionsResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentarySanction'
+        source:
+          type:
+          - string
+          - 'null'
+        note:
+          type:
+          - string
+          - 'null'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
     CompanyEmbargoesResponse:
@@ -474,42 +509,16 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    CompanySanctionsResponse:
-      type: object
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentarySanction'
-        source:
-          type:
-          - string
-          - 'null'
-        note:
-          type:
-          - string
-          - 'null'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
   responses:
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -517,28 +526,6 @@ components:
           description: Seconds to wait before retrying.
           schema:
             type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
       content:
         application/json:
           schema:
@@ -574,6 +561,19 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.

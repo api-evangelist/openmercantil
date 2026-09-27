@@ -374,37 +374,49 @@ paths:
       description: Production
 components:
   schemas:
-    CnaeNode:
+    CnaeTreeResponse:
       type: object
-      description: CNAE node. Catalog loaders may add official explanatory fields.
+      required:
+      - sections
       properties:
-        code:
-          type: string
-        name:
-          type: string
-        level:
-          type:
-          - integer
-          - 'null'
-        parent:
-          type:
-          - string
-          - 'null'
-        companies_count:
-          type:
-          - integer
-          - 'null'
-        count_status:
-          type: string
-          enum:
-          - precomputed
-          - not_precomputed
-        children:
+        sections:
           type: array
           items:
             $ref: '#/components/schemas/CnaeNode'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
+    SectorRatiosResponse:
+      type: object
+      required:
+      - code
+      - ratios
+      properties:
+        code:
+          type: string
+          pattern: ^[0-9]{2}$
+          minLength: 2
+          maxLength: 2
+        ratios:
+          type: array
+          items:
+            $ref: '#/components/schemas/SectorRatio'
+      additionalProperties: false
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -509,22 +521,63 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    ProjectionUnavailableError:
+    SectorRatio:
       type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
       required:
-      - error
-      - detail
-      - projection
+      - year
+      - metric
+      - value
+      - unit
+      - source
       properties:
-        error:
+        year:
+          type: integer
+        metric:
           type: string
-          const: projection_unavailable
-        detail:
+          enum:
+          - margen_neto
+          - roa
+          - roe
+        value:
+          type: number
+        unit:
           type: string
-        projection:
+          const: '%'
+        source:
           type: string
+          const: BdE Central de Balances
       additionalProperties: false
+    CnaeNode:
+      type: object
+      description: CNAE node. Catalog loaders may add official explanatory fields.
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        level:
+          type:
+          - integer
+          - 'null'
+        parent:
+          type:
+          - string
+          - 'null'
+        companies_count:
+          type:
+          - integer
+          - 'null'
+        count_status:
+          type: string
+          enum:
+          - precomputed
+          - not_precomputed
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CnaeNode'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     SectorCompaniesResponse:
       type: object
       required:
@@ -559,17 +612,20 @@ components:
             $ref: '#/components/schemas/CompanySearchItem'
           maxItems: 100
       additionalProperties: false
-    CnaeTreeResponse:
-      type: object
-      required:
-      - sections
-      properties:
-        sections:
-          type: array
-          items:
-            $ref: '#/components/schemas/CnaeNode'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     CompanySearchItem:
       type: object
       required:
@@ -623,62 +679,6 @@ components:
             type: string
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    SectorRatio:
-      type: object
-      required:
-      - year
-      - metric
-      - value
-      - unit
-      - source
-      properties:
-        year:
-          type: integer
-        metric:
-          type: string
-          enum:
-          - margen_neto
-          - roa
-          - roe
-        value:
-          type: number
-        unit:
-          type: string
-          const: '%'
-        source:
-          type: string
-          const: BdE Central de Balances
-      additionalProperties: false
-    SectorRatiosResponse:
-      type: object
-      required:
-      - code
-      - ratios
-      properties:
-        code:
-          type: string
-          pattern: ^[0-9]{2}$
-          minLength: 2
-          maxLength: 2
-        ratios:
-          type: array
-          items:
-            $ref: '#/components/schemas/SectorRatio'
-      additionalProperties: false
     ErrorResponse_2:
       type: object
       properties:
@@ -687,7 +687,68 @@ components:
         message:
           type: string
       additionalProperties: true
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
       description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
@@ -719,35 +780,6 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
     ValidationFailed:
       description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
@@ -757,6 +789,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound_2:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
     TooManyRequests_2:
       description: Rate limit exceeded
       headers:
@@ -780,53 +827,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse_2'
-    NotFound_2:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-  headers:
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   securitySchemes:
     cookieAuth:
       type: apiKey

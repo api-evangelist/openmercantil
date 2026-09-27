@@ -228,6 +228,107 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
 components:
   schemas:
+    GraphEdge:
+      type: object
+      properties:
+        slug:
+          type:
+          - string
+          - 'null'
+          example: endesa-sa
+        name:
+          type: string
+          example: ENDESA SA
+        rel_type:
+          type: string
+          example: IS_DIRECTLY_CONSOLIDATED_BY
+        source_slug:
+          type: string
+          description: Canonical dataset slug authorized by the active source policy.
+    CompanyGraphResponse:
+      type: object
+      required:
+      - schema_version
+      - canonical_url
+      - center
+      - parents
+      - children
+      - coverage
+      - as_of
+      properties:
+        schema_version:
+          type: string
+          example: '1'
+        canonical_url:
+          type: string
+          format: uri
+        center:
+          type: object
+          properties:
+            slug:
+              type: string
+            name:
+              type: string
+            cif:
+              type: string
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraphEdge'
+        counts:
+          type: object
+          properties:
+            parents:
+              type: integer
+            children:
+              type: integer
+        coverage:
+          type: object
+          additionalProperties:
+            type: string
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        as_of:
+          type: string
+          format: date
+          example: '2026-05-18'
+        ttl_seconds:
+          type: integer
+          const: 0
+          example: 0
+    PersonPublicProjectionMetadata:
+      type: object
+      required:
+      - name
+      - schema_version
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
+      properties:
+        name:
+          type: string
+          const: person_public_v1
+        schema_version:
+          type: string
+          const: '1.0'
+        contract_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
     PersonGraphCompany:
       type: object
       required:
@@ -378,168 +479,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    CompanyGraphResponse:
-      type: object
-      required:
-      - schema_version
-      - canonical_url
-      - center
-      - parents
-      - children
-      - coverage
-      - as_of
-      properties:
-        schema_version:
-          type: string
-          example: '1'
-        canonical_url:
-          type: string
-          format: uri
-        center:
-          type: object
-          properties:
-            slug:
-              type: string
-            name:
-              type: string
-            cif:
-              type: string
-        parents:
-          type: array
-          items:
-            $ref: '#/components/schemas/GraphEdge'
-        children:
-          type: array
-          items:
-            $ref: '#/components/schemas/GraphEdge'
-        counts:
-          type: object
-          properties:
-            parents:
-              type: integer
-            children:
-              type: integer
-        coverage:
-          type: object
-          additionalProperties:
-            type: string
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        as_of:
-          type: string
-          format: date
-          example: '2026-05-18'
-        ttl_seconds:
-          type: integer
-          const: 0
-          example: 0
-    OfflineProjectionError:
-      type: object
-      required:
-      - error
-      properties:
-        error:
-          type: string
-        projection:
-          type:
-          - string
-          - 'null'
-        derivation:
-          type:
-          - string
-          - 'null'
-        detail:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    GraphEdge:
-      type: object
-      properties:
-        slug:
-          type:
-          - string
-          - 'null'
-          example: endesa-sa
-        name:
-          type: string
-          example: ENDESA SA
-        rel_type:
-          type: string
-          example: IS_DIRECTLY_CONSOLIDATED_BY
-        source_slug:
-          type: string
-          description: Canonical dataset slug authorized by the active source policy.
     PersonGraphResponse:
       type: object
       required:
@@ -649,6 +588,26 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
+    OfflineProjectionError:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+        projection:
+          type:
+          - string
+          - 'null'
+        derivation:
+          type:
+          - string
+          - 'null'
+        detail:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -663,58 +622,113 @@ components:
       - type: object
         additionalProperties:
           $ref: '#/components/schemas/JsonValue'
-    PersonPublicProjectionMetadata:
+    SourceCatalogEnvelope:
       type: object
       required:
-      - name
-      - schema_version
-      - contract_sha256
-      - source_generation
-      - content_sha256
-      - projected_at
+      - catalog_version
+      - policy_fingerprint
+      - sources
       properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
         name:
           type: string
-          const: person_public_v1
-        schema_version:
+        license:
           type: string
-          const: '1.0'
-        contract_sha256:
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
           type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
           type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        content_sha256:
+          format: date
+        reviewed_at:
           type: string
-          pattern: ^[a-f0-9]{64}$
-        projected_at:
-          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
           format: date-time
-      additionalProperties: false
+        catalog_version:
+          type: string
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   responses:
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -744,42 +758,28 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
   securitySchemes:
     cookieAuth:
       type: apiKey

@@ -106,6 +106,12 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
 components:
   responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -129,20 +135,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    ErrorResponse:
+    TrustScore:
       type: object
       properties:
-        error:
+        slug:
           type: string
-        message:
-          type: string
+        trust_score:
+          type: number
+        signals:
+          type: object
+          additionalProperties: true
       additionalProperties: true
     CompanyScore:
       type: object
@@ -155,16 +158,13 @@ components:
           type: object
           additionalProperties: true
       additionalProperties: true
-    TrustScore:
+    ErrorResponse:
       type: object
       properties:
-        slug:
+        error:
           type: string
-        trust_score:
-          type: number
-        signals:
-          type: object
-          additionalProperties: true
+        message:
+          type: string
       additionalProperties: true
   securitySchemes:
     sessionCookie:

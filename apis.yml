@@ -123,7 +123,6 @@ apis:
     Account API credential management: list, create, rotate and revoke opaque omk_* API keys. Secrets
     are returned once and recoverable only via an identical Idempotency-Key replay inside 24 hours.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - API Credentials
   properties:
@@ -143,7 +142,6 @@ apis:
     Session-bound Stripe checkout, invoices and portal contracts. External actions are bounded, idempotent
     and never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Billing
   properties:
@@ -161,7 +159,6 @@ apis:
   name: OpenMercantil BORME API
   description: Daily BORME publications, multi-source timeline and registry events
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - BORME
   properties:
@@ -179,7 +176,6 @@ apis:
   name: OpenMercantil Companies API
   description: Company reports and registry events
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Companies
   properties:
@@ -197,7 +193,6 @@ apis:
   name: OpenMercantil Datasets API
   description: Bulk exports (CSV / JSON / aggregated stats)
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Datasets
   properties:
@@ -217,7 +212,6 @@ apis:
     Corporate and person-to-company relationship graphs. Every emitted record retains the source-specific
     terms authorized by the active public source catalog; no blanket relicensing applies.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Graph
   properties:
@@ -237,7 +231,6 @@ apis:
     Public read-only connector catalog. Never exposes credentials, OAuth tokens, webhook secrets or operator
     actions.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Integration
   tags_raw:
@@ -262,7 +255,6 @@ apis:
     sector information); the official version is always boe.es. Informational only — NOT legal advice.
     Court judgments are NOT exposed here (CENDOJ is kept as a citation-index only, per CGPJ…
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Legal
   properties:
@@ -282,7 +274,6 @@ apis:
     Documentary mentions of natural persons in BORME (officer roles). Persons treated as documentary mentions
     only — no DNI, no contact data, no scoring.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Persons
   properties:
@@ -300,7 +291,6 @@ apis:
   name: OpenMercantil Public Procurement API
   description: Public procurement awards (PLACSP) and grants (BDNS)
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Public Procurement
   properties:
@@ -318,7 +308,6 @@ apis:
   name: OpenMercantil Search API
   description: Company and person search endpoints
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Search
   properties:
@@ -336,7 +325,6 @@ apis:
   name: OpenMercantil Sectors API
   description: CNAE sector aggregates, ratios and company listings
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Sectors
   properties:
@@ -354,7 +342,6 @@ apis:
   name: OpenMercantil Sources API
   description: Source catalog metadata, freshness and integration status
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Sources
   properties:
@@ -374,7 +361,6 @@ apis:
     Customer-support writes. Anonymous creation requires explicit privacy consent; replies require an
     authenticated owner session and CSRF. Ticket data is never exposed through the public MCP.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Support
   properties:
@@ -392,7 +378,6 @@ apis:
   name: OpenMercantil System API
   description: Service health and metadata
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - System
   properties:
@@ -412,7 +397,6 @@ apis:
     Authenticated Panel Pro endpoints — segments, lists, notes, tags, exports, audit. Requires session
     cookie (browser) and X-CSRF-Token header for mutations.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - User
   properties:
@@ -432,7 +416,6 @@ apis:
     Account outbound webhooks: register, update, rotate the HMAC signing secret and delete event subscriptions.
     Three subscribable event types; deliveries are signed and fail closed on unknown events.
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Webhook
   tags_raw:
@@ -454,7 +437,6 @@ apis:
   name: OpenMercantil Contracts API
   description: Public procurement (PLACSP) rankings
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Contracts
   properties:
@@ -464,7 +446,6 @@ apis:
   name: OpenMercantil Daily API
   description: Daily BORME summary feeds
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Daily
   properties:
@@ -474,7 +455,6 @@ apis:
   name: OpenMercantil Export API
   description: Bulk and per-resource export endpoints
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Export
   properties:
@@ -484,7 +464,6 @@ apis:
   name: OpenMercantil Geocode API
   description: Geolocation enrichment
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Geocode
   properties:
@@ -494,7 +473,6 @@ apis:
   name: OpenMercantil Network API
   description: Company relationship network and embargoes
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Networks
   tags_raw:
@@ -507,7 +485,6 @@ apis:
   description: >-
     Documentary risk signals from public sources (AEPD, CNMC, concursos, AEAT moroso, CENDOJ)
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Risk Signals
   properties:
@@ -517,7 +494,6 @@ apis:
   name: OpenMercantil Score API
   description: Company score, trust score and activity timeseries
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Score
   properties:
@@ -527,7 +503,6 @@ apis:
   name: OpenMercantil Stats API
   description: Aggregate statistics by region and sector
   humanURL: https://openmercantil.es/api/documentacion
-  baseURL: https://openmercantil.es
   tags:
   - Stats
   properties:

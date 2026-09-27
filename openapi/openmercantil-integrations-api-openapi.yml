@@ -281,12 +281,13 @@ paths:
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
   schemas:
-    IntegrationDetailResponse:
+    IntegrationListResponse:
       type: object
       required:
       - schema_version
       - source_catalog_version
-      - integration
+      - count
+      - items
       - contract
       - _source_catalog
       - _data_sources_used
@@ -295,8 +296,12 @@ components:
           type: string
         source_catalog_version:
           type: string
-        integration:
-          $ref: '#/components/schemas/PublicIntegration'
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicIntegration'
         contract:
           $ref: '#/components/schemas/PublicIntegrationContract'
         _source_catalog:
@@ -310,6 +315,66 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
+    PublicIntegrationCoverage:
+      type: object
+      properties:
+        multi_lot:
+          type:
+          - string
+          - 'null'
+        multiple_cpv:
+          type:
+          - string
+          - 'null'
+        geography:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StripeWebhookEventRequest:
+      type: object
+      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
+      required:
+      - id
+      - type
+      - data
+      properties:
+        id:
+          type: string
+          minLength: 1
+          description: Provider event id and durable idempotency key.
+        object:
+          type: string
+          const: event
+        type:
+          type: string
+          minLength: 1
+        created:
+          type: integer
+          minimum: 0
+        livemode:
+          type: boolean
+        api_version:
+          type:
+          - string
+          - 'null'
+        data:
+          type: object
+          required:
+          - object
+          properties:
+            object:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/JsonValue'
+            previous_attributes:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/JsonValue'
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -414,248 +479,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    PublicSourcePolicyMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
-      - catalog_version
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    StripeWebhookEventRequest:
-      type: object
-      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
-      required:
-      - id
-      - type
-      - data
-      properties:
-        id:
-          type: string
-          minLength: 1
-          description: Provider event id and durable idempotency key.
-        object:
-          type: string
-          const: event
-        type:
-          type: string
-          minLength: 1
-        created:
-          type: integer
-          minimum: 0
-        livemode:
-          type: boolean
-        api_version:
-          type:
-          - string
-          - 'null'
-        data:
-          type: object
-          required:
-          - object
-          properties:
-            object:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/JsonValue'
-            previous_attributes:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/JsonValue'
-          additionalProperties:
-            $ref: '#/components/schemas/JsonValue'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    PublicIntegrationEgressPolicy:
-      type: object
-      description: Legal permission from the active source catalog. It does not claim that a technical projection is deployed.
-      required:
-      - status
-      - catalog_version
-      - policy_effective_date
-      - reviewed_at
-      properties:
-        status:
-          type: string
-          const: allowed
-        catalog_version:
-          type: string
-          minLength: 1
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type: string
-          format: date
-      additionalProperties: false
-    IntegrationListResponse:
-      type: object
-      required:
-      - schema_version
-      - source_catalog_version
-      - count
-      - items
-      - contract
-      - _source_catalog
-      - _data_sources_used
-      properties:
-        schema_version:
-          type: string
-        source_catalog_version:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicIntegration'
-        contract:
-          $ref: '#/components/schemas/PublicIntegrationContract'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
-    PublicIntegrationTransport:
-      type: object
-      description: Technical read-plane status. unavailable has no endpoint; separate_authority delegates fail-closed validation to the listed endpoint contract and is not a health probe.
-      required:
-      - status
-      - projection
-      - generation
-      - endpoints
-      properties:
-        status:
-          type: string
-          enum:
-          - available
-          - unavailable
-          - separate_authority
-        projection:
-          type:
-          - string
-          - 'null'
-        generation:
-          type:
-          - string
-          - 'null'
-        endpoints:
-          type: array
-          maxItems: 8
-          items:
-            type: string
-            pattern: ^/api/v1/
-      oneOf:
-      - properties:
-          status:
-            const: available
-          projection:
-            type: string
-            minLength: 1
-          generation:
-            type: string
-            pattern: ^(?:cipv1|sr1)-[a-f0-9]{64}$
-          endpoints:
-            minItems: 1
-      - properties:
-          status:
-            const: unavailable
-          generation:
-            type: 'null'
-          endpoints:
-            maxItems: 0
-      - properties:
-          status:
-            const: separate_authority
-          projection:
-            type: string
-            minLength: 1
-          generation:
-            type: 'null'
-          endpoints:
-            minItems: 1
-      additionalProperties: false
     PublicIntegration:
       type: object
       required:
@@ -726,20 +549,129 @@ components:
         coverage:
           $ref: '#/components/schemas/PublicIntegrationCoverage'
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
+    PublicIntegrationTransport:
+      type: object
+      description: Technical read-plane status. unavailable has no endpoint; separate_authority delegates fail-closed validation to the listed endpoint contract and is not a health probe.
+      required:
+      - status
+      - projection
+      - generation
+      - endpoints
+      properties:
+        status:
+          type: string
+          enum:
+          - available
+          - unavailable
+          - separate_authority
+        projection:
+          type:
+          - string
+          - 'null'
+        generation:
+          type:
+          - string
+          - 'null'
+        endpoints:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            pattern: ^/api/v1/
       oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
+      - properties:
+          status:
+            const: available
+          projection:
+            type: string
+            minLength: 1
+          generation:
+            type: string
+            pattern: ^(?:cipv1|sr1)-[a-f0-9]{64}$
+          endpoints:
+            minItems: 1
+      - properties:
+          status:
+            const: unavailable
+          generation:
+            type: 'null'
+          endpoints:
+            maxItems: 0
+      - properties:
+          status:
+            const: separate_authority
+          projection:
+            type: string
+            minLength: 1
+          generation:
+            type: 'null'
+          endpoints:
+            minItems: 1
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    PublicIntegrationEgressPolicy:
+      type: object
+      description: Legal permission from the active source catalog. It does not claim that a technical projection is deployed.
+      required:
+      - status
+      - catalog_version
+      - policy_effective_date
+      - reviewed_at
+      properties:
+        status:
+          type: string
+          const: allowed
+        catalog_version:
+          type: string
+          minLength: 1
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+      additionalProperties: false
+    IntegrationDetailResponse:
+      type: object
+      required:
+      - schema_version
+      - source_catalog_version
+      - integration
+      - contract
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+        source_catalog_version:
+          type: string
+        integration:
+          $ref: '#/components/schemas/PublicIntegration'
+        contract:
+          $ref: '#/components/schemas/PublicIntegrationContract'
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
     PublicIntegrationContract:
       type: object
       required:
@@ -765,23 +697,157 @@ components:
           items:
             type: string
       additionalProperties: false
-    PublicIntegrationCoverage:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    SourceCatalogEnvelope:
       type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
       properties:
-        multi_lot:
-          type:
-          - string
-          - 'null'
-        multiple_cpv:
-          type:
-          - string
-          - 'null'
-        geography:
-          type:
-          - string
-          - 'null'
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
       additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    PrivateRevalidationCacheControl:
+      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
+      schema:
+        type: string
+        const: private, no-cache, must-revalidate
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+  parameters:
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 8192
   responses:
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Resource not found
       headers:
@@ -804,72 +870,6 @@ components:
             error: legal_layer_unavailable
             detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    PrivateRevalidationCacheControl:
-      description: Caller-specific rate-limit and plan headers make this representation private. A private cache may retain the body but must revalidate every request; shared caches must not store or reuse it.
-      schema:
-        type: string
-        const: private, no-cache, must-revalidate
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-  parameters:
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      required: false
-      description: Optional RFC 9110 entity-tag validator. Weak validators, comma-separated validator lists and `*` are accepted.
-      schema:
-        type: string
-        minLength: 1
-        maxLength: 8192
   securitySchemes:
     cookieAuth:
       type: apiKey
