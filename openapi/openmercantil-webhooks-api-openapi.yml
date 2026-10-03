@@ -280,24 +280,6 @@ paths:
           description: Account security, encryption keyring or webhook schema unavailable
 components:
   schemas:
-    OutboundWebhookEventTypeV1:
-      type: string
-      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types, wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future events implicitly.
-      enum:
-      - alert.triggered
-      - tender.matched
-      - tender.deadline
-      x-webhook-event-contract-version: '1.0'
-      x-fail-closed: true
-    OutboundWebhookContractedEventCatalogV1:
-      type: array
-      description: All event payload contracts known by this API version, including contracted-but-unwired events that cannot yet be subscribed.
-      items:
-        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
-      minItems: 8
-      maxItems: 8
-      uniqueItems: true
-      x-webhook-event-contract-version: '1.0'
     WebhookUpdatedResponse:
       type: object
       required:
@@ -308,6 +290,42 @@ components:
           type: boolean
         webhook:
           $ref: '#/components/schemas/OutboundWebhook'
+      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    OutboundWebhookContractedEventCatalogV1:
+      type: array
+      description: All event payload contracts known by this API version, including contracted-but-unwired events that cannot yet be subscribed.
+      items:
+        $ref: '#/components/schemas/OutboundWebhookContractedEventTypeV1'
+      minItems: 8
+      maxItems: 8
+      uniqueItems: true
+      x-webhook-event-contract-version: '1.0'
+    OutboundWebhookCreateRequest:
+      type: object
+      required:
+      - url
+      - events
+      properties:
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
       additionalProperties: false
     ErrorResponse:
       type: object
@@ -413,6 +431,14 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    OutboundWebhookEventCatalogV1:
+      description: Exact account-visible list of events with a currently wired durable producer.
+      allOf:
+      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+      - type: array
+        minItems: 3
+        maxItems: 3
+      x-webhook-event-contract-version: '1.0'
     OutboundWebhookEventSubscriptionsV1:
       type: array
       description: Events with a currently wired durable producer. Contracted-but-unwired event types are not subscribable. An empty input is normalized to alert.triggered; wildcard, inactive and unknown values are rejected.
@@ -421,61 +447,6 @@ components:
       maxItems: 3
       uniqueItems: true
       x-webhook-event-contract-version: '1.0'
-    OutboundWebhook:
-      type: object
-      required:
-      - id
-      - url
-      - events
-      - active
-      - secret_prefix
-      - created_at
-      properties:
-        id:
-          type: integer
-          minimum: 1
-        url:
-          type: string
-          format: uri
-          pattern: ^https://
-        events:
-          $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-        active:
-          type: boolean
-        secret_prefix:
-          type: string
-          maxLength: 12
-          description: Non-secret identification prefix.
-        key_id:
-          type:
-          - string
-          - 'null'
-          description: Public identifier of the current HMAC signing key.
-        secret_storage:
-          type: string
-          enum:
-          - encrypted
-          - migration_required
-        last_success_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        created_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-    DeletedResponse:
-      type: object
-      required:
-      - ok
-      - deleted
-      properties:
-        ok:
-          type: boolean
-        deleted:
-          type: boolean
-      additionalProperties: false
     OutboundWebhookContractedEventTypeV1:
       type: string
       description: Versioned event names with a defined payload contract. Only names also present in OutboundWebhookEventTypeV1 are currently subscribable.
@@ -489,6 +460,15 @@ components:
       - tender.deadline
       - webhook.test
       x-webhook-event-contract-version: '1.0'
+    OutboundWebhookEventTypeV1:
+      type: string
+      description: Exact subscription allowlist for webhook payload contract 1.0. Unknown event types, wildcard subscriptions and unsupported schema versions fail closed. Adding an event requires an explicit runtime, OpenAPI and contract-test change so existing subscriptions never gain future events implicitly.
+      enum:
+      - alert.triggered
+      - tender.matched
+      - tender.deadline
+      x-webhook-event-contract-version: '1.0'
+      x-fail-closed: true
     OutboundWebhookOneTimeResponse:
       type: object
       required:
@@ -535,18 +515,60 @@ components:
           readOnly: true
           description: Unix timestamp for the encrypted replay window.
       additionalProperties: false
-    OutboundWebhookCreateRequest:
+    DeletedResponse:
       type: object
       required:
+      - ok
+      - deleted
+      properties:
+        ok:
+          type: boolean
+        deleted:
+          type: boolean
+      additionalProperties: false
+    OutboundWebhook:
+      type: object
+      required:
+      - id
       - url
       - events
+      - active
+      - secret_prefix
+      - created_at
       properties:
+        id:
+          type: integer
+          minimum: 1
         url:
           type: string
           format: uri
           pattern: ^https://
         events:
           $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
+        active:
+          type: boolean
+        secret_prefix:
+          type: string
+          maxLength: 12
+          description: Non-secret identification prefix.
+        key_id:
+          type:
+          - string
+          - 'null'
+          description: Public identifier of the current HMAC signing key.
+        secret_storage:
+          type: string
+          enum:
+          - encrypted
+          - migration_required
+        last_success_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
       additionalProperties: false
     WebhookWorkerHealth:
       type: object
@@ -566,28 +588,6 @@ components:
         reason:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    OutboundWebhookEventCatalogV1:
-      description: Exact account-visible list of events with a currently wired durable producer.
-      allOf:
-      - $ref: '#/components/schemas/OutboundWebhookEventSubscriptionsV1'
-      - type: array
-        minItems: 3
-        maxItems: 3
-      x-webhook-event-contract-version: '1.0'
     OutboundWebhookUpdateRequest:
       type: object
       minProperties: 1
@@ -601,21 +601,42 @@ components:
         active:
           type: boolean
       additionalProperties: false
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    IdempotencyReplayed:
-      description: True when this response was recovered from the durable encrypted replay record for the same key and payload.
-      schema:
-        type: boolean
-    IdempotencyKeyExpires:
-      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key is required.
-      schema:
-        type: integer
-        minimum: 1
+  responses:
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   parameters:
     CsrfHeader:
       name: X-CSRF-Token
@@ -636,42 +657,21 @@ components:
         minLength: 8
         maxLength: 128
         pattern: ^[A-Za-z0-9][A-Za-z0-9._:\-]{7,127}$
-  responses:
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    IdempotencyKeyExpires:
+      description: Unix timestamp after which this key cannot replay the one-time secret and a fresh key is required.
+      schema:
+        type: integer
+        minimum: 1
+    IdempotencyReplayed:
+      description: True when this response was recovered from the durable encrypted replay record for the same key and payload.
+      schema:
+        type: boolean
   securitySchemes:
     cookieAuth:
       type: apiKey
