@@ -514,6 +514,9 @@ maintainers:
 - FN: Pablo Cirre
   url: https://github.com/PabloCirre
 common:
+- type: CapabilityMap
+  url: capabilities/openmercantil-capability-edges.yml
+  name: OpenMercantil Business Capability Map
 - type: Overlay
   url: overlays/openmercantil-risk-signals-overlay.yaml
 - type: AgenticAccess

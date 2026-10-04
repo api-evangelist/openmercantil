@@ -1,0 +1,55 @@
+slug: openmercantil
+provider: OpenMercantil
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 4
+edges:
+- tag: Webhooks
+  spec_file: openmercantil-webhooks-api-openapi.yml
+  capability_id: BC-4270.80
+  capability_id_l1: BC-4270
+  capability_name: Webhook & Event Subscription Management
+  confidence: 0.9
+  evidence: POST /api/v1/user/webhooks  Create an outbound webhook; POST /api/v1/user/webhooks/{id}/rotate  Rotate
+    an outbound webhook signing secret; schema OutboundWebhookEventSubscriptionsV1
+  reason: CRUD plus secret rotation over outbound webhooks with an event catalogue and subscription schema
+    is exactly outbound webhook and event-subscription lifecycle management for API consumers.
+- tag: Billing
+  spec_file: openmercantil-billing-api-openapi.yml
+  capability_id: BC-4250
+  capability_id_l1: BC-4250
+  capability_name: Subscription Billing & Revenue Management
+  confidence: 0.85
+  evidence: POST /api/v1/checkout 'Create a subscription Checkout session'; GET /api/v1/billing/invoices
+    'List the authenticated user's invoices and subscription'; 'Create a Stripe Customer Portal session'
+  reason: Subscription checkout, invoice listing and Stripe billing-portal sessions are subscription billing
+    and payment collection operations; spans several L2s so only the L1 is asserted.
+- tag: Support
+  spec_file: openmercantil-support-api-openapi.yml
+  capability_id: BC-430.10
+  capability_id_l1: BC-430
+  capability_name: Customer Inquiry Management
+  confidence: 0.85
+  evidence: POST /api/v1/support/ticket  Create a customer-support ticket; POST /api/v1/support/ticket/{id}/reply  Reply
+    to a support ticket owned by the authenticated user
+  reason: Ticket creation and threaded replies for authenticated users is plainly inbound customer inquiry
+    handling; schemas SupportTicketCategory and SupportTicketCreateRequest confirm a support-desk surface.
+- tag: API Credentials
+  spec_file: openmercantil-api-credentials-api-openapi.yml
+  capability_id: BC-4270.40
+  capability_id_l1: BC-4270
+  capability_name: Developer Identity & Credential Management
+  confidence: 0.76
+  evidence: POST /api/v1/user/api-credentials 'Create an API credential'; 'Rotate one API credential';
+    'Revoke one API credential'
+  reason: Issuance, rotation and revocation of API keys for developers consuming the public API maps to
+    developer identity and credential management.
