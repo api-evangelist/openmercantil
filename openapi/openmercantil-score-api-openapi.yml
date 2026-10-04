@@ -106,17 +106,6 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
 components:
   schemas:
-    TrustScore:
-      type: object
-      properties:
-        slug:
-          type: string
-        trust_score:
-          type: number
-        signals:
-          type: object
-          additionalProperties: true
-      additionalProperties: true
     ErrorResponse:
       type: object
       properties:
@@ -133,6 +122,17 @@ components:
         score:
           type: number
         components:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    TrustScore:
+      type: object
+      properties:
+        slug:
+          type: string
+        trust_score:
+          type: number
+        signals:
           type: object
           additionalProperties: true
       additionalProperties: true

@@ -224,32 +224,54 @@ paths:
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
   schemas:
-    DocumentarySanction:
+    CompanyAeatDebtorResponse:
       type: object
-      description: Sanitized documentary sanction record; appearance does not imply current liability.
+      required:
+      - slug
+      - listed
       properties:
+        slug:
+          type: string
+        cif:
+          type:
+          - string
+          - 'null'
+        listed:
+          type: boolean
+        debt_eur:
+          type:
+          - number
+          - 'null'
+        period:
+          type:
+          - string
+          - 'null'
+        published_date:
+          type:
+          - string
+          - 'null'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/JsonValue'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    CompanySanctionsResponse:
+      type: object
+      properties:
+        slug:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentarySanction'
         source:
           type:
           - string
           - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        authority:
-          type:
-          - string
-          - 'null'
-        summary:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        status:
+        note:
           type:
           - string
           - 'null'
@@ -359,6 +381,36 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
     EmbargoRecord:
       type: object
       description: Documentary official-notice record; may not reflect later unpublished resolutions.
@@ -386,84 +438,32 @@ components:
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    CompanyAeatDebtorResponse:
+    DocumentarySanction:
       type: object
-      required:
-      - slug
-      - listed
+      description: Sanitized documentary sanction record; appearance does not imply current liability.
       properties:
-        slug:
-          type: string
-        cif:
-          type:
-          - string
-          - 'null'
-        listed:
-          type: boolean
-        debt_eur:
-          type:
-          - number
-          - 'null'
-        period:
-          type:
-          - string
-          - 'null'
-        published_date:
-          type:
-          - string
-          - 'null'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/JsonValue'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    CompanySanctionsResponse:
-      type: object
-      properties:
-        slug:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentarySanction'
         source:
           type:
           - string
           - 'null'
-        note:
+        date:
+          type:
+          - string
+          - 'null'
+        authority:
+          type:
+          - string
+          - 'null'
+        summary:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        status:
           type:
           - string
           - 'null'
@@ -509,7 +509,37 @@ components:
         note:
           type: string
       additionalProperties: false
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
   responses:
+    LegalLayerUnavailable:
+      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: legal_layer_unavailable
+            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
+            source_catalog_version: 2026-07-12.2
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
       description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
@@ -541,30 +571,6 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    LegalLayerUnavailable:
-      description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-          example:
-            error: legal_layer_unavailable
-            detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
-            source_catalog_version: 2026-07-12.2
     NotFound:
       description: Resource not found
       headers:
@@ -574,12 +580,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
   securitySchemes:
     cookieAuth:
       type: apiKey

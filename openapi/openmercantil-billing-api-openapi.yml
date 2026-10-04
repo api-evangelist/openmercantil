@@ -453,150 +453,19 @@ paths:
     - url: https://openmercantil.es
       description: Production
 components:
-  responses:
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest_2:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-    TooManyRequests_2:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-        X-RateLimit-Limit:
-          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
-          schema:
-            type: integer
-        X-RateLimit-Remaining:
-          description: Remaining requests in the current window.
-          schema:
-            type: integer
-        X-RateLimit-Reset:
-          description: Unix timestamp when the rate-limit counter resets.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-  parameters:
-    CsrfHeader:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
-      schema:
-        type: string
-        minLength: 32
-        maxLength: 256
   schemas:
-    BillingInvoice:
-      type: object
-      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
-      properties:
-        id:
-          type: integer
-        stripe_invoice_id:
-          type: string
-        invoice_number:
-          type:
-          - string
-          - 'null'
-        amount_paid_cents:
-          type:
-          - integer
-          - 'null'
-        amount_due_cents:
-          type:
-          - integer
-          - 'null'
-        subtotal_cents:
-          type:
-          - integer
-          - 'null'
-        tax_cents:
-          type:
-          - integer
-          - 'null'
-        tax_rate_pct:
-          type:
-          - number
-          - 'null'
-        currency:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-        invoice_pdf:
-          type:
-          - string
-          - 'null'
-          format: uri
-        hosted_invoice_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        period_start:
-          type:
-          - string
-          - 'null'
-        period_end:
-          type:
-          - string
-          - 'null'
-        paid_at:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    StripeSessionResponse:
+    RequestBodyTooLargeError:
       type: object
       required:
-      - url
-      - session_id
+      - error
+      - max_bytes
       properties:
-        url:
+        error:
           type: string
-          format: uri
-        session_id:
-          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
       additionalProperties: false
     ErrorResponse:
       type: object
@@ -702,20 +571,116 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
+    BillingInvoice:
+      type: object
+      description: Authenticated user's invoice metadata; URLs point to Stripe-hosted documents.
+      properties:
+        id:
+          type: integer
+        stripe_invoice_id:
+          type: string
+        invoice_number:
+          type:
+          - string
+          - 'null'
+        amount_paid_cents:
+          type:
+          - integer
+          - 'null'
+        amount_due_cents:
+          type:
+          - integer
+          - 'null'
+        subtotal_cents:
+          type:
+          - integer
+          - 'null'
+        tax_cents:
+          type:
+          - integer
+          - 'null'
+        tax_rate_pct:
+          type:
+          - number
+          - 'null'
+        currency:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        invoice_pdf:
+          type:
+          - string
+          - 'null'
+          format: uri
+        hosted_invoice_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        period_start:
+          type:
+          - string
+          - 'null'
+        period_end:
+          type:
+          - string
+          - 'null'
+        paid_at:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
+    StripeWebhookEventRequest:
+      type: object
+      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
+      required:
+      - id
+      - type
+      - data
+      properties:
+        id:
+          type: string
+          minLength: 1
+          description: Provider event id and durable idempotency key.
+        object:
+          type: string
+          const: event
+        type:
+          type: string
+          minLength: 1
+        created:
+          type: integer
+          minimum: 0
+        livemode:
+          type: boolean
+        api_version:
+          type:
+          - string
+          - 'null'
+        data:
+          type: object
+          required:
+          - object
+          properties:
+            object:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/JsonValue'
+            previous_attributes:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/JsonValue'
+          additionalProperties:
+            $ref: '#/components/schemas/JsonValue'
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     BillingSubscription:
       type: object
       description: Authenticated user's current subscription metadata.
@@ -766,18 +731,31 @@ components:
           type: string
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    RequestBodyTooLargeError:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    StripeSessionResponse:
       type: object
       required:
-      - error
-      - max_bytes
+      - url
+      - session_id
       properties:
-        error:
+        url:
           type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
+          format: uri
+        session_id:
+          type: string
       additionalProperties: false
     BillingInvoicesResponse:
       type: object
@@ -798,50 +776,6 @@ components:
             $ref: '#/components/schemas/BillingInvoice'
           maxItems: 50
       additionalProperties: false
-    StripeWebhookEventRequest:
-      type: object
-      description: Stripe Event envelope. The exact signed raw bytes, not a reserialized object, are used for verification. Provider extension fields remain typed JSON and are not reflected to callers.
-      required:
-      - id
-      - type
-      - data
-      properties:
-        id:
-          type: string
-          minLength: 1
-          description: Provider event id and durable idempotency key.
-        object:
-          type: string
-          const: event
-        type:
-          type: string
-          minLength: 1
-        created:
-          type: integer
-          minimum: 0
-        livemode:
-          type: boolean
-        api_version:
-          type:
-          - string
-          - 'null'
-        data:
-          type: object
-          required:
-          - object
-          properties:
-            object:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/JsonValue'
-            previous_attributes:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/JsonValue'
-          additionalProperties:
-            $ref: '#/components/schemas/JsonValue'
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     ErrorResponse_2:
       type: object
       properties:
@@ -856,6 +790,72 @@ components:
       schema:
         type: string
         const: no-store
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Fresh token returned by GET /api/v1/user/me for this authenticated session.
+      schema:
+        type: string
+        minLength: 32
+        maxLength: 256
+  responses:
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest_2:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
+    TooManyRequests_2:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+        X-RateLimit-Limit:
+          description: Maximum requests per window (60 per minute by IP on the public anonymous tier).
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Remaining requests in the current window.
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          description: Unix timestamp when the rate-limit counter resets.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
   securitySchemes:
     cookieAuth:
       type: apiKey

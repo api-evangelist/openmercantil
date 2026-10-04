@@ -174,119 +174,63 @@ paths:
       description: Production
 components:
   schemas:
-    CompanySearchItem:
+    PersonSearchResponse:
       type: object
       required:
-      - slug
-      - name
-      - cif
-      - acts_count
-      properties:
-        slug:
-          type: string
-          example: mercadona-sa
-        name:
-          type: string
-          example: MERCADONA SA
-        cif:
-          type: string
-          example: A46103834
-        acts_count:
-          type: integer
-        last_seen:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        cnae_code:
-          type:
-          - string
-          - 'null'
-        cnae_section:
-          type:
-          - string
-          - 'null'
-        capital_cents:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-        first_seen:
-          type:
-          - string
-          - 'null'
-        matched_alias:
-          type: string
-          description: Present only when an exact safe alias was matched; slug is always canonical.
-        aliases:
-          type: array
-          items:
-            type: string
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    PersonSearchItem:
-      type: object
-      description: Documentary person search result; no DNI, contact data or personal address.
-      required:
-      - slug
-      - name
-      - mentions_count
-      - companies_count
-      - first_seen
-      - last_seen
+      - schema_version
+      - status
+      - query
+      - count
+      - items
       - subject_type
       - identity_resolution
-      - source_slug
+      - projection
+      - _legal_notice
+      - _source_catalog
+      - _data_sources_used
       properties:
-        slug:
+        schema_version:
           type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
+          const: person_search_v1
+        status:
           type: string
-          minLength: 1
-        mentions_count:
+          const: available
+        query:
+          type: string
+          minLength: 2
+          maxLength: 200
+        count:
           type: integer
-          minimum: 1
-        companies_count:
-          type: integer
-          minimum: 1
-        first_seen:
-          type:
-          - string
-          - 'null'
-          format: date
-        last_seen:
-          type:
-          - string
-          - 'null'
-          format: date
+          minimum: 0
+          maximum: 50
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/PersonSearchItem'
         subject_type:
           type: string
           const: person_documentary_mentions
         identity_resolution:
           type: string
           const: not_performed
-        source_slug:
+        projection:
+          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
+        _legal_notice:
           type: string
-          const: borme
+          minLength: 1
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -391,35 +335,37 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    PersonPublicProjectionMetadata:
+    SearchResponse:
       type: object
       required:
-      - name
-      - schema_version
-      - contract_sha256
-      - source_generation
-      - content_sha256
-      - projected_at
+      - query
+      - count
+      - items
       properties:
-        name:
+        query:
           type: string
-          const: person_public_v1
-        schema_version:
-          type: string
-          const: '1.0'
-        contract_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        content_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        projected_at:
-          type: string
-          format: date-time
-      additionalProperties: false
+        count:
+          type: integer
+        offset:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanySearchItem'
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     SourceCatalogEnvelope:
       type: object
       required:
@@ -438,6 +384,52 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    PersonSearchItem:
+      type: object
+      description: Documentary person search result; no DNI, contact data or personal address.
+      required:
+      - slug
+      - name
+      - mentions_count
+      - companies_count
+      - first_seen
+      - last_seen
+      - subject_type
+      - identity_resolution
+      - source_slug
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
+          type: string
+          minLength: 1
+        mentions_count:
+          type: integer
+          minimum: 1
+        companies_count:
+          type: integer
+          minimum: 1
+        first_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        last_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        subject_type:
+          type: string
+          const: person_documentary_mentions
+        identity_resolution:
+          type: string
+          const: not_performed
+        source_slug:
+          type: string
+          const: borme
       additionalProperties: false
     PublicSourcePolicyMetadata:
       type: object
@@ -490,23 +482,59 @@ components:
           format: date-time
         catalog_version:
           type: string
-    SearchResponse:
+    CompanySearchItem:
       type: object
       required:
-      - query
-      - count
-      - items
+      - slug
+      - name
+      - cif
+      - acts_count
       properties:
-        query:
+        slug:
           type: string
-        count:
+          example: mercadona-sa
+        name:
+          type: string
+          example: MERCADONA SA
+        cif:
+          type: string
+          example: A46103834
+        acts_count:
           type: integer
-        offset:
-          type: integer
-        items:
+        last_seen:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        cnae_code:
+          type:
+          - string
+          - 'null'
+        cnae_section:
+          type:
+          - string
+          - 'null'
+        capital_cents:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+        first_seen:
+          type:
+          - string
+          - 'null'
+        matched_alias:
+          type: string
+          description: Present only when an exact safe alias was matched; slug is always canonical.
+        aliases:
           type: array
           items:
-            $ref: '#/components/schemas/CompanySearchItem'
+            type: string
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     ProjectionUnavailableError:
       type: object
       description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
@@ -523,63 +551,55 @@ components:
         projection:
           type: string
       additionalProperties: false
-    PersonSearchResponse:
+    PersonPublicProjectionMetadata:
       type: object
       required:
+      - name
       - schema_version
-      - status
-      - query
-      - count
-      - items
-      - subject_type
-      - identity_resolution
-      - projection
-      - _legal_notice
-      - _source_catalog
-      - _data_sources_used
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
       properties:
+        name:
+          type: string
+          const: person_public_v1
         schema_version:
           type: string
-          const: person_search_v1
-        status:
+          const: '1.0'
+        contract_sha256:
           type: string
-          const: available
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    PersonSearchResponse_2:
+      type: object
+      properties:
         query:
           type: string
-          minLength: 2
-          maxLength: 200
         count:
           type: integer
-          minimum: 0
-          maximum: 50
         items:
           type: array
-          maxItems: 50
           items:
-            $ref: '#/components/schemas/PersonSearchItem'
-        subject_type:
+            $ref: '#/components/schemas/PersonSearchItem_2'
+      additionalProperties: true
+    ErrorResponse_2:
+      type: object
+      properties:
+        error:
           type: string
-          const: person_documentary_mentions
-        identity_resolution:
+        message:
           type: string
-          const: not_performed
-        projection:
-          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
-        _legal_notice:
-          type: string
-          minLength: 1
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
+      additionalProperties: true
     CompanySearchItem_2:
       type: object
       properties:
@@ -603,14 +623,6 @@ components:
           items:
             type: string
       additionalProperties: true
-    ErrorResponse_2:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-      additionalProperties: true
     PersonSearchItem_2:
       type: object
       properties:
@@ -621,19 +633,51 @@ components:
         company_count:
           type: integer
       additionalProperties: true
-    PersonSearchResponse_2:
-      type: object
-      properties:
-        query:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonSearchItem_2'
-      additionalProperties: true
+  headers:
+    NoStoreCacheControl:
+      description: Error responses must not be stored.
+      schema:
+        type: string
+        const: no-store
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
   responses:
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     PublicReadUnavailable:
       description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
       headers:
@@ -676,30 +720,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    BadRequest:
-      description: Invalid request
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    BadRequest_2:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
     TooManyRequests_2:
       description: Rate limit exceeded
       headers:
@@ -723,32 +743,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse_2'
-  headers:
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    NoStoreCacheControl:
-      description: Error responses must not be stored.
-      schema:
-        type: string
-        const: no-store
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
+    BadRequest_2:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse_2'
   parameters:
     IfNoneMatchHeader:
       name: If-None-Match
