@@ -1,29 +1,27 @@
-# Kin Score artifact — openmercantil — 2026-08-30T220315
+# Kin Score artifact — openmercantil — 2026-09-25T210408
 # The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
 ---
 kin_score:
   slug: openmercantil
-  schema_version: 0.17.2
-  scored_at: '2026-08-30'
-  run_ts: 2026-08-30T220315
-  composite: 86.4
+  schema_version: 0.23.0
+  scored_at: '2026-09-25'
+  run_ts: 2026-09-25T210408
+  composite: 81.5
   band: exemplar
   facets:
-    discoverability: 81.5
-    contract_quality: 77.7
-    governance: 47.0
+    discoverability: 78.6
+    contract_quality: 70.8
+    contract_governance: 45.5
     operational_transparency: 94.7
     developer_ergonomics: 56.5
-    commercial_clarity: 100.0
-    contract_governance: 47.0
     access_clarity: 100.0
   agent_readiness:
-    score: 42.3
+    score: 46.6
     band: agent-native
     dimensions:
       spec_presence: true
       agentic_access: derived
-      reversibility_documented: false
+      reversibility_documented: verified
       mcp_server: false
       auth_clarity: bearer
       idempotency: verified
@@ -44,7 +42,7 @@ kin_score:
     applies: true
     regime: Government & Public Sector
     regime_id: government
-    score: 85.2
+    score: 45.1
     matched_via: tags
   provenance:
     mcp: first-party
@@ -52,7 +50,7 @@ kin_score:
     agentic_access: derived
     conformance: first-party
     contracts:
-      total: 18
+      total: 25
       derived: 0
       coverage: 0.0
       callable: 100.0
