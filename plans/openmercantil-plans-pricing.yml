@@ -316,3 +316,58 @@ cancellation: Cancel any time; no commitment on monthly billing.
 free_alternative: >-
   CC BY 4.0 bulk dataset downloads at https://openmercantil.es/descargas are
   free and are the provider's recommended path for high-volume use.
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - negotiated
+  - subscription
+  units:
+  - data
+  - period
+  - rate
+  plans:
+  - name: Gratis
+    access: freemium
+    model: free
+    model_how: derived
+    units:
+    - other
+    - rate
+    periods:
+    - day
+    - minute
+    - month
+  - name: Profesional
+    access: paid
+    model: subscription
+    model_how: derived
+    units:
+    - data
+    - period
+    - rate
+    periods:
+    - day
+    - minute
+    - month
+  - name: MAX
+    access: paid
+    model: subscription
+    model_how: derived
+    units:
+    - data
+    - period
+    - rate
+    periods:
+    - day
+    - minute
+    - month
+  - name: Enterprise
+    access: negotiated
+    model: negotiated
+    model_how: stated
+    units:
+    - rate
+    periods:
+    - day

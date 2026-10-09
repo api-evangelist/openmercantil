@@ -1,4 +1,4 @@
-generated: '2026-09-16'
+generated: '2026-09-23'
 method: generated
 source: openapi/openmercantil-api-credentials-api-openapi.yml, openapi/openmercantil-billing-api-openapi.yml,
   openapi/openmercantil-borme-api-openapi.yml, openapi/openmercantil-companies-api-openapi.yml,
@@ -19,11 +19,11 @@ description: Recommended x-agentic-access execution contracts, classified heuris
 summary:
   operations: 210
   by_action_class:
-    connected: 148
-    acting: 62
+    connected: 149
+    acting: 61
   by_consequence:
-    read: 148
-    write: 53
+    read: 149
+    write: 52
     safety-critical: 2
     physical: 7
   human_in_the_loop_required: 2
@@ -2128,18 +2128,12 @@ operations:
   method: post
   operationId: lookupPersonByDni
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
+      max-ttl: 3600
+    audit: none
 - path: /api/v1/persons/lookup/usage
   method: get
   operationId: getPersonLookupUsage
