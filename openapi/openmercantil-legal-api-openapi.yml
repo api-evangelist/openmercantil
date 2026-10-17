@@ -477,19 +477,66 @@ paths:
           $ref: '#/components/responses/LegalLayerUnavailable'
 components:
   schemas:
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
+    LegalNormsIndexResponse:
+      allOf:
+      - type: object
+        required:
+        - layer
+        - count
+        - norms
+        properties:
+          layer:
+            type: string
+            example: derecho-mercantil
+          count:
+            type: integer
+            example: 48
+          norms:
+            type: array
+            items:
+              $ref: '#/components/schemas/LegalNormSummary'
+          docs:
+            type: string
+            format: uri
+            example: https://openmercantil.es/leyes
+      - $ref: '#/components/schemas/LegalLicenseFields'
+    LegalActMapResponse:
+      allOf:
+      - type: object
+        required:
+        - layer
+        - count
+        - act_map
+        properties:
+          layer:
+            type: string
+            example: puente-acto-norma
+          count:
+            type: integer
+            example: 22
+          act_map:
+            type: array
+            items:
+              type: object
+              properties:
+                act_type:
+                  type: string
+                norm_slug:
+                  type: string
+                norm_api_url:
+                  type:
+                  - string
+                  - 'null'
+                  format: uri
+                articles:
+                  type: string
+                microtext:
+                  type: string
+                concept_slug:
+                  type:
+                  - string
+                  - 'null'
+      - $ref: '#/components/schemas/LegalLicenseFields'
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -594,26 +641,37 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    LegalLicenseFields:
+    LegalRegulatedAct:
       type: object
-      description: License/attribution/disclaimer envelope present in every legal-layer response. The legal corpus is consolidated BOE text re-used under Ley 37/2007 (NOT CC BY 4.0).
+      description: BORME act type governed by this norm (law→data bridge).
       properties:
-        license:
+        act_type:
           type: string
-          example: BOE — Ley 37/2007 (reutilización de la información del sector público)
-        license_url:
+          example: ampliacion-capital
+        label:
+          type: string
+        articles:
+          type: string
+          example: LSC arts. 295-316
+        microtext:
+          type: string
+        url:
           type: string
           format: uri
-          example: https://www.boe.es/informacion/aviso_legal/index.php
-        attribution:
+          description: Bridge page listing real companies with this act (/ley/{slug}/empresas).
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
           type: string
-          example: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
-        disclaimer:
-          type: string
-          example: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
-        generated_at:
-          type: string
-          format: date-time
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
+      additionalProperties: false
     LegalNormResponse:
       allOf:
       - type: object
@@ -633,45 +691,78 @@ components:
           citable_fact:
             $ref: '#/components/schemas/LegalCitableFact'
       - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalReportResponse:
-      type: object
-      required:
-      - ok
-      - company
-      - charged
-      - beta_free
-      - already_paid
-      - balance_after
-      - report
-      properties:
-        ok:
-          type: boolean
-          const: true
-        company:
-          type: object
-          required:
-          - slug
-          - name
-          properties:
-            slug:
-              type: string
-            name:
-              type: string
-          additionalProperties: false
-        charged:
-          type: integer
-          minimum: 0
-        beta_free:
-          type: boolean
-        already_paid:
-          type: boolean
-        balance_after:
-          type:
-          - integer
-          - 'null'
-        report:
-          $ref: '#/components/schemas/LegalReportDocument'
-      additionalProperties: false
+    LegalArticleResponse:
+      allOf:
+      - type: object
+        required:
+        - article_num
+        - body_html
+        properties:
+          norm:
+            type:
+            - object
+            - 'null'
+            properties:
+              slug:
+                type: string
+              title:
+                type: string
+              short_name:
+                type:
+                - string
+                - 'null'
+              official_url:
+                type: string
+                format: uri
+          article_num:
+            type: string
+            example: '318'
+          title:
+            type: string
+            example: Artículo 318. El acuerdo de reducción del capital social.
+          body_html:
+            type: string
+            description: Consolidated article text (HTML) from the BOE, re-used under Ley 37/2007.
+          eli_anchor:
+            type: string
+            example: https://www.boe.es/eli/es/rdlg/2010/07/02/1/con#a318
+          version_date:
+            type:
+            - string
+            - 'null'
+            format: date
+          url:
+            type: string
+            format: uri
+      - $ref: '#/components/schemas/LegalLicenseFields'
+    LegalReportPaymentRequiredError:
+      oneOf:
+      - type: object
+        required:
+        - error
+        - cost
+        - balance
+        - buy_url
+        properties:
+          error:
+            type: string
+            const: insufficient_credits
+          cost:
+            type: integer
+            minimum: 0
+          balance:
+            type: integer
+          buy_url:
+            type: string
+        additionalProperties: false
+      - type: object
+        required:
+        - error
+        properties:
+          error:
+            type: string
+            const: charge_failed
+        additionalProperties: false
     LegalCitableFact:
       type:
       - object
@@ -692,66 +783,6 @@ components:
         verify_url:
           type: string
           format: uri
-    LegalActMapResponse:
-      allOf:
-      - type: object
-        required:
-        - layer
-        - count
-        - act_map
-        properties:
-          layer:
-            type: string
-            example: puente-acto-norma
-          count:
-            type: integer
-            example: 22
-          act_map:
-            type: array
-            items:
-              type: object
-              properties:
-                act_type:
-                  type: string
-                norm_slug:
-                  type: string
-                norm_api_url:
-                  type:
-                  - string
-                  - 'null'
-                  format: uri
-                articles:
-                  type: string
-                microtext:
-                  type: string
-                concept_slug:
-                  type:
-                  - string
-                  - 'null'
-      - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalNormsIndexResponse:
-      allOf:
-      - type: object
-        required:
-        - layer
-        - count
-        - norms
-        properties:
-          layer:
-            type: string
-            example: derecho-mercantil
-          count:
-            type: integer
-            example: 48
-          norms:
-            type: array
-            items:
-              $ref: '#/components/schemas/LegalNormSummary'
-          docs:
-            type: string
-            format: uri
-            example: https://openmercantil.es/leyes
-      - $ref: '#/components/schemas/LegalLicenseFields'
     LegalNormFull:
       type: object
       properties:
@@ -800,132 +831,98 @@ components:
         url:
           type: string
           format: uri
-    LegalNormSummary:
-      type: object
-      properties:
-        slug:
-          type: string
-          example: ley-de-sociedades-de-capital
-        title:
-          type: string
-        short_name:
-          type:
-          - string
-          - 'null'
-          example: LSC
-        norm_type:
-          type: string
-          example: real_decreto_legislativo
-        norm_type_label:
-          type: string
-          example: Real Decreto Legislativo
-        in_force:
-          type: boolean
-        url:
-          type: string
-          format: uri
-        api_url:
-          type: string
-          format: uri
-    LegalReportDocument:
+    LegalReportResponse:
       type: object
       required:
-      - state
-      - axes
-      - totals
+      - ok
+      - company
+      - charged
+      - beta_free
+      - already_paid
+      - balance_after
+      - report
       properties:
-        state:
-          anyOf:
-          - type: object
-            additionalProperties:
-              $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-        axes:
-          type: array
-          items:
-            $ref: '#/components/schemas/LegalReportAxis'
-        totals:
+        ok:
+          type: boolean
+          const: true
+        company:
           type: object
           required:
-          - axes_present
-          - events_total
-          - norms_cited
+          - slug
+          - name
           properties:
-            axes_present:
-              type: integer
-              minimum: 0
-            events_total:
-              type: integer
-              minimum: 0
-            norms_cited:
-              type: array
-              items:
-                type: string
-              uniqueItems: true
+            slug:
+              type: string
+            name:
+              type: string
           additionalProperties: false
-      additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    LegalReportPaymentRequiredError:
-      oneOf:
-      - type: object
-        required:
-        - error
-        - cost
-        - balance
-        - buy_url
-        properties:
-          error:
-            type: string
-            const: insufficient_credits
-          cost:
-            type: integer
-            minimum: 0
-          balance:
-            type: integer
-          buy_url:
-            type: string
-        additionalProperties: false
-      - type: object
-        required:
-        - error
-        properties:
-          error:
-            type: string
-            const: charge_failed
-        additionalProperties: false
-    LegalKeyArticle:
-      type: object
-      properties:
-        article_num:
-          type: string
-          example: '318'
-        label:
-          type: string
-        rule:
-          type: string
-          description: Plain-language rule extracted from the article.
-        has_text:
+        charged:
+          type: integer
+          minimum: 0
+        beta_free:
           type: boolean
-          description: Whether the consolidated BOE text is seeded for this article.
-        url:
+        already_paid:
+          type: boolean
+        balance_after:
+          type:
+          - integer
+          - 'null'
+        report:
+          $ref: '#/components/schemas/LegalReportDocument'
+      additionalProperties: false
+    LegalReportRequest:
+      type: object
+      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
+      properties:
+        csrf:
+          type: string
+          minLength: 32
+          maxLength: 256
+          description: Body fallback; prefer X-CSRF-Token.
+      additionalProperties: false
+    LegalActMapEntry:
+      allOf:
+      - type: object
+        properties:
+          act_type:
+            type: string
+            example: ampliacion-capital
+          norm_slug:
+            type: string
+          norm_api_url:
+            type:
+            - string
+            - 'null'
+            format: uri
+          articles:
+            type: string
+          microtext:
+            type: string
+          concept_slug:
+            type:
+            - string
+            - 'null'
+      - $ref: '#/components/schemas/LegalLicenseFields'
+    LegalLicenseFields:
+      type: object
+      description: License/attribution/disclaimer envelope present in every legal-layer response. The legal corpus is consolidated BOE text re-used under Ley 37/2007 (NOT CC BY 4.0).
+      properties:
+        license:
+          type: string
+          example: BOE — Ley 37/2007 (reutilización de la información del sector público)
+        license_url:
           type: string
           format: uri
-        api_url:
+          example: https://www.boe.es/informacion/aviso_legal/index.php
+        attribution:
           type: string
-          format: uri
+          example: Texto consolidado del Boletín Oficial del Estado (BOE), estructurado por OpenMercantil. La versión oficial y auténtica es la publicada en boe.es.
+        disclaimer:
+          type: string
+          example: Contenido meramente informativo. No constituye asesoramiento jurídico ni sustituye al texto oficial consolidado del BOE.
+        generated_at:
+          type: string
+          format: date-time
     LegalReportAxis:
       type: object
       description: One documentary axis in the redacted corporate legal-history projection. Presence records sourced events; it does not assert wrongdoing, solvency, current status or identity beyond the corporate subject guard.
@@ -991,101 +988,104 @@ components:
             $ref: '#/components/schemas/JsonValue'
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    LegalArticleResponse:
-      allOf:
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
       - type: object
-        required:
-        - article_num
-        - body_html
-        properties:
-          norm:
-            type:
-            - object
-            - 'null'
-            properties:
-              slug:
-                type: string
-              title:
-                type: string
-              short_name:
-                type:
-                - string
-                - 'null'
-              official_url:
-                type: string
-                format: uri
-          article_num:
-            type: string
-            example: '318'
-          title:
-            type: string
-            example: Artículo 318. El acuerdo de reducción del capital social.
-          body_html:
-            type: string
-            description: Consolidated article text (HTML) from the BOE, re-used under Ley 37/2007.
-          eli_anchor:
-            type: string
-            example: https://www.boe.es/eli/es/rdlg/2010/07/02/1/con#a318
-          version_date:
-            type:
-            - string
-            - 'null'
-            format: date
-          url:
-            type: string
-            format: uri
-      - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalActMapEntry:
-      allOf:
-      - type: object
-        properties:
-          act_type:
-            type: string
-            example: ampliacion-capital
-          norm_slug:
-            type: string
-          norm_api_url:
-            type:
-            - string
-            - 'null'
-            format: uri
-          articles:
-            type: string
-          microtext:
-            type: string
-          concept_slug:
-            type:
-            - string
-            - 'null'
-      - $ref: '#/components/schemas/LegalLicenseFields'
-    LegalRegulatedAct:
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    LegalKeyArticle:
       type: object
-      description: BORME act type governed by this norm (law→data bridge).
       properties:
-        act_type:
+        article_num:
           type: string
-          example: ampliacion-capital
+          example: '318'
         label:
           type: string
-        articles:
+        rule:
           type: string
-          example: LSC arts. 295-316
-        microtext:
-          type: string
+          description: Plain-language rule extracted from the article.
+        has_text:
+          type: boolean
+          description: Whether the consolidated BOE text is seeded for this article.
         url:
           type: string
           format: uri
-          description: Bridge page listing real companies with this act (/ley/{slug}/empresas).
-    LegalReportRequest:
-      type: object
-      description: The body carries only the CSRF fallback. Entitlement, pricing, beta status and the daily idempotency key are server-owned.
-      properties:
-        csrf:
+        api_url:
           type: string
-          minLength: 32
-          maxLength: 256
-          description: Body fallback; prefer X-CSRF-Token.
+          format: uri
+    LegalReportDocument:
+      type: object
+      required:
+      - state
+      - axes
+      - totals
+      properties:
+        state:
+          anyOf:
+          - type: object
+            additionalProperties:
+              $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+        axes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalReportAxis'
+        totals:
+          type: object
+          required:
+          - axes_present
+          - events_total
+          - norms_cited
+          properties:
+            axes_present:
+              type: integer
+              minimum: 0
+            events_total:
+              type: integer
+              minimum: 0
+            norms_cited:
+              type: array
+              items:
+                type: string
+              uniqueItems: true
+          additionalProperties: false
       additionalProperties: false
+    LegalNormSummary:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: ley-de-sociedades-de-capital
+        title:
+          type: string
+        short_name:
+          type:
+          - string
+          - 'null'
+          example: LSC
+        norm_type:
+          type: string
+          example: real_decreto_legislativo
+        norm_type_label:
+          type: string
+          example: Real Decreto Legislativo
+        in_force:
+          type: boolean
+        url:
+          type: string
+          format: uri
+        api_url:
+          type: string
+          format: uri
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.
@@ -1113,6 +1113,15 @@ components:
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: placsp
   responses:
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
       description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
@@ -1126,11 +1135,13 @@ components:
             error: legal_layer_unavailable
             detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    BadRequest:
-      description: Invalid request
+    TooManyRequests:
+      description: Rate limit exceeded
       headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
       content:
         application/json:
           schema:
@@ -1141,22 +1152,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
+    BadRequest:
+      description: Invalid request
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
       content:
         application/json:
           schema:

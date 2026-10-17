@@ -458,6 +458,53 @@ paths:
           $ref: '#/components/responses/PublicReadUnavailable'
 components:
   schemas:
+    BormeEvent:
+      type: object
+      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+        publish_date:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        act_type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        text:
+          type:
+          - string
+          - 'null'
+        province:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -562,20 +609,22 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
     CompanyFactsResponse:
       type: object
       required:
@@ -635,6 +684,30 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    DailySummary:
+      type: object
+      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with the artifact version.
+      properties:
+        date:
+          type:
+          - string
+          - 'null'
+        count:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BormeEvent'
+        provinces:
+          type: object
+          additionalProperties:
+            type: integer
+        types:
+          type: object
+          additionalProperties:
+            type: integer
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     CompanyEventsResponse:
       type: object
       required:
@@ -665,53 +738,6 @@ components:
             $ref: '#/components/schemas/BormeEvent'
           maxItems: 100
       additionalProperties: false
-    BormeEvent:
-      type: object
-      description: Sanitized documentary BORME event; additional source fields remain backward compatible.
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-        publish_date:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        act_type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        text:
-          type:
-          - string
-          - 'null'
-        province:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
     BormeFact:
       type: object
       description: Sanitized structured BORME fact; DNI/NIE is redacted before caching.
@@ -745,46 +771,20 @@ components:
           format: uri
       additionalProperties:
         $ref: '#/components/schemas/JsonValue'
-    DailySummary:
-      type: object
-      description: BORME daily artifact. Stable counters are explicit; grouping fields may evolve with the artifact version.
-      properties:
-        date:
-          type:
-          - string
-          - 'null'
-        count:
-          type: integer
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/BormeEvent'
-        provinces:
-          type: object
-          additionalProperties:
-            type: integer
-        types:
-          type: object
-          additionalProperties:
-            type: integer
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.
@@ -812,8 +812,8 @@ components:
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: placsp
   responses:
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+    NotFound:
+      description: Resource not found
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -834,6 +834,17 @@ components:
             error: legal_layer_unavailable
             detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     BadRequest:
       description: Invalid request
       headers:
@@ -843,17 +854,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    InternalServerError:
-      description: The bounded operation failed without exposing internal exception details.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -892,13 +894,11 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
+    InternalServerError:
+      description: The bounded operation failed without exposing internal exception details.
       headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
       content:
         application/json:
           schema:

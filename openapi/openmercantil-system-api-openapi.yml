@@ -167,6 +167,80 @@ paths:
     - url: https://openmercantil.es
       description: Production
 components:
+  headers:
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    StatsGeneration:
+      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
+      schema:
+        type: string
+        pattern: ^asv1-[a-f0-9]{64}$
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
+  responses:
+    PublicReadUnavailable:
+      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
+      headers:
+        Cache-Control:
+          description: Unavailable public reads are never cacheable.
+          schema:
+            type: string
+            const: no-store
+        Retry-After:
+          description: Optional number of seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            anyOf:
+            - $ref: '#/components/schemas/ProjectionUnavailableError'
+            - $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            legal_layer:
+              value:
+                error: legal_layer_unavailable
+            company_identity:
+              value:
+                error: company_public_projection_unavailable
+            projection:
+              value:
+                error: projection_unavailable
+                detail: La proyección pública requerida no está disponible.
+                projection: wikidata_company_v1
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
     ErrorResponse:
       type: object
@@ -272,6 +346,22 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
     JsonValue:
       description: A JSON value used only inside explicitly documented extension maps.
       oneOf:
@@ -363,22 +453,6 @@ components:
           type: boolean
           description: True when any feature is disabled/invalid or the data is stale (artifacts_age_hours >= 26), even if status is still "ok".
       additionalProperties: false
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
     Health:
       type: object
       properties:
@@ -395,80 +469,6 @@ components:
           - string
           - 'null'
       additionalProperties: true
-  responses:
-    PublicReadUnavailable:
-      description: The public read failed closed because its legal source catalog, subject classification, bounded projection, database helper or required artifact is unavailable. Clients must not infer an empty result.
-      headers:
-        Cache-Control:
-          description: Unavailable public reads are never cacheable.
-          schema:
-            type: string
-            const: no-store
-        Retry-After:
-          description: Optional number of seconds to wait before retrying.
-          schema:
-            type: integer
-            minimum: 1
-      content:
-        application/json:
-          schema:
-            anyOf:
-            - $ref: '#/components/schemas/ProjectionUnavailableError'
-            - $ref: '#/components/schemas/ErrorResponse'
-          examples:
-            legal_layer:
-              value:
-                error: legal_layer_unavailable
-            company_identity:
-              value:
-                error: company_public_projection_unavailable
-            projection:
-              value:
-                error: projection_unavailable
-                detail: La proyección pública requerida no está disponible.
-                projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  headers:
-    StatsGeneration:
-      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
-      schema:
-        type: string
-        pattern: ^asv1-[a-f0-9]{64}$
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
   parameters:
     IfNoneMatchHeader:
       name: If-None-Match

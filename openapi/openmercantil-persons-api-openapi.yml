@@ -260,108 +260,79 @@ paths:
       description: Production
 components:
   schemas:
-    PersonDocumentaryPosition:
+    PersonDocumentaryReport:
       type: object
+      description: Exact person_public_v1 report. It groups unresolved BORME name mentions and never proves identity or current vigency.
       required:
-      - company
-      - company_name
-      - company_slug
-      - cif
-      - role
-      - since
-      - until
-      - documentary_status
-      - vigency_verified
-      - source_slug
-      - source_url
-      properties:
-        company:
-          type: string
-          minLength: 1
-        company_name:
-          type: string
-          minLength: 1
-        company_slug:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        cif:
-          type: string
-          description: Admitted legal-entity CIF; never a natural-person identifier.
-        role:
-          type:
-          - string
-          - 'null'
-        since:
-          type:
-          - string
-          - 'null'
-          format: date
-        until:
-          type:
-          - string
-          - 'null'
-          format: date
-        documentary_status:
-          type: string
-          enum:
-          - open_documentary_mention
-          - historical_documentary_mention
-        vigency_verified:
-          type: boolean
-          const: false
-        source_slug:
-          type: string
-          const: borme
-        source_url:
-          type: string
-          format: uri
-          const: https://www.boe.es/diario_borme/
-      additionalProperties: false
-    PersonSearchResponse:
-      type: object
-      required:
-      - schema_version
-      - status
-      - query
-      - count
-      - items
+      - slug
+      - name
+      - first_seen
+      - last_seen
+      - companies_count
+      - active_positions
+      - inactive_positions
       - subject_type
       - identity_resolution
-      - projection
+      - positions_semantics
       - _legal_notice
+      - _correction_channel
+      - schema_version
+      - status
+      - projection
       - _source_catalog
       - _data_sources_used
       properties:
-        schema_version:
+        slug:
           type: string
-          const: person_search_v1
-        status:
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
           type: string
-          const: available
-        query:
-          type: string
-          minLength: 2
-          maxLength: 200
-        count:
+          minLength: 1
+        first_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        last_seen:
+          type:
+          - string
+          - 'null'
+          format: date
+        companies_count:
           type: integer
-          minimum: 0
-          maximum: 50
-        items:
+          minimum: 1
+        active_positions:
           type: array
-          maxItems: 50
           items:
-            $ref: '#/components/schemas/PersonSearchItem'
+            $ref: '#/components/schemas/PersonDocumentaryPosition'
+        inactive_positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonDocumentaryPosition'
         subject_type:
           type: string
           const: person_documentary_mentions
         identity_resolution:
           type: string
           const: not_performed
-        projection:
-          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
+        positions_semantics:
+          type: string
+          minLength: 1
         _legal_notice:
           type: string
           minLength: 1
+        _correction_channel:
+          type: string
+          format: uri
+          const: https://openmercantil.es/proteccion-de-datos/derechos
+        schema_version:
+          type: string
+          const: person_documentary_report_v1
+        status:
+          type: string
+          const: available
+        projection:
+          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
         _source_catalog:
           $ref: '#/components/schemas/SourceCatalogEnvelope'
         _data_sources_used:
@@ -478,129 +449,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    OfficerList:
-      type: array
-      maxItems: 500
-      items:
-        $ref: '#/components/schemas/OfficerDocumentaryMention'
-    PersonDocumentaryReport:
-      type: object
-      description: Exact person_public_v1 report. It groups unresolved BORME name mentions and never proves identity or current vigency.
-      required:
-      - slug
-      - name
-      - first_seen
-      - last_seen
-      - companies_count
-      - active_positions
-      - inactive_positions
-      - subject_type
-      - identity_resolution
-      - positions_semantics
-      - _legal_notice
-      - _correction_channel
-      - schema_version
-      - status
-      - projection
-      - _source_catalog
-      - _data_sources_used
-      properties:
-        slug:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          minLength: 1
-        first_seen:
-          type:
-          - string
-          - 'null'
-          format: date
-        last_seen:
-          type:
-          - string
-          - 'null'
-          format: date
-        companies_count:
-          type: integer
-          minimum: 1
-        active_positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonDocumentaryPosition'
-        inactive_positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonDocumentaryPosition'
-        subject_type:
-          type: string
-          const: person_documentary_mentions
-        identity_resolution:
-          type: string
-          const: not_performed
-        positions_semantics:
-          type: string
-          minLength: 1
-        _legal_notice:
-          type: string
-          minLength: 1
-        _correction_channel:
-          type: string
-          format: uri
-          const: https://openmercantil.es/proteccion-de-datos/derechos
-        schema_version:
-          type: string
-          const: person_documentary_report_v1
-        status:
-          type: string
-          const: available
-        projection:
-          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
-        _source_catalog:
-          $ref: '#/components/schemas/SourceCatalogEnvelope'
-        _data_sources_used:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-        _attributions:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
     PersonSearchItem:
       type: object
       description: Documentary person search result; no DNI, contact data or personal address.
@@ -647,6 +495,84 @@ components:
           type: string
           const: borme
       additionalProperties: false
+    ProjectionUnavailableError:
+      type: object
+      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
+      required:
+      - error
+      - detail
+      - projection
+      properties:
+        error:
+          type: string
+          const: projection_unavailable
+        detail:
+          type: string
+        projection:
+          type: string
+      additionalProperties: false
+    PersonPublicProjectionMetadata:
+      type: object
+      required:
+      - name
+      - schema_version
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
+      properties:
+        name:
+          type: string
+          const: person_public_v1
+        schema_version:
+          type: string
+          const: '1.0'
+        contract_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    OfficerDocumentaryMention:
+      type: object
+      description: Documentary officer mention. It never contains DNI, contact details or a personal address.
+      properties:
+        name:
+          type: string
+        person_slug:
+          type:
+          - string
+          - 'null'
+        role:
+          type:
+          - string
+          - 'null'
+        appointed_at:
+          type:
+          - string
+          - 'null'
+        ended_at:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        source_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+      additionalProperties:
+        $ref: '#/components/schemas/JsonValue'
     OfflineProjectionError:
       type: object
       required:
@@ -666,6 +592,158 @@ components:
           type:
           - string
           - 'null'
+      additionalProperties: false
+    SourceCatalogEnvelope:
+      type: object
+      required:
+      - catalog_version
+      - policy_fingerprint
+      - sources
+      properties:
+        catalog_version:
+          type: string
+        policy_fingerprint:
+          type: string
+        policy_effective_date:
+          type: string
+          format: date
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+      additionalProperties: false
+    PersonSearchResponse:
+      type: object
+      required:
+      - schema_version
+      - status
+      - query
+      - count
+      - items
+      - subject_type
+      - identity_resolution
+      - projection
+      - _legal_notice
+      - _source_catalog
+      - _data_sources_used
+      properties:
+        schema_version:
+          type: string
+          const: person_search_v1
+        status:
+          type: string
+          const: available
+        query:
+          type: string
+          minLength: 2
+          maxLength: 200
+        count:
+          type: integer
+          minimum: 0
+          maximum: 50
+        items:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/PersonSearchItem'
+        subject_type:
+          type: string
+          const: person_documentary_mentions
+        identity_resolution:
+          type: string
+          const: not_performed
+        projection:
+          $ref: '#/components/schemas/PersonPublicProjectionMetadata'
+        _legal_notice:
+          type: string
+          minLength: 1
+        _source_catalog:
+          $ref: '#/components/schemas/SourceCatalogEnvelope'
+        _data_sources_used:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
+        _attributions:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
+    OfficerList:
+      type: array
+      maxItems: 500
+      items:
+        $ref: '#/components/schemas/OfficerDocumentaryMention'
+    PersonDocumentaryPosition:
+      type: object
+      required:
+      - company
+      - company_name
+      - company_slug
+      - cif
+      - role
+      - since
+      - until
+      - documentary_status
+      - vigency_verified
+      - source_slug
+      - source_url
+      properties:
+        company:
+          type: string
+          minLength: 1
+        company_name:
+          type: string
+          minLength: 1
+        company_slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        cif:
+          type: string
+          description: Admitted legal-entity CIF; never a natural-person identifier.
+        role:
+          type:
+          - string
+          - 'null'
+        since:
+          type:
+          - string
+          - 'null'
+          format: date
+        until:
+          type:
+          - string
+          - 'null'
+          format: date
+        documentary_status:
+          type: string
+          enum:
+          - open_documentary_mention
+          - historical_documentary_mention
+        vigency_verified:
+          type: boolean
+          const: false
+        source_slug:
+          type: string
+          const: borme
+        source_url:
+          type: string
+          format: uri
+          const: https://www.boe.es/diario_borme/
       additionalProperties: false
     PublicSourcePolicyMetadata:
       type: object
@@ -718,96 +796,6 @@ components:
           format: date-time
         catalog_version:
           type: string
-    ProjectionUnavailableError:
-      type: object
-      description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
-      required:
-      - error
-      - detail
-      - projection
-      properties:
-        error:
-          type: string
-          const: projection_unavailable
-        detail:
-          type: string
-        projection:
-          type: string
-      additionalProperties: false
-    OfficerDocumentaryMention:
-      type: object
-      description: Documentary officer mention. It never contains DNI, contact details or a personal address.
-      properties:
-        name:
-          type: string
-        person_slug:
-          type:
-          - string
-          - 'null'
-        role:
-          type:
-          - string
-          - 'null'
-        appointed_at:
-          type:
-          - string
-          - 'null'
-        ended_at:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        source_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-      additionalProperties:
-        $ref: '#/components/schemas/JsonValue'
-    PersonPublicProjectionMetadata:
-      type: object
-      required:
-      - name
-      - schema_version
-      - contract_sha256
-      - source_generation
-      - content_sha256
-      - projected_at
-      properties:
-        name:
-          type: string
-          const: person_public_v1
-        schema_version:
-          type: string
-          const: '1.0'
-        contract_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        content_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        projected_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-    PersonSearchResponse_2:
-      type: object
-      properties:
-        query:
-          type: string
-        count:
-          type: integer
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonSearchItem_2'
-      additionalProperties: true
     ErrorResponse_2:
       type: object
       properties:
@@ -815,16 +803,6 @@ components:
           type: string
         message:
           type: string
-      additionalProperties: true
-    PersonSearchItem_2:
-      type: object
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        company_count:
-          type: integer
       additionalProperties: true
     PersonReport:
       type: object
@@ -858,6 +836,28 @@ components:
           - 'null'
           format: date
       additionalProperties: true
+    PersonSearchItem_2:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        company_count:
+          type: integer
+      additionalProperties: true
+    PersonSearchResponse_2:
+      type: object
+      properties:
+        query:
+          type: string
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonSearchItem_2'
+      additionalProperties: true
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.
@@ -885,6 +885,15 @@ components:
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: placsp
   responses:
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
       description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
@@ -898,11 +907,13 @@ components:
             error: legal_layer_unavailable
             detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+    TooManyRequests:
+      description: Rate limit exceeded
       headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
       content:
         application/json:
           schema:
@@ -916,8 +927,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
@@ -956,17 +967,12 @@ components:
                 error: projection_unavailable
                 detail: La proyección pública requerida no está disponible.
                 projection: wikidata_company_v1
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
+    BadRequest_2:
+      description: Invalid request
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/ErrorResponse_2'
     TooManyRequests_2:
       description: Rate limit exceeded
       headers:
@@ -986,12 +992,6 @@ components:
           description: Unix timestamp when the rate-limit counter resets.
           schema:
             type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse_2'
-    BadRequest_2:
-      description: Invalid request
       content:
         application/json:
           schema:

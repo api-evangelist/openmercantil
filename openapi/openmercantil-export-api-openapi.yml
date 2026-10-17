@@ -171,6 +171,14 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
     CompanyReport:
       type: object
       properties:
@@ -207,14 +215,6 @@ components:
           type: array
           items:
             type: string
-      additionalProperties: true
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
       additionalProperties: true
   responses:
     TooManyRequests:

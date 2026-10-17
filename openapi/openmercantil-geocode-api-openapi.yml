@@ -65,6 +65,14 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      additionalProperties: true
     Geocode:
       type: object
       properties:
@@ -75,14 +83,6 @@ components:
         address:
           type: string
         source:
-          type: string
-      additionalProperties: true
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
           type: string
       additionalProperties: true
   responses:

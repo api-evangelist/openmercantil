@@ -275,7 +275,121 @@ paths:
     - url: https://openmercantil.es
       description: Production
 components:
+  headers:
+    XDataSources:
+      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: borme,placsp
+    XAttributionRequired:
+      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
+      schema:
+        type: string
+        minLength: 1
+        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
+      example: placsp
+    EntityTag:
+      description: Strong generation-bound entity tag for conditional GET.
+      schema:
+        type: string
+        pattern: ^"[a-f0-9]{64}"$
+    StatsGeneration:
+      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
+      schema:
+        type: string
+        pattern: ^asv1-[a-f0-9]{64}$
+    XSourceCatalogVersion:
+      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
+      schema:
+        type: string
+        minLength: 1
+      example: 2026-07-12.2
   schemas:
+    PublicSourceStatusResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - generated_at
+      - source_catalog_version
+      - count
+      - sources
+      - _legal_notice
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        source_catalog_version:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSourceMetadata'
+        _legal_notice:
+          type: string
+    PublicSourceMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - catalog_version
+      - freshness
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type:
+          - string
+          - 'null'
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
+        freshness:
+          type: string
+          enum:
+          - current
+          - stale
+          - unknown
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -380,79 +494,6 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    PublicSourceMetadata:
-      type: object
-      additionalProperties: false
-      required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - catalog_version
-      - freshness
-      properties:
-        slug:
-          type: string
-        name:
-          type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
-        policy_effective_date:
-          type: string
-          format: date
-        reviewed_at:
-          type:
-          - string
-          - 'null'
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-        freshness:
-          type: string
-          enum:
-          - current
-          - stale
-          - unknown
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
     ProjectionUnavailableError:
       type: object
       description: Fail-closed projection outage. Clients must not reinterpret this response as an empty or negative result.
@@ -469,6 +510,20 @@ components:
         projection:
           type: string
       additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     OfflineProjectionError:
       type: object
       required:
@@ -489,30 +544,14 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    PublicSourceStatusResponse:
+    ErrorResponse_2:
       type: object
-      additionalProperties: false
-      required:
-      - generated_at
-      - source_catalog_version
-      - count
-      - sources
-      - _legal_notice
       properties:
-        generated_at:
+        error:
           type: string
-          format: date-time
-        source_catalog_version:
+        message:
           type: string
-        count:
-          type: integer
-          minimum: 0
-        sources:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicSourceMetadata'
-        _legal_notice:
-          type: string
+      additionalProperties: true
     SourcesStatus:
       type: object
       properties:
@@ -530,14 +569,6 @@ components:
               status:
                 type: string
             additionalProperties: true
-      additionalProperties: true
-    ErrorResponse_2:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
       additionalProperties: true
   responses:
     PublicReadUnavailable:
@@ -611,37 +642,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse_2'
-  headers:
-    StatsGeneration:
-      description: Exact shared generation of the active CCAA, sector, sources and global-counters bundle.
-      schema:
-        type: string
-        pattern: ^asv1-[a-f0-9]{64}$
-    XAttributionRequired:
-      description: Optional. When present, comma-separated public source aliases whose attribution terms must accompany reuse.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: placsp
-    XSourceCatalogVersion:
-      description: Mandatory on every successful public GET. Exact version of the legal source catalog used to authorize the response.
-      schema:
-        type: string
-        minLength: 1
-      example: 2026-07-12.2
-    XDataSources:
-      description: Comma-separated aliases from the active public source catalog that contributed to the response. Omitted only when a valid exact filter returns an empty representation with zero contributing sources.
-      schema:
-        type: string
-        minLength: 1
-        pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
-      example: borme,placsp
-    EntityTag:
-      description: Strong generation-bound entity tag for conditional GET.
-      schema:
-        type: string
-        pattern: ^"[a-f0-9]{64}"$
   parameters:
     IfNoneMatchHeader:
       name: If-None-Match

@@ -205,20 +205,42 @@ paths:
                 ok: false
                 error: Servicio no disponible.
 components:
+  responses:
+    Unauthorized:
+      description: Authentication required (no active session)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   schemas:
-    RequestBodyTooLargeError:
-      type: object
-      required:
-      - error
-      - max_bytes
-      properties:
-        error:
-          type: string
-          const: request_body_too_large
-        max_bytes:
-          type: integer
-          minimum: 1
-      additionalProperties: false
+    SupportRequestErrorResponse:
+      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
+      anyOf:
+      - $ref: '#/components/schemas/SupportErrorResponse'
+      - $ref: '#/components/schemas/ErrorResponse'
+    SupportTicketCategory:
+      type: string
+      description: Stable support-routing category accepted by the current account schema.
+      enum:
+      - comercial
+      - tecnico
+      - datos
+      - rgpd
+      - partnerships
+      - sugerencia
+      - bug
+      - otro
     ErrorResponse:
       type: object
       description: Closed compatibility envelope for public/account errors. Route-specific schemas narrow these fields further where required.
@@ -323,31 +345,20 @@ components:
         _alias_of:
           type: string
       additionalProperties: false
-    OkResponse:
-      type: object
-      required:
-      - ok
-      properties:
-        ok:
-          type: boolean
-      additionalProperties: false
-    SupportRequestErrorResponse:
-      description: Support validation/ownership errors carry `ok=false`; shared body-reader and action-budget errors use the generic API error envelope.
-      anyOf:
-      - $ref: '#/components/schemas/SupportErrorResponse'
-      - $ref: '#/components/schemas/ErrorResponse'
-    SupportTicketCategory:
-      type: string
-      description: Stable support-routing category accepted by the current account schema.
-      enum:
-      - comercial
-      - tecnico
-      - datos
-      - rgpd
-      - partnerships
-      - sugerencia
-      - bug
-      - otro
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     SupportReplyRequest:
       type: object
       required:
@@ -358,6 +369,19 @@ components:
           minLength: 5
           maxLength: 10000
           description: Trimmed before the 5–10,000 character validation.
+      additionalProperties: false
+    RequestBodyTooLargeError:
+      type: object
+      required:
+      - error
+      - max_bytes
+      properties:
+        error:
+          type: string
+          const: request_body_too_large
+        max_bytes:
+          type: integer
+          minimum: 1
       additionalProperties: false
     SupportTicketCreatedResponse:
       type: object
@@ -376,20 +400,6 @@ components:
           type: string
           pattern: ^OB-[0-9]{4}-[0-9]{6,}$
       additionalProperties: false
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
     SupportErrorResponse:
       type: object
       required:
@@ -408,6 +418,14 @@ components:
           type: integer
           minimum: 1
           description: Present when the per-IP support creation ceiling is exhausted.
+      additionalProperties: false
+    OkResponse:
+      type: object
+      required:
+      - ok
+      properties:
+        ok:
+          type: boolean
       additionalProperties: false
     SupportTicketCreateRequest:
       type: object
@@ -456,24 +474,6 @@ components:
           const: true
           description: Strict purpose-bound acceptance, persisted as privacy_accepted/privacy_policy_v1; never interpreted as marketing consent.
       additionalProperties: false
-  responses:
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Unauthorized:
-      description: Authentication required (no active session)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
   parameters:
     CsrfHeader:
       name: X-CSRF-Token

@@ -349,6 +349,35 @@ components:
         source_slug:
           type: string
           description: Canonical dataset slug authorized by the active source policy.
+    PersonPublicProjectionMetadata:
+      type: object
+      required:
+      - name
+      - schema_version
+      - contract_sha256
+      - source_generation
+      - content_sha256
+      - projected_at
+      properties:
+        name:
+          type: string
+          const: person_public_v1
+        schema_version:
+          type: string
+          const: '1.0'
+        contract_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        source_generation:
+          type: string
+          pattern: ^cpv2-[a-f0-9]{64}$
+        content_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        projected_at:
+          type: string
+          format: date-time
+      additionalProperties: false
     CompanyGraphResponse:
       type: object
       required:
@@ -404,85 +433,6 @@ components:
           type: integer
           const: 0
           example: 0
-    JsonValue:
-      description: A JSON value used only inside explicitly documented extension maps.
-      oneOf:
-      - type:
-        - string
-        - number
-        - boolean
-        - 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/JsonValue'
-      - type: object
-        additionalProperties:
-          $ref: '#/components/schemas/JsonValue'
-    SourceCatalogEnvelope:
-      type: object
-      required:
-      - catalog_version
-      - policy_fingerprint
-      - sources
-      properties:
-        catalog_version:
-          type: string
-        policy_fingerprint:
-          type: string
-        policy_effective_date:
-          type: string
-          format: date
-        sources:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
-      additionalProperties: false
-    PersonGraphCompany:
-      type: object
-      required:
-      - slug
-      - name
-      - rel_type
-      - role
-      - since
-      - until
-      - documentary_status
-      - vigency_verified
-      - source_slug
-      properties:
-        slug:
-          type: string
-          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
-        name:
-          type: string
-          minLength: 1
-        rel_type:
-          type: string
-          const: OFFICER_OF
-        role:
-          type: string
-        since:
-          type:
-          - string
-          - 'null'
-          format: date
-        until:
-          type:
-          - string
-          - 'null'
-          format: date
-        documentary_status:
-          type: string
-          enum:
-          - open_documentary_mention
-          - historical_documentary_mention
-        vigency_verified:
-          type: boolean
-          const: false
-        source_slug:
-          type: string
-          const: borme
-      additionalProperties: false
     OfflineProjectionError:
       type: object
       required:
@@ -503,86 +453,39 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    PublicSourcePolicyMetadata:
+    SourceCatalogEnvelope:
       type: object
-      additionalProperties: false
       required:
-      - slug
-      - name
-      - license
-      - attribution_required
-      - reuse_conditions
-      - policy_effective_date
-      - reviewed_at
       - catalog_version
+      - policy_fingerprint
+      - sources
       properties:
-        slug:
+        catalog_version:
           type: string
-        name:
+        policy_fingerprint:
           type: string
-        license:
-          type: string
-        license_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        attribution_required:
-          type: boolean
-        attribution_text:
-          type:
-          - string
-          - 'null'
-        official_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-        reuse_conditions:
-          type: string
-          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
         policy_effective_date:
           type: string
           format: date
-        reviewed_at:
-          type: string
-          format: date
-        data_updated_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        catalog_version:
-          type: string
-    PersonPublicProjectionMetadata:
-      type: object
-      required:
-      - name
-      - schema_version
-      - contract_sha256
-      - source_generation
-      - content_sha256
-      - projected_at
-      properties:
-        name:
-          type: string
-          const: person_public_v1
-        schema_version:
-          type: string
-          const: '1.0'
-        contract_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        source_generation:
-          type: string
-          pattern: ^cpv2-[a-f0-9]{64}$
-        content_sha256:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-        projected_at:
-          type: string
-          format: date-time
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PublicSourcePolicyMetadata'
       additionalProperties: false
+    JsonValue:
+      description: A JSON value used only inside explicitly documented extension maps.
+      oneOf:
+      - type:
+        - string
+        - number
+        - boolean
+        - 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/JsonValue'
+      - type: object
+        additionalProperties:
+          $ref: '#/components/schemas/JsonValue'
     PersonGraphResponse:
       type: object
       required:
@@ -692,6 +595,103 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
+    PersonGraphCompany:
+      type: object
+      required:
+      - slug
+      - name
+      - rel_type
+      - role
+      - since
+      - until
+      - documentary_status
+      - vigency_verified
+      - source_slug
+      properties:
+        slug:
+          type: string
+          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        name:
+          type: string
+          minLength: 1
+        rel_type:
+          type: string
+          const: OFFICER_OF
+        role:
+          type: string
+        since:
+          type:
+          - string
+          - 'null'
+          format: date
+        until:
+          type:
+          - string
+          - 'null'
+          format: date
+        documentary_status:
+          type: string
+          enum:
+          - open_documentary_mention
+          - historical_documentary_mention
+        vigency_verified:
+          type: boolean
+          const: false
+        source_slug:
+          type: string
+          const: borme
+      additionalProperties: false
+    PublicSourcePolicyMetadata:
+      type: object
+      additionalProperties: false
+      required:
+      - slug
+      - name
+      - license
+      - attribution_required
+      - reuse_conditions
+      - policy_effective_date
+      - reviewed_at
+      - catalog_version
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        license:
+          type: string
+        license_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        attribution_required:
+          type: boolean
+        attribution_text:
+          type:
+          - string
+          - 'null'
+        official_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+        reuse_conditions:
+          type: string
+          description: Condiciones de reutilizacion que el consumidor debe conservar al presentar o transformar el dato.
+        policy_effective_date:
+          type: string
+          format: date
+        reviewed_at:
+          type: string
+          format: date
+        data_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        catalog_version:
+          type: string
   headers:
     NoStoreCacheControl:
       description: Error responses must not be stored.
@@ -719,6 +719,15 @@ components:
         pattern: ^[a-z0-9][a-z0-9_.-]*(,[a-z0-9][a-z0-9_.-]*)*$
       example: placsp
   responses:
+    NotFound:
+      description: Resource not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStoreCacheControl'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     LegalLayerUnavailable:
       description: 'Controlled fail-closed denial: the required dataset or legal layer is absent, invalid, unsupported or not authorized for this public surface.'
       headers:
@@ -732,11 +741,13 @@ components:
             error: legal_layer_unavailable
             detail: Este dataset no esta habilitado para redistribucion publica por la politica de fuentes activa.
             source_catalog_version: 2026-07-12.2
-    ValidationFailed:
-      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
+    TooManyRequests:
+      description: Rate limit exceeded
       headers:
-        Cache-Control:
-          $ref: '#/components/headers/NoStoreCacheControl'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
       content:
         application/json:
           schema:
@@ -750,22 +761,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    NotFound:
-      description: Resource not found
+    ValidationFailed:
+      description: The query is lexically valid but outside a documented numeric or length bound, or uses an unsupported indexed combination.
       headers:
         Cache-Control:
           $ref: '#/components/headers/NoStoreCacheControl'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    TooManyRequests:
-      description: Rate limit exceeded
-      headers:
-        Retry-After:
-          description: Seconds to wait before retrying.
-          schema:
-            type: integer
       content:
         application/json:
           schema:
