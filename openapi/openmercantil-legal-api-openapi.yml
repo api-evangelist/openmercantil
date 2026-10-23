@@ -1190,3 +1190,9 @@ components:
 externalDocs:
   description: Documentación narrativa con ejemplos en curl/Python/JavaScript
   url: https://openmercantil.es/api/documentacion
+x-provenance:
+  method: harvested
+  publisher: OpenMercantil
+  source: https://openmercantil.es/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)

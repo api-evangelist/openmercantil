@@ -506,3 +506,9 @@ externalDocs:
 x-refined-from:
 - openmercantil-openapi-1.9.3.json
 - openmercantil-openapi.yml
+x-provenance:
+  method: harvested
+  publisher: OpenMercantil
+  source: https://openmercantil.es/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
